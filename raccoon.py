@@ -4,12 +4,22 @@ class DataFrame(object):
     def __init__(self, data=None, columns=None, index=None):
         # setup the data and column names
         # define from dictionary
-        if isinstance(data, dict):
+        if data is None:
+            self._data = [[]]
+            if columns:
+                # expand to the number of columns
+                self._data = self._data * len(columns)
+                self._columns = columns
+            else:
+                self._columns = list()
+            if index:
+                # pad out to the number of rows
+                self._pad_data(max_len = len(index))
+                if not columns:
+                    self._columns = [1]
+        elif isinstance(data, dict):
             self._data = [x for x in data.values()]
             self._columns = list(data.keys())
-        else:
-            self._data = [[]]
-            self._columns = []
         
         # TODO: from list of lists. Set columns = 1,2,3 if columns=None, otherwise self._columns = columns assuming right len
         
@@ -35,8 +45,9 @@ class DataFrame(object):
         self._columns = [self._columns[x] for x in new_sort]
         
     
-    def _pad_data(self):
-        max_len = max([len(x) for x in self._data])
+    def _pad_data(self, max_len=None):
+        if not max_len:
+            max_len = max([len(x) for x in self._data])
         for i, col in enumerate(self._data):  # TODO: Can this be an list comprehension
             col.extend([None] * (max_len - len(col)))
         #self.data = [x.extend([None] * (max_len - len(x))) for x in self._data]
