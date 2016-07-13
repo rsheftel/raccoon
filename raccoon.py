@@ -52,28 +52,26 @@ class DataFrame(object):
             # self.data = [x.extend([None] * (max_len - len(x))) for x in self._data]
 
     @property
-    def values(self):
+    def data(self):
         return self._data
 
     @property
     def columns(self):
-        # returns a copy
-        return self._columns.copy()
+        return self._columns
 
     @columns.setter
     def columns(self, columns_list):
-        if len(columns_list) != len(self.values):
+        if len(columns_list) != len(self.data):
             raise AttributeError('length of columns_list is not the same as the number of columns')
         self._columns = columns_list
 
     @property
     def index(self):
-        # returns a copy
-        return self._index.copy()
+        return self._index
 
     @index.setter
     def index(self, index_list):
-        if len(index_list) != len(self.values[0]):
+        if len(index_list) != len(self.data[0]):
             raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
 
@@ -83,7 +81,17 @@ class DataFrame(object):
     def iloc(self):
         pass
 
-    def at(self, index, column):
+    def get(self, indexes=None, columns=None):
+        # If one value for either indexes or columns then return list, otherwise list of list
+        if indexes is None:
+            indexes = self._index
+        if columns is None:
+            columns = self._columns
+        # singe index and column
+        if (not isinstance(indexes, list)) and (not isinstance(columns, list)):
+            return self.get_cell(indexes, columns)
+
+    def get_cell(self, index, column):
         i = self._index.index(index)
         c = self._columns.index(column)
         return self._data[c][i]
