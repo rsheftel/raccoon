@@ -1,5 +1,5 @@
 import pytest
-from . import raccoon as rc
+import raccoon as rc
 
 
 def test_initialization():
@@ -32,7 +32,7 @@ def test_jagged_data():
 def test_empty_initialization():
     actual = rc.DataFrame()
     assert isinstance(actual, rc.DataFrame)
-    assert actual.data == [[]]
+    assert actual.data == []
     assert actual.columns == []
     assert actual.index == []
 
@@ -41,11 +41,6 @@ def test_empty_initialization():
     assert actual.columns == ['a', 'b', 'c']
     assert actual.index == []
 
-    actual = rc.DataFrame(index=[1, 2, 3])
-    assert actual.data == [[None, None, None]]
-    assert actual.columns == [1]
-    assert actual.index == [1, 2, 3]
-
     actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'])
     assert actual.data == [[None, None, None], [None, None, None]]
     assert actual.columns == ['a', 'b']
@@ -53,6 +48,10 @@ def test_empty_initialization():
 
 
 def test_bad_initialization():
+    # index but no columns
+    with pytest.raises(AttributeError):
+        rc.DataFrame(index=[1, 2, 3])
+
     # wrong number in index
     with pytest.raises(AttributeError):
         rc.DataFrame({'a': [1, 2, 3]}, index=[1])
@@ -109,14 +108,6 @@ def test_values():
         actual.data = [4, 5]
 
 
-def test_at():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
-
-    assert actual.get(10, 'a') == 1
-    assert actual.get(11, 'a') == 2
-    assert actual.get(12, 'c') == 9
-
-
 def test_set_cell():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
 
@@ -130,10 +121,17 @@ def test_set_cell():
     assert actual.data == [[11, 2, 3], [4, 55, 6], [13, 8, 9]]
 
     # add a new row
+    actual.set(13, 'b', 14)
+    assert actual.data == [[11, 2, 3, None], [4, 55, 6, 14], [13, 8, 9, None]]
 
     # add a new column
+    actual.set(13, 'd', 88)
+    assert actual.data == [[11, 2, 3, None], [4, 55, 6, 14], [13, 8, 9, None], [None, None, None, 88]]
 
     # add a new row and column
+    actual.set(14, 'e', 999)
+    assert actual.data == [[11, 2, 3, None, None], [4, 55, 6, 14, None], [13, 8, 9, None, None],
+                           [None, None, None, 88, None], [None, None, None, None, 999]]
 
 
 def test_set_row():
@@ -158,13 +156,99 @@ def test_set_row():
     assert actual.data == [[11, 22, 33, 4, None], [44, 5, 66, 7, 8], [77, 88, 99, 10, 11]]
     assert actual.index == [10, 11, 12, 13, 14]
 
+    # bad column names
+    with pytest.raises(AttributeError):
+        actual.set(index=14, values={'a': 0, 'bad': 1})
+
+    # bad values type
+    with pytest.raises(AttributeError):
+        actual.set(index=14, values=[1, 2, 3, 4, 5])
+
 
 def test_set_column():
-    pass
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
+
+    # change existing column
+    actual.set(column='b', values=[44, 55, 66])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
+
+    # add a new column
+    actual.set(column='e', values=[10, 11, 12])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
+
+    # values list longer than index adds rows
+    actual.set(column='e', values=[20, 30, 40, 50])
+    assert actual.data == [[1, 2, 3, None], [44, 55, 66, None], [7, 8, 9, None], [20, 30, 40, 50]]
+
+    # not enough values
+    with pytest.raises(AttributeError):
+        actual.set(column='e', values=[1, 2])
+
+    # bad values type
+    with pytest.raises(AttributeError):
+        actual.set(column='e', values={1, 2, 3})
 
 
-def test_ohlcv():
-    df = rc.DataFrame(columns=['datetime', 'open', 'high','low','close','volume'])
+def test_set_column_index_subset():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
+
+    # by index value
+    actual.set(column='b', index=[12, 11, 10], values=[66, 55, 44])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
+
+    actual.set(column='a', index=[12, 10], values=[33, 11])
+    assert actual.data == [[11, 2, 33], [44, 55, 66], [7, 8, 9]]
+
+    # new rows
+    actual.set(column='c', index=[12, 13, 14], values=[120, 130, 140])
+    assert actual.data == [[11, 2, 33, None, None], [44, 55, 66, None, None], [7, 8, 120, 130, 140]]
+    assert actual.index == [10, 11, 12, 13, 14]
+
+    # new row new columns
+    actual.set(column='z', index=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
+    assert actual.data == [[11, 2, 33, None, None, None, None], [44, 55, 66, None, None, None, None],
+                           [7, 8, 120, 130, 140, None, None], [None, None, None, None, 'zoo', 'boo', 'hoo']]
+    assert actual.index == [10, 11, 12, 13, 14, 15, 16]
+
+    # values list shorter than indexes, raise error
+    with pytest.raises(AttributeError):
+        actual.set(index=[10, 11], column='a', values=[1])
+
+    # by boolean list
+    actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'])
+    actual.set(column='c', index=[False, True], values=[99])
+    assert actual.data == [[4, 5], [7, 8], [1, 99]]
+
+    # boolean list not size of existing index
+    with pytest.raises(AttributeError):
+        actual.set(index=[True, False, True], column='a', values=[1, 2])
+
+    # boolean list True entries not same size as values list
+    with pytest.raises(AttributeError):
+        actual.set(index=[True, True, False], column='b', values=[4, 5, 6])
+
+    with pytest.raises(AttributeError):
+        actual.set(index=[True, True, False], column='b', values=[4])
+
+
+def test_set_from_blank_df():
+    # single cell
+    df = rc.DataFrame()
+    df.set(index=1, column='a', values=9)
+    assert df.columns == ['a']
+    assert df.index == [1]
+    assert df.data == [[9]]
+
+    # single column
+    df = rc.DataFrame()
+    df.set(index=[1, 2, 3], column='a', values=[9, 10, 11])
+    assert df.columns == ['a']
+    assert df.index == [1, 2, 3]
+    assert df.data == [[9, 10, 11]]
+
+
+def test_bar():
+    df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     for x in range(10):
         df.set(index=x, values={'datetime': '2001-01-01', 'open': 100.0, 'high': 101.0, 'low': 99.5,
                                 'close': 99.75, 'volume': 10000})
@@ -172,3 +256,23 @@ def test_ohlcv():
     assert df.index == list(range(10))
     assert df.columns == ['datetime', 'open', 'high', 'low', 'close', 'volume']
     assert df.data[0] == ['2001-01-01'] * 10
+
+
+def test_get_cell():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
+
+    assert actual.get(10, 'a') == 1
+    assert actual.get(11, 'a') == 2
+    assert actual.get(12, 'c') == 9
+
+
+def test_get_row():
+    pass
+
+
+def test_get_column():
+    pass
+
+
+def test_get_row_and_col():
+    pass
