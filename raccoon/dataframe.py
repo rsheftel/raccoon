@@ -1,7 +1,15 @@
 
+from itertools import compress
+
+
 class DataFrame(object):
     def __init__(self, data=None, columns=None, index=None):
-        # setup the data and column names
+        # quality checks
+        if (index is not None) and (not isinstance(index, list)):
+            raise AttributeError('index must be a list.')
+        if (columns is not None) and (not isinstance(columns, list)):
+            raise AttributeError('columns must be a list.')
+
         # define from dictionary
         if data is None:
             self._data = list()
@@ -20,8 +28,8 @@ class DataFrame(object):
             else:
                 self._index = list()
         elif isinstance(data, dict):
-            # setup data
-            self._data = [x for x in data.values()]
+            # set data from dict values. If dict value is not a list, wrap it to make a single element list
+            self._data = [x if isinstance(x, list) else [x] for x in data.values()]
             # setup columns from directory keys
             self._columns = list(data.keys())
             # pad the data
@@ -47,9 +55,8 @@ class DataFrame(object):
     def _pad_data(self, max_len=None):
         if not max_len:
             max_len = max([len(x) for x in self._data])
-        for i, col in enumerate(self._data):  # TODO: Can this be an list comprehension
+        for i, col in enumerate(self._data):
             col.extend([None] * (max_len - len(col)))
-            # self.data = [x.extend([None] * (max_len - len(x))) for x in self._data]
 
     @property
     def data(self):
@@ -75,21 +82,35 @@ class DataFrame(object):
             raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
 
-    def loc(self):
-        pass
-
-    def iloc(self):
-        pass
-
     def get(self, indexes=None, columns=None):
+        # returns a copy
         # If one value for either indexes or columns then return list, otherwise list of list
         if indexes is None:
-            indexes = self._index
+            indexes = [True] * len(self._index)
         if columns is None:
-            columns = self._columns
+            columns = [True] * len(self._columns)
         # singe index and column
         if (not isinstance(indexes, list)) and (not isinstance(columns, list)):
             return self.get_cell(indexes, columns)
+        elif isinstance(indexes, list) and (not isinstance(columns, list)):
+            return self.get_rows(indexes, columns)
+        elif (not isinstance(indexes, list)) and isinstance(columns, list):
+            return self.get_columns(indexes, columns)
+        else:
+            return self.get_matrix(indexes, columns)
+
+    def get_rows(self, indexes, column):
+        if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
+            indexes = [x in indexes for x in self._index]  # Look to change to a list of False and just add True
+        c = self._columns.index(column)
+        return DataFrame(data={column: list(compress(self._data[c], indexes))},
+                         index=list(compress(self._index, indexes)))
+
+    def get_columns(self, index, columns):
+        data = dict()
+        for column in columns:
+            data[column] = [self.get_cell(index, column)]
+        return DataFrame(data=data, index=[index], columns=columns)
 
     def get_cell(self, index, column):
         i = self._index.index(index)
@@ -99,12 +120,11 @@ class DataFrame(object):
     # TODO: make add_row and add_column public?
     def _add_row(self, index):
         self._index.append(index)
-        for c, col in enumerate(self._columns):  # TODO: Turn this into list comprehension
+        for c, col in enumerate(self._columns):
             self._data[c].append(None)
 
     def _add_missing_rows(self, indexes):
         new_indexes = [x for x in indexes if x not in self._index]
-        # TODO: Look for a way to eliminate the for loop
         for x in new_indexes:
             self._add_row(x)
 
@@ -192,6 +212,14 @@ class DataFrame(object):
         pass
 
     def __getitem__(self, index):
+        pass
+
+    def to_list(self):
+        # works for single column only
+        pass
+
+    def to_dict(self):
+        # returns column names : [column values]
         pass
 
     def to_csv(self, filename):

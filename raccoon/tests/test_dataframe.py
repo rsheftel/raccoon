@@ -1,5 +1,6 @@
 import pytest
 import raccoon as rc
+from raccoon.utils import assert_frame_equal
 
 
 def test_initialization():
@@ -20,6 +21,12 @@ def test_initialization():
     assert actual.data == [[4, 5, 6], [1, 2, 3]]
     assert actual.columns == ['b', 'a']
     assert actual.index == ['a', 'b', 'c']
+
+    # dict values are not lists
+    actual = rc.DataFrame({'a': 1, 'b': 2, 'c': [1, 2, 3]}, columns=['b', 'c', 'a'])
+    assert actual.columns == ['b', 'c', 'a']
+    assert actual.index == [0, 1, 2]
+    assert actual.data == [[2, None, None], [1, 2, 3], [1, None, None]]
 
 
 def test_jagged_data():
@@ -66,6 +73,14 @@ def test_bad_initialization():
     # columns does not match dict keys
     with pytest.raises(AttributeError):
         rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['BAD', 'VALUE'])
+
+    # index is not a list
+    with pytest.raises(AttributeError):
+        rc.DataFrame({'a': [1]}, index=1)
+
+    # columns is not a list
+    with pytest.raises(AttributeError):
+        rc.DataFrame({'a': [1]}, columns='a')
 
 
 def test_columns():
@@ -266,12 +281,22 @@ def test_get_cell():
     assert actual.get(12, 'c') == 9
 
 
-def test_get_row():
-    pass
+def test_get_rows():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'])
+
+    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12])
+    actual = df.get([11, 12], 'c')
+    assert_frame_equal(actual, expected)
 
 
-def test_get_column():
-    pass
+def test_get_columns():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'])
+
+    expected = rc.DataFrame({'a': [4], 'c': [None]}, index=[99], columns=['a', 'c'])
+    actual = df.get(99, ['a', 'c'])
+    assert_frame_equal(actual, expected)
 
 
 def test_get_row_and_col():
