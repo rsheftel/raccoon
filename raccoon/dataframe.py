@@ -1,5 +1,6 @@
 
 from itertools import compress
+from copy import deepcopy
 
 
 class DataFrame(object):
@@ -9,6 +10,9 @@ class DataFrame(object):
             raise AttributeError('index must be a list.')
         if (columns is not None) and (not isinstance(columns, list)):
             raise AttributeError('columns must be a list.')
+
+        # standard variable setup
+        self._index_name = 'index'
 
         # define from dictionary
         if data is None:
@@ -60,27 +64,35 @@ class DataFrame(object):
 
     @property
     def data(self):
-        return self._data
+        return deepcopy(self._data)
 
     @property
     def columns(self):
-        return self._columns
+        return self._columns.copy()
 
     @columns.setter
     def columns(self, columns_list):
-        if len(columns_list) != len(self.data):
+        if len(columns_list) != len(self._data):
             raise AttributeError('length of columns_list is not the same as the number of columns')
         self._columns = columns_list
 
     @property
     def index(self):
-        return self._index
+        return self._index.copy()
 
     @index.setter
     def index(self, index_list):
-        if len(index_list) != len(self.data[0]):
+        if len(index_list) != len(self._data[0]):
             raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
+
+    @property
+    def index_name(self):
+        return self._index_name
+
+    @index_name.setter
+    def index_name(self, name):
+        self._index_name = name
 
     def get(self, indexes=None, columns=None):
         # returns a copy
@@ -90,14 +102,19 @@ class DataFrame(object):
         if columns is None:
             columns = [True] * len(self._columns)
         # singe index and column
-        if (not isinstance(indexes, list)) and (not isinstance(columns, list)):
-            return self.get_cell(indexes, columns)
+        if isinstance(indexes, list) and isinstance(columns, list):
+            return self.get_matrix(indexes, columns)
         elif isinstance(indexes, list) and (not isinstance(columns, list)):
             return self.get_rows(indexes, columns)
         elif (not isinstance(indexes, list)) and isinstance(columns, list):
             return self.get_columns(indexes, columns)
         else:
-            return self.get_matrix(indexes, columns)
+            return self.get_cell(indexes, columns)
+
+    def get_cell(self, index, column):
+        i = self._index.index(index)
+        c = self._columns.index(column)
+        return self._data[c][i]
 
     def get_rows(self, indexes, column):
         if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
@@ -108,14 +125,31 @@ class DataFrame(object):
 
     def get_columns(self, index, columns):
         data = dict()
+        if len(columns) == (columns.count(True) + columns.count(False)):
+            columns = list(compress(self._columns, columns))
         for column in columns:
             data[column] = [self.get_cell(index, column)]
         return DataFrame(data=data, index=[index], columns=columns)
 
-    def get_cell(self, index, column):
-        i = self._index.index(index)
-        c = self._columns.index(column)
-        return self._data[c][i]
+    def get_matrix(self, indexes, columns):
+        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+            i = indexes
+            indexes = list(compress(self._index, indexes))
+        else:  # index list
+            i = [x in indexes for x in self._index]  # Look to change to a list of False and just add True
+
+        if len(columns) == (columns.count(True) + columns.count(False)):  # boolean list
+            c = columns
+            columns = list(compress(self._columns, columns))
+        else:  # name list
+            c = [x in columns for x in self._columns]
+
+        data_dict = dict()
+        data = list(compress(self._data, c))
+        for x, column in enumerate(columns):
+            data_dict[column] = list(compress(data[x], i))
+
+        return DataFrame(data=data_dict, index=indexes, columns=columns)
 
     # TODO: make add_row and add_column public?
     def _add_row(self, index):

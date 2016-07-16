@@ -88,9 +88,9 @@ def test_columns():
     names = actual.columns
     assert names == ['b', 'a']
 
-    # test that a view is returned
+    # test that a copy is returned
     names.append('bad')
-    assert actual.columns != ['b', 'a']
+    assert actual.columns == ['b', 'a']
 
     actual.columns = ['new1', 'new2']
     assert actual.columns == ['new1', 'new2']
@@ -104,9 +104,9 @@ def test_index():
     result = actual.index
     assert result == ['a', 'b', 'c']
 
-    # test that a view is returned
+    # test that a copy is returned
     result.append('bad')
-    assert actual.index != ['a', 'b', 'c']
+    assert actual.index == ['a', 'b', 'c']
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -114,10 +114,19 @@ def test_index():
     with pytest.raises(AttributeError):
         actual.index = [1, 3, 4, 5, 6]
 
+    assert actual.index_name == 'index'
+    actual.index_name = 'new name'
+    assert actual.index_name == 'new name'
 
-def test_values():
+
+def test_data():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
     assert actual.data == [[4, 5, 6], [1, 2, 3]]
+
+    # test deep copy
+    new = actual.data
+    new[0][0] = 99
+    assert actual.data != new
 
     with pytest.raises(AttributeError):
         actual.data = [4, 5]
@@ -289,6 +298,10 @@ def test_get_rows():
     actual = df.get([11, 12], 'c')
     assert_frame_equal(actual, expected)
 
+    # test with boolean list
+    actual = df.get([False, True, True, False], 'c')
+    assert_frame_equal(actual, expected)
+
 
 def test_get_columns():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
@@ -298,6 +311,23 @@ def test_get_columns():
     actual = df.get(99, ['a', 'c'])
     assert_frame_equal(actual, expected)
 
+    # test with boolean list
+    actual = df.get(99, [True, False, True])
+    assert_frame_equal(actual, expected)
+
 
 def test_get_row_and_col():
-    pass
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, index=['x', 'y', 'z'],
+                      columns=['a', 'b', 'c', 'd'])
+
+    expected = rc.DataFrame({'b': [4, 6], 'd': [10, 12]}, index=['x', 'z'], columns=['b', 'd'])
+    actual = df.get(['x', 'z'], ['b', 'd'])
+    assert_frame_equal(actual, expected)
+
+    # test with booleans
+    actual = df.get([True, False, True], [False, True, False, True])
+    assert_frame_equal(actual, expected)
+
+    # get everything
+    everything = df.get()
+    assert_frame_equal(everything, df)
