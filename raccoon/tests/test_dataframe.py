@@ -1,6 +1,7 @@
 import pytest
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
+from collections import OrderedDict
 
 
 def test_initialization():
@@ -331,3 +332,20 @@ def test_get_row_and_col():
     # get everything
     everything = df.get()
     assert_frame_equal(everything, df)
+
+
+def test_do_dict():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+
+    # with index
+    actual = df.to_dict(index=True)
+    assert actual == {'index': ['a', 'b', 'c'], 'a': [1, 2, 3], 'b': [4, 5, 6]}
+
+    # without index
+    actual = df.to_dict(index=False)
+    assert actual == {'a': [1, 2, 3], 'b': [4, 5, 6]}
+
+    # ordered
+    act_order = df.to_dict(ordered=True)
+    expected = OrderedDict([('index', ['a', 'b', 'c']), ('b', [4, 5, 6]), ('a', [1, 2, 3])])
+    assert act_order == expected

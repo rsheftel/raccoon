@@ -1,6 +1,7 @@
 
 from itertools import compress
 from copy import deepcopy
+from collections import OrderedDict
 
 
 class DataFrame(object):
@@ -252,9 +253,19 @@ class DataFrame(object):
         # works for single column only
         pass
 
-    def to_dict(self):
+    def to_dict(self, index=True, ordered=False):
         # returns column names : [column values]
-        pass
+        result = OrderedDict() if ordered else dict()
+
+        if index:
+            result.update({self._index_name: self._index})
+
+        if ordered:
+            data_dict = [(column, self._data[i]) for i, column in enumerate(self._columns)]
+        else:
+            data_dict = {column: self._data[i] for i, column in enumerate(self._columns)}
+        result.update(data_dict)
+        return result
 
     def to_csv(self, filename):
         pass
