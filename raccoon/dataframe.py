@@ -366,6 +366,28 @@ class DataFrame(object):
         if not len(self._data):  # if all the columns have been deleted, remove index
             self._index = list()
 
+    @staticmethod
+    def _sorted_list_indexes(list_to_sort):
+        return sorted(range(len(list_to_sort)), key=list_to_sort.__getitem__)
+
+    def sort_index(self):
+        sort = self._sorted_list_indexes(self._index)
+        # sort index
+        self._index = [self._index[x] for x in sort]
+        # each column
+        for c in range(len(self._data)):
+            self._data[c] = [self._data[c][i] for i in sort]
+
+    def sort_columns(self, column):
+        if isinstance(column, list):
+            raise AttributeError('Can only sort by a single column  ')
+        sort = self._sorted_list_indexes(self._data[self._columns.index(column)])
+        # sort index
+        self._index = [self._index[x] for x in sort]
+        # each column
+        for c in range(len(self._data)):
+            self._data[c] = [self._data[c][i] for i in sort]
+
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)
         pass
