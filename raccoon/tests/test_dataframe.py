@@ -284,6 +284,21 @@ def test_set_from_blank_df():
     assert df.data == [[9, 10, 11]]
 
 
+def test_set_square_brackets():
+    df = rc.DataFrame()
+
+    df[1, 'a'] = 2
+    assert df.data == [[2]]
+
+    # df[[0, 3], 'b'] - - set index = [0, 3], column = b
+    df[[0, 3], 'b'] = 4
+    assert df.data == [[2, None, None], [None, 4, 4]]
+
+    # df[1:2, 'b'] - - set index slice 1:2, column = b
+    df[1:3, 'b'] = 5
+    assert df.data == [[2, None, None], [5, 5, 5]]
+
+
 def test_bar():
     df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     for x in range(10):
@@ -359,12 +374,32 @@ def test_get_square_brackets():
     # df[1, 'd'] -- get cell at index = 5, column = 'b'
     assert df[1, 'd'] == 11
 
+    # df[[0, 2]] -- get indexes = [0, 2] all columns
+    assert_frame_equal(df[[0, 2], df.columns],
+                       rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9], 'd': [10, 12]},
+                                    columns=['a', 'b', 'c', 'd'], index=[0, 2]))
+
     # df[[0, 2], 'c'] -- get indexes = [4, 5], column = 'b'
     assert_frame_equal(df[[0, 2], 'c'], rc.DataFrame({'c': [7, 9]}, index=[0, 2]))
 
     # df[[1, 2], ['a', 'd']] -- get indexes = [4, 5], columns = ['a', 'b']
     assert_frame_equal(df[[1, 2], ['a', 'd']], rc.DataFrame({'a': [2, 3], 'd': [11, 12]}, columns=['a', 'd'],
                        index=[1, 2]))
+
+
+def test_get_slicer():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'])
+
+    # df[1:2] -- get slice from index 1 to 2, all columns
+    assert_frame_equal(df[1:2],
+                       rc.DataFrame({'a': [2, 3], 'b': [5, 6], 'c': [8, 9], 'd': [11, 12]},
+                                    columns=['a', 'b', 'c', 'd'], index=[1, 2]))
+
+    # df[0:1, ['c', 'd']] -- get slice from index 0 to 1, columns ['c', 'd']
+    assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]}, columns=['c', 'd'], index=[0, 1]))
+
+    # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
+    assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1]))
 
 
 def test_to_dict():
@@ -382,3 +417,47 @@ def test_to_dict():
     act_order = df.to_dict(ordered=True)
     expected = OrderedDict([('index', ['a', 'b', 'c']), ('b', [4, 5, 6]), ('a', [1, 2, 3])])
     assert act_order == expected
+
+
+def test_to_list():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
+
+    assert df['b'].to_list() == [4, 5, 6]
+    assert df[[4, 6], 'a'].to_list() == [1, 3]
+    assert df[4:5, 'c'].to_list() == [7, 8]
+    assert df[[6], 'c'].to_list() == [9]
+    with pytest.raises(AttributeError):
+        df.tolist()
+
+
+def test_rename_columns():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+
+    df.rename_columns({'b': 'b_new'})
+    assert df.columns == ['b_new', 'a']
+
+    df.rename_columns({'b_new': 'b2', 'a': 'a2'})
+    assert df.columns == ['b2', 'a2']
+
+    with pytest.raises(AttributeError):
+        df.rename_columns({'a2': 'a', 'bad': 'nogo'})
+
+
+def test_head():
+    df = rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2])
+
+    assert_frame_equal(df.head(0), rc.DataFrame(columns=[1, 2]))
+    assert_frame_equal(df.head(1), rc.DataFrame({1: [0], 2: [3]}, columns=[1, 2]))
+    assert_frame_equal(df.head(2), rc.DataFrame({1: [0, 1], 2: [3, 4]}, columns=[1, 2]))
+    assert_frame_equal(df.head(3), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))
+    assert_frame_equal(df.head(999), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))
+
+
+def test_tail():
+    df = rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2])
+
+    assert_frame_equal(df.tail(0), rc.DataFrame(columns=[1, 2]))
+    assert_frame_equal(df.tail(1), rc.DataFrame({1: [2], 2: [5]}, columns=[1, 2], index=[2]))
+    assert_frame_equal(df.tail(2), rc.DataFrame({1: [1, 2], 2: [4, 5]}, columns=[1, 2], index=[1, 2]))
+    assert_frame_equal(df.tail(3), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))
+    assert_frame_equal(df.tail(999), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))

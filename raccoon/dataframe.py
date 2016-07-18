@@ -244,8 +244,25 @@ class DataFrame(object):
             else:
                 self._data[c] = values
 
-    def __setitem__(self, index, value):
-        pass
+    def _slice_index(self, slicer):
+        try:
+            start_index = self._index.index(slicer.start)
+        except ValueError:
+            raise ValueError('start of slice not in the index')
+        try:
+            end_index = self._index.index(slicer.stop)
+        except ValueError:
+            raise ValueError('end of slice not in the index')
+        if end_index < start_index:
+            raise ValueError('end of slice is before start of slice')
+
+        pre_list = [False] * start_index
+        mid_list = [True] * (end_index - start_index + 1)
+        post_list = [False] * (len(self._index) - 1 - end_index)
+
+        pre_list.extend(mid_list)
+        pre_list.extend(post_list)
+        return pre_list
 
     def __getitem__(self, index):
         """
@@ -260,14 +277,39 @@ class DataFrame(object):
         :param index:
         :return:
         """
-        if isinstance(index, tuple):
-            return self.get(indexes=index[0], columns=index[1])
-        else:
+        if isinstance(index, tuple):  # index and column
+            indexes = self._slice_index(index[0]) if isinstance(index[0], slice) else index[0]
+            return self.get(indexes=indexes, columns=index[1])
+        if isinstance(index, slice):  # just a slice of index
+            return self.get(indexes=self._slice_index(index))
+        else:  # just the columns
             return self.get(columns=index)
+
+    def __setitem__(self, index, value):
+        """
+        Usage...
+
+        df[1, 'a'] -- set cell at index=1, column=a
+        df[[0, 3], 'b'] -- set index=[0, 3], column=b
+        df[1:2, 'b'] -- set index slice 1:2, column=b
+
+        :param index:
+        :param value:
+        :return:
+        """
+        if isinstance(index, tuple):  # index and column
+            indexes = self._slice_index(index[0]) if isinstance(index[0], slice) else index[0]
+            return self.set(index=indexes, column=index[1], values=value)
+        if isinstance(index, slice):  # just a slice of index
+            return self.set(index=self._slice_index(index), column=None, values=value)
+        else:  # just the columns
+            return self.set(index=None, column=index, values=value)
 
     def to_list(self):
         # works for single column only
-        pass
+        if len(self._columns) > 1:
+            raise AttributeError('tolist() only works with a single column DataFrame')
+        return self._data[0]
 
     def to_dict(self, index=True, ordered=False):
         # returns column names : [column values]
@@ -282,6 +324,22 @@ class DataFrame(object):
             data_dict = {column: self._data[i] for i, column in enumerate(self._columns)}
         result.update(data_dict)
         return result
+
+    def rename_columns(self, rename_dict):
+        if not all([x in self._columns for x in rename_dict.keys()]):
+            raise AttributeError('all dictionary keys must be in current columns')
+        for current in rename_dict.keys():
+            self._columns[self._columns.index(current)] = rename_dict[current]
+
+    def head(self, rows):
+        rows_bool = [True] * min(rows, len(self._index))
+        rows_bool.extend([False] * max(0, len(self._index) - rows))
+        return self.get(indexes=rows_bool)
+
+    def tail(self, rows):
+        rows_bool = [False] * max(0, len(self._index) - rows)
+        rows_bool.extend([True] * min(rows, len(self._index)))
+        return self.get(indexes=rows_bool)
 
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)
