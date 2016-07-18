@@ -314,10 +314,8 @@ class DataFrame(object):
     def to_dict(self, index=True, ordered=False):
         # returns column names : [column values]
         result = OrderedDict() if ordered else dict()
-
         if index:
             result.update({self._index_name: self._index})
-
         if ordered:
             data_dict = [(column, self._data[i]) for i, column in enumerate(self._columns)]
         else:
@@ -340,6 +338,33 @@ class DataFrame(object):
         rows_bool = [False] * max(0, len(self._index) - rows)
         rows_bool.extend([True] * min(rows, len(self._index)))
         return self.get(indexes=rows_bool)
+
+    def delete_rows(self, indexes):
+        indexes = [indexes] if not isinstance(indexes, list) else indexes
+        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+            if len(indexes) != len(self._index):
+                raise AttributeError('boolean indexes list must be same size of existing indexes')
+            indexes = [i for i, x in enumerate(indexes) if x]
+        else:
+            indexes = [self._index.index(x) for x in indexes]
+        indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
+        for c, column in enumerate(self._columns):
+            for i in indexes:
+                del self._data[c][i]
+        # now remove from index
+        for i in indexes:
+            del self._index[i]
+
+    def delete_columns(self, columns):
+        columns = [columns] if not isinstance(columns, list) else columns
+        if not all([x in self._columns for x in columns]):
+            raise AttributeError('all columns must be in current columns')
+        for column in columns:
+            c = self._columns.index(column)
+            del self._data[c]
+            del self._columns[c]
+        if not len(self._data):  # if all the columns have been deleted, remove index
+            self._index = list()
 
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)

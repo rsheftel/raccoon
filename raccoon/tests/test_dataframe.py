@@ -461,3 +461,60 @@ def test_tail():
     assert_frame_equal(df.tail(2), rc.DataFrame({1: [1, 2], 2: [4, 5]}, columns=[1, 2], index=[1, 2]))
     assert_frame_equal(df.tail(3), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))
     assert_frame_equal(df.tail(999), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2]))
+
+
+def test_delete_row():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+
+    df.delete_rows(['a', 'c'])
+    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
+
+    df.delete_rows('b')
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a']))
+
+    # insert back in data
+    df[1, 'a'] = 9
+    assert df.data == [[None], [9]]
+
+    df[2, 'b'] = 8
+    assert df.data == [[None, 8], [9, None]]
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    # cannot delete values not in index
+    with pytest.raises(ValueError):
+        df.delete_rows(['bad'])
+
+    # length of boolean must be len of index
+    with pytest.raises(AttributeError):
+        df.delete_rows([True, False])
+
+    df.delete_rows([True, False, True])
+    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
+
+    df.delete_rows([True])
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a']))
+
+
+def test_delete_columns():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, columns=['a', 'b', 'c'])
+
+    # cannot delete bad column
+    with pytest.raises(AttributeError):
+        df.delete_columns(['bad', 'a'])
+
+    df.delete_columns(['a', 'c'])
+    assert_frame_equal(df, rc.DataFrame({'b': [4, 5, 6]}))
+    assert df.index == [0, 1, 2]
+
+    # insert some data back in
+    df[1, 'a'] = 77
+    assert df.data == [[4, 5, 6], [None, 77, None]]
+
+    df.delete_columns(['b', 'a'])
+    assert_frame_equal(df, rc.DataFrame())
+    assert df.columns == []
+    assert df.index == []
+
+    # insert some data back in, fresh columns and index
+    df[1, 'e'] = 77
+    assert df.data == [[77]]
