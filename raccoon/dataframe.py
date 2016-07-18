@@ -152,7 +152,6 @@ class DataFrame(object):
 
         return DataFrame(data=data_dict, index=indexes, columns=columns)
 
-    # TODO: make add_row and add_column public?
     def _add_row(self, index):
         self._index.append(index)
         for c, col in enumerate(self._columns):
@@ -214,6 +213,8 @@ class DataFrame(object):
             c = len(self.columns)
             self._add_column(column)
         if index:  # index was provided
+            if not isinstance(values, list):  # single value provided, not a list, so turn values into list
+                values = [values for x in index]
             if len(index) == (index.count(True) + index.count(False)):  # boolean list
                 if len(index) != len(self._index):
                     raise AttributeError('boolean index list must be same size of existing index')
@@ -232,7 +233,9 @@ class DataFrame(object):
                     indexes = [self._index.index(x) for x in index]
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
-        elif isinstance(values, list):  # no index, only values as list
+        else:  # no index, only values
+            if not isinstance(values, list):  # values not a list, turn into one of length same as index
+                values = [values for x in self._index]
             if len(values) < len(self._index):
                 raise AttributeError('values list must be at least as long as current index length.')
             elif len(values) > len(self._index):
@@ -240,14 +243,27 @@ class DataFrame(object):
                 self._pad_data()
             else:
                 self._data[c] = values
-        else:
-            raise AttributeError('cannot handle values of this type.')
 
     def __setitem__(self, index, value):
         pass
 
     def __getitem__(self, index):
-        pass
+        """
+        Usage...
+        df['a'] -- get column
+        df[['a','b',c']] -- get columns
+        df[5, 'b']  -- get cell at index=5, column='b'
+        df[[4, 5], 'c'] -- get indexes=[4, 5], column='b'
+        df[[4, 5,], ['a', 'b']]  -- get indexes=[4, 5], columns=['a', 'b']
+
+        can also use a boolean list for anyting
+        :param index:
+        :return:
+        """
+        if isinstance(index, tuple):
+            return self.get(indexes=index[0], columns=index[1])
+        else:
+            return self.get(columns=index)
 
     def to_list(self):
         # works for single column only
@@ -267,13 +283,8 @@ class DataFrame(object):
         result.update(data_dict)
         return result
 
-    def to_csv(self, filename):
-        pass
-
-    def from_csv(self, filename):
-        pass
-
     def to_pandas(self):
+        # just return a dict of index, columns, data (view not copy)
         pass
 
     def from_pandas(self):

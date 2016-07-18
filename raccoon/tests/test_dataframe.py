@@ -209,10 +209,6 @@ def test_set_column():
     with pytest.raises(AttributeError):
         actual.set(column='e', values=[1, 2])
 
-    # bad values type
-    with pytest.raises(AttributeError):
-        actual.set(column='e', values={1, 2, 3})
-
 
 def test_set_column_index_subset():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
@@ -254,6 +250,22 @@ def test_set_column_index_subset():
 
     with pytest.raises(AttributeError):
         actual.set(index=[True, True, False], column='b', values=[4])
+
+
+def test_set_single_value():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
+
+    # set multiple index to one value
+    df.set([10, 12], 'a', 99)
+    assert df.data == [[99, 2, 99], [4, 5, 6], [7, 8, 9]]
+
+    # set entire column to one value
+    df.set(column='c', values=88)
+    assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88]]
+
+    # can be anything that isn't a list
+    df.set(column='e', values={1, 2, 3})
+    assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88], [{1, 2, 3}, {1, 2, 3}, {1, 2, 3}]]
 
 
 def test_set_from_blank_df():
@@ -334,7 +346,28 @@ def test_get_row_and_col():
     assert_frame_equal(everything, df)
 
 
-def test_do_dict():
+def test_get_square_brackets():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'])
+
+    # df['b'] -- get column
+    assert_frame_equal(df['b'], rc.DataFrame({'b': [4, 5, 6]}))
+
+    # df[['a', 'b', c']] -- get columns
+    assert_frame_equal(df[['a', 'b', 'c']], rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]},
+                                                         columns=['a', 'b', 'c']))
+
+    # df[1, 'd'] -- get cell at index = 5, column = 'b'
+    assert df[1, 'd'] == 11
+
+    # df[[0, 2], 'c'] -- get indexes = [4, 5], column = 'b'
+    assert_frame_equal(df[[0, 2], 'c'], rc.DataFrame({'c': [7, 9]}, index=[0, 2]))
+
+    # df[[1, 2], ['a', 'd']] -- get indexes = [4, 5], columns = ['a', 'b']
+    assert_frame_equal(df[[1, 2], ['a', 'd']], rc.DataFrame({'a': [2, 3], 'd': [11, 12]}, columns=['a', 'd'],
+                       index=[1, 2]))
+
+
+def test_to_dict():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
 
     # with index
