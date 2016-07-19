@@ -49,6 +49,9 @@ class DataFrame(object):
         if columns:
             self._sort_columns(columns)
 
+        # check everything
+        self.validate_integrity()
+
     def _sort_columns(self, columns_list):
         if not (all([x in columns_list for x in self._columns]) and all([x in self._columns for x in columns_list])):
             raise AttributeError(
@@ -76,6 +79,7 @@ class DataFrame(object):
         if len(columns_list) != len(self._data):
             raise AttributeError('length of columns_list is not the same as the number of columns')
         self._columns = columns_list
+        self._validate_columns()
 
     @property
     def index(self):
@@ -86,6 +90,7 @@ class DataFrame(object):
         if len(index_list) != len(self._data[0]):
             raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
+        self._validate_index()
 
     @property
     def index_name(self):
@@ -388,9 +393,36 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
 
+    def _validate_index(self):
+        if len(self._index) != len(set(self._index)):
+            raise ValueError('index contains duplicates')
+        if self.data:
+            if len(self._index) != len(self._data[0]):
+                raise ValueError('index length does not match data length')
+
+    def _validate_columns(self):
+        if len(self._columns) != len(set(self._columns)):
+            raise ValueError('columns contains duplicates')
+        if self._data:
+            if len(self._columns) != len(self._data):
+                raise ValueError('number of column names does not match number of data columns')
+
+    def _validate_data(self):
+        if self._data:
+            max_rows = max([len(x) for x in self._data])
+            same_lens = all([len(x) == max_rows for x in self._data])
+            if not same_lens:
+                raise ValueError('data is corrupted, each column not all same length')
+
+    def validate_integrity(self):
+        self._validate_columns()
+        self._validate_index()
+        self._validate_data()
+
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)
         pass
 
     def from_pandas(self):
         pass
+
