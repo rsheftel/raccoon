@@ -8,9 +8,9 @@ class DataFrame(object):
     def __init__(self, data=None, columns=None, index=None):
         # quality checks
         if (index is not None) and (not isinstance(index, list)):
-            raise AttributeError('index must be a list.')
+            raise TypeError('index must be a list.')
         if (columns is not None) and (not isinstance(columns, list)):
-            raise AttributeError('columns must be a list.')
+            raise TypeError('columns must be a list.')
 
         # standard variable setup
         self._index_name = 'index'
@@ -26,7 +26,7 @@ class DataFrame(object):
                 self._columns = list()
             if index:
                 if not columns:
-                    raise AttributeError('cannot initialize with index but no columns')
+                    raise ValueError('cannot initialize with index but no columns')
                 # pad out to the number of rows
                 self._index = index
                 self._pad_data(max_len=len(index))
@@ -52,9 +52,15 @@ class DataFrame(object):
         # check everything
         self.validate_integrity()
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return 'columns:\n%s\ndata:\n%s\nindex:\n%s\n' % (self._columns, self._data, self._index)
+
     def _sort_columns(self, columns_list):
         if not (all([x in columns_list for x in self._columns]) and all([x in self._columns for x in columns_list])):
-            raise AttributeError(
+            raise ValueError(
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
         self._data = [self._data[x] for x in new_sort]
@@ -76,10 +82,11 @@ class DataFrame(object):
 
     @columns.setter
     def columns(self, columns_list):
-        if len(columns_list) != len(self._data):
-            raise AttributeError('length of columns_list is not the same as the number of columns')
+        self._validate_columns(columns_list)
+        # TODO: remove below
+        # if len(columns_list) != len(self._data):
+        #     raise AttributeError('length of columns_list is not the same as the number of columns')
         self._columns = columns_list
-        self._validate_columns()
 
     @property
     def index(self):
@@ -87,10 +94,11 @@ class DataFrame(object):
 
     @index.setter
     def index(self, index_list):
-        if len(index_list) != len(self._data[0]):
-            raise AttributeError('length of index_list must be the same as the length of the data')
+        self._validate_index(index_list)
+        # TODO: remove below
+        # if len(index_list) != len(self._data[0]):
+        #     raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
-        self._validate_index()
 
     @property
     def index_name(self):
@@ -182,7 +190,7 @@ class DataFrame(object):
         elif (index is None) and (column is not None):
             self.set_column(index, column, values)
         else:
-            raise AttributeError('either or both of index or column must be provided')
+            raise ValueError('either or both of index or column must be provided')
 
     def set_cell(self, index, column, values):
         try:
@@ -205,11 +213,11 @@ class DataFrame(object):
             self._add_row(index)
         if isinstance(values, dict):
             if not (set(values.keys()).issubset(self._columns)):
-                raise AttributeError('keys of values are not all in existing columns')
+                raise ValueError('keys of values are not all in existing columns')
             for c, column in enumerate(self._columns):
                 self._data[c][i] = values.get(column, self._data[c][i])
         else:
-            raise AttributeError('cannot handle values of this type.')
+            raise TypeError('cannot handle values of this type.')
 
     def set_column(self, index=None, column=None, values=None):
         try:
@@ -222,15 +230,15 @@ class DataFrame(object):
                 values = [values for x in index]
             if len(index) == (index.count(True) + index.count(False)):  # boolean list
                 if len(index) != len(self._index):
-                    raise AttributeError('boolean index list must be same size of existing index')
+                    raise ValueError('boolean index list must be same size of existing index')
                 if len(values) != index.count(True):
-                    raise AttributeError('length of values list must equal number of True entries in index list')
+                    raise ValueError('length of values list must equal number of True entries in index list')
                 indexes = [i for i, x in enumerate(index) if x]
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
             else:  # list of index
                 if len(values) != len(index):
-                    raise AttributeError('length of values and index must be the same.')
+                    raise ValueError('length of values and index must be the same.')
                 try:  # all index in current index
                     indexes = [self._index.index(x) for x in index]
                 except ValueError:  # new rows need to be added
@@ -242,7 +250,7 @@ class DataFrame(object):
             if not isinstance(values, list):  # values not a list, turn into one of length same as index
                 values = [values for x in self._index]
             if len(values) < len(self._index):
-                raise AttributeError('values list must be at least as long as current index length.')
+                raise ValueError('values list must be at least as long as current index length.')
             elif len(values) > len(self._index):
                 self._data[c] = values
                 self._pad_data()
@@ -253,13 +261,13 @@ class DataFrame(object):
         try:
             start_index = self._index.index(slicer.start)
         except ValueError:
-            raise ValueError('start of slice not in the index')
+            raise IndexError('start of slice not in the index')
         try:
             end_index = self._index.index(slicer.stop)
         except ValueError:
-            raise ValueError('end of slice not in the index')
+            raise IndexError('end of slice not in the index')
         if end_index < start_index:
-            raise ValueError('end of slice is before start of slice')
+            raise IndexError('end of slice is before start of slice')
 
         pre_list = [False] * start_index
         mid_list = [True] * (end_index - start_index + 1)
@@ -313,7 +321,7 @@ class DataFrame(object):
     def to_list(self):
         # works for single column only
         if len(self._columns) > 1:
-            raise AttributeError('tolist() only works with a single column DataFrame')
+            raise TypeError('tolist() only works with a single column DataFrame')
         return self._data[0]
 
     def to_dict(self, index=True, ordered=False):
@@ -330,7 +338,7 @@ class DataFrame(object):
 
     def rename_columns(self, rename_dict):
         if not all([x in self._columns for x in rename_dict.keys()]):
-            raise AttributeError('all dictionary keys must be in current columns')
+            raise ValueError('all dictionary keys must be in current columns')
         for current in rename_dict.keys():
             self._columns[self._columns.index(current)] = rename_dict[current]
 
@@ -348,7 +356,7 @@ class DataFrame(object):
         indexes = [indexes] if not isinstance(indexes, list) else indexes
         if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
             if len(indexes) != len(self._index):
-                raise AttributeError('boolean indexes list must be same size of existing indexes')
+                raise ValueError('boolean indexes list must be same size of existing indexes')
             indexes = [i for i, x in enumerate(indexes) if x]
         else:
             indexes = [self._index.index(x) for x in indexes]
@@ -363,7 +371,7 @@ class DataFrame(object):
     def delete_columns(self, columns):
         columns = [columns] if not isinstance(columns, list) else columns
         if not all([x in self._columns for x in columns]):
-            raise AttributeError('all columns must be in current columns')
+            raise ValueError('all columns must be in current columns')
         for column in columns:
             c = self._columns.index(column)
             del self._data[c]
@@ -385,7 +393,7 @@ class DataFrame(object):
 
     def sort_columns(self, column):
         if isinstance(column, list):
-            raise AttributeError('Can only sort by a single column  ')
+            raise TypeError('Can only sort by a single column  ')
         sort = self._sorted_list_indexes(self._data[self._columns.index(column)])
         # sort index
         self._index = [self._index[x] for x in sort]
@@ -393,18 +401,18 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
 
-    def _validate_index(self):
-        if len(self._index) != len(set(self._index)):
+    def _validate_index(self, indexes):
+        if len(indexes) != len(set(indexes)):
             raise ValueError('index contains duplicates')
         if self.data:
-            if len(self._index) != len(self._data[0]):
+            if len(indexes) != len(self._data[0]):
                 raise ValueError('index length does not match data length')
 
-    def _validate_columns(self):
-        if len(self._columns) != len(set(self._columns)):
+    def _validate_columns(self, columns):
+        if len(columns) != len(set(columns)):
             raise ValueError('columns contains duplicates')
         if self._data:
-            if len(self._columns) != len(self._data):
+            if len(columns) != len(self._data):
                 raise ValueError('number of column names does not match number of data columns')
 
     def _validate_data(self):
@@ -415,8 +423,8 @@ class DataFrame(object):
                 raise ValueError('data is corrupted, each column not all same length')
 
     def validate_integrity(self):
-        self._validate_columns()
-        self._validate_index()
+        self._validate_columns(self._columns)
+        self._validate_index(self._index)
         self._validate_data()
 
     def append(self, data_frame):

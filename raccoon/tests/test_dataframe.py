@@ -57,30 +57,30 @@ def test_empty_initialization():
 
 def test_bad_initialization():
     # index but no columns
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame(index=[1, 2, 3])
 
     # wrong number in index
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [1, 2, 3]}, index=[1])
 
     # wrong number of columns
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a'])
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b', 'c', 'TOO', 'MANY'])
 
     # columns does not match dict keys
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['BAD', 'VALUE'])
 
     # index is not a list
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         rc.DataFrame({'a': [1]}, index=1)
 
     # columns is not a list
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         rc.DataFrame({'a': [1]}, columns='a')
 
 
@@ -96,7 +96,7 @@ def test_columns():
     actual.columns = ['new1', 'new2']
     assert actual.columns == ['new1', 'new2']
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.columns = ['list', 'too', 'long']
 
 
@@ -112,7 +112,8 @@ def test_index():
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
 
-    with pytest.raises(AttributeError):
+    # index too long
+    with pytest.raises(ValueError):
         actual.index = [1, 3, 4, 5, 6]
 
     assert actual.index_name == 'index'
@@ -182,11 +183,11 @@ def test_set_row():
     assert actual.index == [10, 11, 12, 13, 14]
 
     # bad column names
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(index=14, values={'a': 0, 'bad': 1})
 
     # bad values type
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         actual.set(index=14, values=[1, 2, 3, 4, 5])
 
 
@@ -206,7 +207,7 @@ def test_set_column():
     assert actual.data == [[1, 2, 3, None], [44, 55, 66, None], [7, 8, 9, None], [20, 30, 40, 50]]
 
     # not enough values
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(column='e', values=[1, 2])
 
 
@@ -232,7 +233,7 @@ def test_set_column_index_subset():
     assert actual.index == [10, 11, 12, 13, 14, 15, 16]
 
     # values list shorter than indexes, raise error
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(index=[10, 11], column='a', values=[1])
 
     # by boolean list
@@ -241,14 +242,14 @@ def test_set_column_index_subset():
     assert actual.data == [[4, 5], [7, 8], [1, 99]]
 
     # boolean list not size of existing index
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(index=[True, False, True], column='a', values=[1, 2])
 
     # boolean list True entries not same size as values list
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(index=[True, True, False], column='b', values=[4, 5, 6])
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         actual.set(index=[True, True, False], column='b', values=[4])
 
 
@@ -396,7 +397,8 @@ def test_get_slicer():
                                     columns=['a', 'b', 'c', 'd'], index=[1, 2]))
 
     # df[0:1, ['c', 'd']] -- get slice from index 0 to 1, columns ['c', 'd']
-    assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]}, columns=['c', 'd'], index=[0, 1]))
+    assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]},
+                                                         columns=['c', 'd'], index=[0, 1]))
 
     # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1]))
@@ -426,8 +428,10 @@ def test_to_list():
     assert df[[4, 6], 'a'].to_list() == [1, 3]
     assert df[4:5, 'c'].to_list() == [7, 8]
     assert df[[6], 'c'].to_list() == [9]
-    with pytest.raises(AttributeError):
-        df.tolist()
+
+    # cannot to_list on a mulit-column DataFrame
+    with pytest.raises(TypeError):
+        df.to_list()
 
 
 def test_rename_columns():
@@ -439,7 +443,7 @@ def test_rename_columns():
     df.rename_columns({'b_new': 'b2', 'a': 'a2'})
     assert df.columns == ['b2', 'a2']
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         df.rename_columns({'a2': 'a', 'bad': 'nogo'})
 
 
@@ -485,7 +489,7 @@ def test_delete_row():
         df.delete_rows(['bad'])
 
     # length of boolean must be len of index
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         df.delete_rows([True, False])
 
     df.delete_rows([True, False, True])
@@ -499,7 +503,7 @@ def test_delete_columns():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, columns=['a', 'b', 'c'])
 
     # cannot delete bad column
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         df.delete_columns(['bad', 'a'])
 
     df.delete_columns(['a', 'c'])
@@ -530,7 +534,8 @@ def test_sort_index():
 def test_sort_column():
     df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9])
 
-    with pytest.raises(AttributeError):
+    # cannot sort mulitple columns
+    with pytest.raises(TypeError):
         df.sort_columns(['a', 'b'])
 
     df.sort_columns('a')
@@ -545,7 +550,7 @@ def test_validate_index():
     df.validate_integrity()
 
     # index not right length
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9, 11, 12])
 
     df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9])
@@ -555,7 +560,7 @@ def test_validate_index():
 
     # duplicate index
     with pytest.raises(ValueError):
-        df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 10, 9])
+        rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 10, 9])
 
     df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9])
     with pytest.raises(ValueError):
@@ -572,7 +577,7 @@ def test_validate_columns():
     df.validate_integrity()
 
     # columns not right length
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b', 'extra'])
 
     df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'])
