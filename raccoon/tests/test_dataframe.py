@@ -589,3 +589,34 @@ def test_validate_columns():
     df._columns = ['dup', 'dup']
     with pytest.raises(ValueError):
         df.validate_integrity()
+
+
+def test_append():
+    # duplicate indexes
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.DataFrame({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[2, 3, 4])
+    with pytest.raises(ValueError):
+        df.append(df2)
+
+    # all same columns
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.DataFrame({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[3, 4, 5])
+    df.append(df2)
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, 11, 12, 13], 'b': [4, 5, 6, 14, 15, 16]},
+                                        columns=['a', 'b'], index=[0, 1, 2, 3, 4, 5]))
+
+    # all new columns
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.DataFrame({'x': [11, 12, 13], 'y': [14, 15, 16]}, columns=['x', 'y'], index=[3, 4, 5])
+    df.append(df2)
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, None, None, None],
+                                         'x': [None, None, None, 11, 12, 13], 'y': [None, None, None, 14, 15, 16]},
+                                        columns=['a', 'b', 'x', 'y'], index=[0, 1, 2, 3, 4, 5]))
+
+    # some same, some new columns
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.DataFrame({'b': [11, 12, 13], 'y': [14, 15, 16]}, columns=['b', 'y'], index=[3, 4, 5])
+    df.append(df2)
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, 11, 12, 13],
+                                         'y': [None, None, None, 14, 15, 16]},
+                                        columns=['a', 'b', 'y'], index=[0, 1, 2, 3, 4, 5]))

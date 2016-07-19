@@ -419,6 +419,15 @@ class DataFrame(object):
         self._validate_index()
         self._validate_data()
 
+    def append(self, data_frame):
+        combined_index = deepcopy(self._index)
+        combined_index.extend(data_frame.index)
+        if len(set(combined_index)) != len(combined_index):
+            raise ValueError('duplicate indexes in DataFrames')
+
+        for c, column in enumerate(data_frame.columns):
+            self.set(index=data_frame.index, column=column, values=data_frame.data[c])
+
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)
         pass
