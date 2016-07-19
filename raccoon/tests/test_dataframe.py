@@ -625,3 +625,22 @@ def test_append():
     assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, 11, 12, 13],
                                          'y': [None, None, None, 14, 15, 16]},
                                         columns=['a', 'b', 'y'], index=[0, 1, 2, 3, 4, 5]))
+
+
+def test_print():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
+                      index=['row1', 'row2', 'row3'])
+
+    # __repr__ produces a simple representation
+    expected = "object id: %s\ncolumns:\n['b', 'c', 'a']\ndata:\n[[1.0, 2.55, 3.1], ['first', 'second', None], " \
+               "[1, 2, 3]]\nindex:\n['row1', 'row2', 'row3']\n" % id(df)
+    actual = df.__repr__()
+    assert actual == expected
+
+    # __str__ produces the standard table
+    expected = 'index       b  c         a\n-------  ----  ------  ---\nrow1     1     first     1\n' \
+               'row2     2.55  second    2\nrow3     3.1             3'
+    actual = df.__str__()
+    assert actual == expected
+
+    # print() method will pass along any argument for the tabulate.tabulate function

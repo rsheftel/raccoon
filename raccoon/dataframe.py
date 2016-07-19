@@ -2,6 +2,7 @@
 from itertools import compress
 from copy import deepcopy
 from collections import OrderedDict
+from tabulate import tabulate
 
 
 class DataFrame(object):
@@ -53,10 +54,17 @@ class DataFrame(object):
         self.validate_integrity()
 
     def __repr__(self):
-        return self.__str__()
+        return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns, self._data, self._index)
 
     def __str__(self):
-        return 'columns:\n%s\ndata:\n%s\nindex:\n%s\n' % (self._columns, self._data, self._index)
+        return self._make_table()
+
+    def _make_table(self, index=True, **kwargs):
+        kwargs['headers'] = 'keys' if 'headers' not in kwargs.keys() else kwargs['headers']
+        return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
+
+    def print(self, index=True, **kwargs):
+        print(self._make_table(index=index, **kwargs))
 
     def _sort_columns(self, columns_list):
         if not (all([x in columns_list for x in self._columns]) and all([x in self._columns for x in columns_list])):
@@ -83,9 +91,6 @@ class DataFrame(object):
     @columns.setter
     def columns(self, columns_list):
         self._validate_columns(columns_list)
-        # TODO: remove below
-        # if len(columns_list) != len(self._data):
-        #     raise AttributeError('length of columns_list is not the same as the number of columns')
         self._columns = columns_list
 
     @property
@@ -95,9 +100,6 @@ class DataFrame(object):
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
-        # TODO: remove below
-        # if len(index_list) != len(self._data[0]):
-        #     raise AttributeError('length of index_list must be the same as the length of the data')
         self._index = index_list
 
     @property
