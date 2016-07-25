@@ -1,6 +1,5 @@
 
 from itertools import compress
-from copy import deepcopy
 from collections import OrderedDict
 from tabulate import tabulate
 
@@ -22,22 +21,22 @@ class DataFrame(object):
             if columns:
                 # expand to the number of columns
                 self._data = [[] for x in range(len(columns))]
-                self._columns = columns
+                self.columns = columns
             else:
-                self._columns = list()
+                self.columns = list()
             if index:
                 if not columns:
                     raise ValueError('cannot initialize with index but no columns')
                 # pad out to the number of rows
-                self._index = index
                 self._pad_data(max_len=len(index))
+                self.index = index
             else:
-                self._index = list()
+                self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = [x if isinstance(x, list) else [x] for x in data.values()]
             # setup columns from directory keys
-            self._columns = list(data.keys())
+            self.columns = list(data.keys())
             # pad the data
             self._pad_data()
             # setup index
@@ -49,9 +48,6 @@ class DataFrame(object):
         # sort by columns if provided
         if columns:
             self._sort_columns(columns)
-
-        # check everything
-        self.validate_integrity()
 
     def __repr__(self):
         return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns, self._data, self._index)
@@ -82,7 +78,7 @@ class DataFrame(object):
 
     @property
     def data(self):
-        return deepcopy(self._data)
+        return self._data.copy()
 
     @property
     def columns(self):
@@ -136,8 +132,11 @@ class DataFrame(object):
         if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
             indexes = [x in indexes for x in self._index]  # Look to change to a list of False and just add True
         c = self._columns.index(column)
-        return DataFrame(data={column: list(compress(self._data[c], indexes))},
-                         index=list(compress(self._index, indexes)))
+        if all(indexes):  # the entire column
+            return DataFrame(data={column: self._data[c]}, index=self._index)
+        else:
+            return DataFrame(data={column: list(compress(self._data[c], indexes))},
+                             index=list(compress(self._index, indexes)))
 
     def get_columns(self, index, columns):
         data = dict()
@@ -251,11 +250,8 @@ class DataFrame(object):
         else:  # no index, only values
             if not isinstance(values, list):  # values not a list, turn into one of length same as index
                 values = [values for x in self._index]
-            if len(values) < len(self._index):
-                raise ValueError('values list must be at least as long as current index length.')
-            elif len(values) > len(self._index):
-                self._data[c] = values
-                self._pad_data()
+            if len(values) != len(self._index):
+                raise ValueError('values list must be at same length as current index length.')
             else:
                 self._data[c] = values
 
@@ -406,7 +402,7 @@ class DataFrame(object):
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
             raise ValueError('index contains duplicates')
-        if self.data:
+        if self._data:
             if len(indexes) != len(self._data[0]):
                 raise ValueError('index length does not match data length')
 
@@ -430,13 +426,12 @@ class DataFrame(object):
         self._validate_data()
 
     def append(self, data_frame):
-        combined_index = deepcopy(self._index)
-        combined_index.extend(data_frame.index)
+        combined_index = self._index + data_frame.index
         if len(set(combined_index)) != len(combined_index):
             raise ValueError('duplicate indexes in DataFrames')
 
         for c, column in enumerate(data_frame.columns):
-            self.set(index=data_frame.index, column=column, values=data_frame.data[c])
+            self.set(index=data_frame.index, column=column, values=data_frame.data[c].copy())
 
     def to_pandas(self):
         # just return a dict of index, columns, data (view not copy)
@@ -444,4 +439,3 @@ class DataFrame(object):
 
     def from_pandas(self):
         pass
-

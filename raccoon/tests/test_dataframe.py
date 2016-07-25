@@ -125,9 +125,12 @@ def test_data():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
     assert actual.data == [[4, 5, 6], [1, 2, 3]]
 
-    # test deep copy
+    # test shallow copy
     new = actual.data
     new[0][0] = 99
+    assert actual.data == new
+
+    new.append(88)
     assert actual.data != new
 
     with pytest.raises(AttributeError):
@@ -202,13 +205,13 @@ def test_set_column():
     actual.set(column='e', values=[10, 11, 12])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
 
-    # values list longer than index adds rows
-    actual.set(column='e', values=[20, 30, 40, 50])
-    assert actual.data == [[1, 2, 3, None], [44, 55, 66, None], [7, 8, 9, None], [20, 30, 40, 50]]
-
     # not enough values
     with pytest.raises(ValueError):
         actual.set(column='e', values=[1, 2])
+
+    # too many values
+    with pytest.raises(ValueError):
+        actual.set(column='e', values=[1, 2, 3, 4])
 
 
 def test_set_column_index_subset():
