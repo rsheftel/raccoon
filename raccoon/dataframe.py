@@ -13,7 +13,9 @@ class DataFrame(object):
             raise TypeError('columns must be a list.')
 
         # standard variable setup
+        self._index = None
         self._index_name = 'index'
+        self._columns = None
 
         # define from dictionary
         if data is None:
@@ -50,7 +52,8 @@ class DataFrame(object):
             self._sort_columns(columns)
 
     def __repr__(self):
-        return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns, self._data, self._index)
+        return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns,
+                                                                         self._data, self._index)
 
     def __str__(self):
         return self._make_table()
@@ -130,7 +133,10 @@ class DataFrame(object):
 
     def get_rows(self, indexes, column):
         if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
-            indexes = [x in indexes for x in self._index]  # Look to change to a list of False and just add True
+            bool_indexes = [False] * len(self._index)
+            for i in indexes:
+                bool_indexes[self._index.index(i)] = True
+            indexes = bool_indexes
         c = self._columns.index(column)
         if all(indexes):  # the entire column
             return DataFrame(data={column: self._data[c]}, index=self._index)
@@ -142,8 +148,10 @@ class DataFrame(object):
         data = dict()
         if len(columns) == (columns.count(True) + columns.count(False)):
             columns = list(compress(self._columns, columns))
+        i = self._index.index(index)
         for column in columns:
-            data[column] = [self.get_cell(index, column)]
+            c = self._columns.index(column)
+            data[column] = [self._data[c][i]]
         return DataFrame(data=data, index=[index], columns=columns)
 
     def get_matrix(self, indexes, columns):
@@ -151,7 +159,9 @@ class DataFrame(object):
             i = indexes
             indexes = list(compress(self._index, indexes))
         else:  # index list
-            i = [x in indexes for x in self._index]  # Look to change to a list of False and just add True
+            i = [False] * len(self._index)
+            for x in indexes:
+                i[self._index.index(x)] = True
 
         if len(columns) == (columns.count(True) + columns.count(False)):  # boolean list
             c = columns
