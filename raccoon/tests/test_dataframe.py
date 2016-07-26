@@ -331,9 +331,18 @@ def test_get_rows():
     actual = df.get([11, 12], 'c')
     assert_frame_equal(actual, expected)
 
+    # get as a list
+    assert df.get([11, 12], 'c', as_list=True) == [8, 9]
+
     # test with boolean list
     actual = df.get([False, True, True, False], 'c')
     assert_frame_equal(actual, expected)
+
+    # get as a list
+    assert df.get([False, True, True, False], 'c', as_list=True) == [8, 9]
+
+    # get entire column
+    assert df.get(columns='b', as_list=True) == [4, 5, 6, 7]
 
 
 def test_get_columns():
@@ -722,3 +731,38 @@ def test_len():
 
     df['a', 3] = 99
     assert len(df) == 4
+
+
+def test_equality():
+    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]})
+
+    assert df.equality('z', value=1) == [True, False, True, False, True, True]
+    assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
+    assert df.equality('z', [False, False, False, True, True, True], 1) == [False, True, True]
+
+    # change all 1 to 3
+    df.set(index=df.equality('z', value=1), column='z', values=3)
+    assert df.data == [[3, 2, 3, 2, 3, 3]]
+
+
+def test_add():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, columns=['a', 'b'])
+
+    res = df.add('a', 'b')
+    assert res == [6, 8, 10, 12]
+
+    df['c'] = res
+    assert df.data == [[1, 2, 3, 4], [5, 6, 7, 8], [6, 8, 10, 12]]
+    assert df.columns == ['a', 'b', 'c']
+
+    res = df.add('a', 'b', [1, 3])
+    assert res == [8, 12]
+
+    res = df.subtract('c', 'b')
+    assert res == [1, 2, 3, 4]
+
+    res = df.multiply('a', 'c', [True, True, False, False])
+    assert res == [6, 16]
+
+    res = df.divide('b', 'c', [0, 2])
+    assert res == [5/6, 7/10]

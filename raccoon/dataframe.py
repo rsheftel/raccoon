@@ -117,7 +117,7 @@ class DataFrame(object):
     def __len__(self):
         return len(self._index)
 
-    def get(self, indexes=None, columns=None):
+    def get(self, indexes=None, columns=None, as_list=False):
         # returns a copy
         # If one value for either indexes or columns then return list, otherwise list of list
         if indexes is None:
@@ -128,7 +128,7 @@ class DataFrame(object):
         if isinstance(indexes, (list, blist)) and isinstance(columns, (list, blist)):
             return self.get_matrix(indexes, columns)
         elif isinstance(indexes, (list, blist)) and (not isinstance(columns, (list, blist))):
-            return self.get_rows(indexes, columns)
+            return self.get_rows(indexes, columns, as_list)
         elif (not isinstance(indexes, (list, blist))) and isinstance(columns, (list, blist)):
             return self.get_columns(indexes, columns)
         else:
@@ -139,7 +139,7 @@ class DataFrame(object):
         c = self._columns.index(column)
         return self._data[c][i]
 
-    def get_rows(self, indexes, column):
+    def get_rows(self, indexes, column, as_list=False):
         if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
             bool_indexes = [False] * len(self._index)
             for i in indexes:
@@ -147,10 +147,12 @@ class DataFrame(object):
             indexes = bool_indexes
         c = self._columns.index(column)
         if all(indexes):  # the entire column
-            return DataFrame(data={column: self._data[c]}, index=self._index)
+            data = self._data[c]
+            index = self._index
         else:
-            return DataFrame(data={column: list(compress(self._data[c], indexes))},
-                             index=list(compress(self._index, indexes)))
+            data = list(compress(self._data[c], indexes))
+            index = list(compress(self._index, indexes))
+        return data if as_list else DataFrame(data={column: data}, index=index)
 
     def get_columns(self, index, columns):
         data = dict()
@@ -248,9 +250,9 @@ class DataFrame(object):
             c = len(self.columns)
             self._add_column(column)
         if index:  # index was provided
-            if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
-                values = [values for x in index]
             if len(index) == (index.count(True) + index.count(False)):  # boolean list
+                if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+                    values = [values for x in index if x]
                 if len(index) != len(self._index):
                     raise ValueError('boolean index list must be same size of existing index')
                 if len(values) != index.count(True):
@@ -259,6 +261,8 @@ class DataFrame(object):
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
             else:  # list of index
+                if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+                    values = [values for x in index]
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
                 try:  # all index in current index
@@ -454,9 +458,29 @@ class DataFrame(object):
         for c, column in enumerate(data_frame.columns):
             self.set(index=data_frame.index, column=column, values=data_frame.data[c].copy())
 
-    def to_pandas(self):
-        # just return a dict of index, columns, data (view not copy)
-        pass
+    def equality(self, column, indexes=None, value=None):
+        indexes = [] if indexes is None else indexes
+        compare_list = self.get_rows(indexes, column, as_list=True)
+        return [x == value for x in compare_list]
 
-    def from_pandas(self):
-        pass
+    def _get_lists(self, left_column, right_column, indexes):
+        indexes = [] if indexes is None else indexes
+        left_list = self.get_rows(indexes, left_column, as_list=True)
+        right_list = self.get_rows(indexes, right_column, as_list=True)
+        return left_list, right_list
+
+    def add(self, left_column, right_column, indexes=None):
+        left_list, right_list = self._get_lists(left_column, right_column, indexes)
+        return [l + r for l,r in zip(left_list, right_list)]
+
+    def subtract(self, left_column, right_column, indexes=None):
+        left_list, right_list = self._get_lists(left_column, right_column, indexes)
+        return [l - r for l,r in zip(left_list, right_list)]
+
+    def multiply(self, left_column, right_column, indexes=None):
+        left_list, right_list = self._get_lists(left_column, right_column, indexes)
+        return [l * r for l,r in zip(left_list, right_list)]
+
+    def divide(self, left_column, right_column, indexes=None):
+        left_list, right_list = self._get_lists(left_column, right_column, indexes)
+        return [l / r for l,r in zip(left_list, right_list)]
