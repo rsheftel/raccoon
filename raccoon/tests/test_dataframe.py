@@ -2,6 +2,7 @@ import pytest
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
 from collections import OrderedDict
+from copy import deepcopy
 
 
 def test_initialization():
@@ -635,8 +636,8 @@ def test_print():
                       index=['row1', 'row2', 'row3'])
 
     # __repr__ produces a simple representation
-    expected = "object id: %s\ncolumns:\nblist(['b', 'c', 'a'])\ndata:\n[[1.0, 2.55, 3.1], ['first', 'second', None], " \
-               "[1, 2, 3]]\nindex:\nblist(['row1', 'row2', 'row3'])\n" % id(df)
+    expected = "object id: %s\ncolumns:\nblist(['b', 'c', 'a'])\ndata:\nblist([blist([1.0, 2.55, 3.1]), blist([" \
+               "'first', 'second', None]), blist([1, 2, 3])])\nindex:\nblist(['row1', 'row2', 'row3'])\n" % id(df)
     actual = df.__repr__()
     assert actual == expected
 
@@ -647,3 +648,77 @@ def test_print():
     assert actual == expected
 
     # print() method will pass along any argument for the tabulate.tabulate function
+
+
+def test_input_data_mutability():
+    input_data = {'a': [1, 2, 3], 'b': [4, 5, 6]}
+
+    # without defining column order
+    df = rc.DataFrame(input_data)
+    orig_data = deepcopy(df.data)
+
+    # change input_data
+    input_data['c'] = [6, 7, 8]
+    assert df.to_dict(index=False) != input_data
+    assert df.data == orig_data
+
+    # change an inner index of input data
+    input_data['a'].append(99)
+    assert df.data == orig_data
+
+    # Now make an inner element a mutable item, confirm that mutability remains
+    input_data = {'a': [[1], [2], [3]], 'b': [4, 5, 6]}
+
+    df = rc.DataFrame(input_data)
+    orig_data = deepcopy(df.data)
+
+    # changing the input data changes the inner data in DataFrame
+    input_data['a'][0].append(11)
+    assert df.data != orig_data
+    assert df.get(0, 'a') == [1, 11]
+
+    # using set to change the DataFrame data does not effect the input data
+    df[1, 'a'] = [2, 22]
+    assert input_data['a'] == [[1, 11], [2], [3]]
+
+    df.set(column='b', values=[44, 55, 66])
+    assert input_data['b'] == [4, 5, 6]
+
+
+def test_get_data_mutability():
+    # the .data method only returns a shallow copy, and changes to the return values will corrupt the DataFrame
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['a', 'b', 'c'])
+    orig_data = deepcopy(df.data)
+    data = df.data
+
+    data[0].append(99)
+    assert df.data != orig_data
+    assert df.data[0] == [1, 2, 3, 99]
+
+    # using the get commands returns a shallow copy
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [[1], [2], [3]]}, columns=['a', 'b'])
+    orig_data = deepcopy(df.data)
+
+    new_df = df['a']
+    new_df[3, 'a'] = 100
+    assert df.data == orig_data
+
+    # get a slice
+    new_df = df['b']
+    # mutate inner value
+    new_df[1, 'b'].append(22)
+    # changes the new_df
+    assert new_df.data == [[[1], [2, 22], [3]]]
+    # changes original df
+    assert new_df.data[0] == df.data[1]
+
+
+def test_len():
+    df = rc.DataFrame()
+    assert len(df) == 0
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1]}, columns=['a', 'b'])
+    assert len(df) == 3
+
+    df['a', 3] = 99
+    assert len(df) == 4

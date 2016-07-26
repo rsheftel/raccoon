@@ -6,7 +6,7 @@ from blist import blist
 
 
 class DataFrame(object):
-    def __init__(self, data=None, columns=None, index=None):
+    def __init__(self, data=None, columns=None, index=None, use_blist=True):
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
             raise TypeError('index must be a list.')
@@ -17,13 +17,15 @@ class DataFrame(object):
         self._index = None
         self._index_name = 'index'
         self._columns = None
+        self._blist = use_blist
 
         # define from dictionary
         if data is None:
-            self._data = list()
+            self._data = blist() if self._blist else list()
             if columns:
                 # expand to the number of columns
-                self._data = [[] for x in range(len(columns))]
+                self._data = blist([blist() for x in range(len(columns))]) if self._blist \
+                    else [[] for x in range(len(columns))]
                 self.columns = blist(columns)
             else:
                 self.columns = blist()
@@ -37,7 +39,9 @@ class DataFrame(object):
                 self.index = blist()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
-            self._data = [x if isinstance(x, list) else [x] for x in data.values()]
+            self._data = blist([blist(x) if isinstance(x, (list, blist)) else blist([x]) for x in data.values()]) if \
+                self._blist else \
+                [x if isinstance(x, (list, blist)) else [x] for x in data.values()]
             # setup columns from directory keys
             self.columns = blist(data.keys())
             # pad the data
@@ -71,7 +75,7 @@ class DataFrame(object):
             raise ValueError(
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
-        self._data = [self._data[x] for x in new_sort]
+        self._data = blist([self._data[x] for x in new_sort]) if self._blist else [self._data[x] for x in new_sort]
         self._columns = blist([self._columns[x] for x in new_sort])
 
     def _pad_data(self, max_len=None):
@@ -109,6 +113,9 @@ class DataFrame(object):
     @index_name.setter
     def index_name(self, name):
         self._index_name = name
+
+    def __len__(self):
+        return len(self._index)
 
     def get(self, indexes=None, columns=None):
         # returns a copy
@@ -189,7 +196,10 @@ class DataFrame(object):
 
     def _add_column(self, column):
         self._columns.append(column)
-        self._data.append([None] * len(self._index))
+        if self._blist:
+            self._data.append(blist([None] * len(self._index)))
+        else:
+            self._data.append([None] * len(self._index))
 
     def set(self, index=None, column=None, values=None):
         if (index is not None) and (column is not None):
@@ -238,7 +248,7 @@ class DataFrame(object):
             c = len(self.columns)
             self._add_column(column)
         if index:  # index was provided
-            if not isinstance(values, list):  # single value provided, not a list, so turn values into list
+            if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
                 values = [values for x in index]
             if len(index) == (index.count(True) + index.count(False)):  # boolean list
                 if len(index) != len(self._index):
@@ -259,7 +269,7 @@ class DataFrame(object):
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
         else:  # no index, only values
-            if not isinstance(values, list):  # values not a list, turn into one of length same as index
+            if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
                 values = [values for x in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
