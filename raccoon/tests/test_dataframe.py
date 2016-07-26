@@ -635,8 +635,8 @@ def test_print():
                       index=['row1', 'row2', 'row3'])
 
     # __repr__ produces a simple representation
-    expected = "object id: %s\ncolumns:\n['b', 'c', 'a']\ndata:\n[[1.0, 2.55, 3.1], ['first', 'second', None], " \
-               "[1, 2, 3]]\nindex:\n['row1', 'row2', 'row3']\n" % id(df)
+    expected = "object id: %s\ncolumns:\nblist(['b', 'c', 'a'])\ndata:\n[[1.0, 2.55, 3.1], ['first', 'second', None], " \
+               "[1, 2, 3]]\nindex:\nblist(['row1', 'row2', 'row3'])\n" % id(df)
     actual = df.__repr__()
     assert actual == expected
 

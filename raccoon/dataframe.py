@@ -2,14 +2,15 @@
 from itertools import compress
 from collections import OrderedDict
 from tabulate import tabulate
+from blist import blist
 
 
 class DataFrame(object):
     def __init__(self, data=None, columns=None, index=None):
         # quality checks
-        if (index is not None) and (not isinstance(index, list)):
+        if (index is not None) and (not isinstance(index, (list, blist))):
             raise TypeError('index must be a list.')
-        if (columns is not None) and (not isinstance(columns, list)):
+        if (columns is not None) and (not isinstance(columns, (list, blist))):
             raise TypeError('columns must be a list.')
 
         # standard variable setup
@@ -23,29 +24,29 @@ class DataFrame(object):
             if columns:
                 # expand to the number of columns
                 self._data = [[] for x in range(len(columns))]
-                self.columns = columns
+                self.columns = blist(columns)
             else:
-                self.columns = list()
+                self.columns = blist()
             if index:
                 if not columns:
                     raise ValueError('cannot initialize with index but no columns')
                 # pad out to the number of rows
                 self._pad_data(max_len=len(index))
-                self.index = index
+                self.index = blist(index)
             else:
-                self.index = list()
+                self.index = blist()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = [x if isinstance(x, list) else [x] for x in data.values()]
             # setup columns from directory keys
-            self.columns = list(data.keys())
+            self.columns = blist(data.keys())
             # pad the data
             self._pad_data()
             # setup index
             if index:
-                self.index = index
+                self.index = blist(index)
             else:
-                self.index = list(range(len(self._data[0])))
+                self.index = blist(range(len(self._data[0])))
 
         # sort by columns if provided
         if columns:
@@ -71,7 +72,7 @@ class DataFrame(object):
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
         self._data = [self._data[x] for x in new_sort]
-        self._columns = [self._columns[x] for x in new_sort]
+        self._columns = blist([self._columns[x] for x in new_sort])
 
     def _pad_data(self, max_len=None):
         if not max_len:
@@ -90,7 +91,7 @@ class DataFrame(object):
     @columns.setter
     def columns(self, columns_list):
         self._validate_columns(columns_list)
-        self._columns = columns_list
+        self._columns = blist(columns_list)
 
     @property
     def index(self):
@@ -99,7 +100,7 @@ class DataFrame(object):
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
-        self._index = index_list
+        self._index = blist(index_list)
 
     @property
     def index_name(self):
@@ -117,11 +118,11 @@ class DataFrame(object):
         if columns is None:
             columns = [True] * len(self._columns)
         # singe index and column
-        if isinstance(indexes, list) and isinstance(columns, list):
+        if isinstance(indexes, (list, blist)) and isinstance(columns, (list, blist)):
             return self.get_matrix(indexes, columns)
-        elif isinstance(indexes, list) and (not isinstance(columns, list)):
+        elif isinstance(indexes, (list, blist)) and (not isinstance(columns, (list, blist))):
             return self.get_rows(indexes, columns)
-        elif (not isinstance(indexes, list)) and isinstance(columns, list):
+        elif (not isinstance(indexes, (list, blist))) and isinstance(columns, (list, blist)):
             return self.get_columns(indexes, columns)
         else:
             return self.get_cell(indexes, columns)
@@ -192,7 +193,7 @@ class DataFrame(object):
 
     def set(self, index=None, column=None, values=None):
         if (index is not None) and (column is not None):
-            if isinstance(index, list):
+            if isinstance(index, (list, blist)):
                 self.set_column(index, column, values)
             else:
                 self.set_cell(index, column, values)
@@ -294,7 +295,7 @@ class DataFrame(object):
         df[[4, 5], 'c'] -- get indexes=[4, 5], column='b'
         df[[4, 5,], ['a', 'b']]  -- get indexes=[4, 5], columns=['a', 'b']
 
-        can also use a boolean list for anyting
+        can also use a boolean list for anything
         :param index:
         :return:
         """
@@ -361,7 +362,7 @@ class DataFrame(object):
         return self.get(indexes=rows_bool)
 
     def delete_rows(self, indexes):
-        indexes = [indexes] if not isinstance(indexes, list) else indexes
+        indexes = [indexes] if not isinstance(indexes, (list, blist)) else indexes
         if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
@@ -377,7 +378,7 @@ class DataFrame(object):
             del self._index[i]
 
     def delete_columns(self, columns):
-        columns = [columns] if not isinstance(columns, list) else columns
+        columns = [columns] if not isinstance(columns, (list, blist)) else columns
         if not all([x in self._columns for x in columns]):
             raise ValueError('all columns must be in current columns')
         for column in columns:
@@ -385,7 +386,7 @@ class DataFrame(object):
             del self._data[c]
             del self._columns[c]
         if not len(self._data):  # if all the columns have been deleted, remove index
-            self._index = list()
+            self._index = blist()
 
     @staticmethod
     def _sorted_list_indexes(list_to_sort):
@@ -394,17 +395,17 @@ class DataFrame(object):
     def sort_index(self):
         sort = self._sorted_list_indexes(self._index)
         # sort index
-        self._index = [self._index[x] for x in sort]
+        self._index = blist([self._index[x] for x in sort])
         # each column
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
 
     def sort_columns(self, column):
-        if isinstance(column, list):
+        if isinstance(column, (list, blist)):
             raise TypeError('Can only sort by a single column  ')
         sort = self._sorted_list_indexes(self._data[self._columns.index(column)])
         # sort index
-        self._index = [self._index[x] for x in sort]
+        self._index = blist([self._index[x] for x in sort])
         # each column
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
