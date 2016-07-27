@@ -84,6 +84,9 @@ class DataFrame(object):
         for i, col in enumerate(self._data):
             col.extend([None] * (max_len - len(col)))
 
+    def __len__(self):
+        return len(self._index)
+
     @property
     def data(self):
         return self._data.copy()
@@ -114,8 +117,18 @@ class DataFrame(object):
     def index_name(self, name):
         self._index_name = name
 
-    def __len__(self):
-        return len(self._index)
+    def select_index(self, compare, result='boolean'):
+        # compare is a tuple or single
+        # result is either 'boolean" or 'values'
+        compare = compare if isinstance(compare, tuple) else (compare,)
+        booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)]) for x, v in
+                    enumerate(self._index)]
+        if result=='boolean':
+            return booleans
+        elif result=='value':
+            return list(compress(self._index, booleans))
+        else:
+            raise ValueError('only valid values for result parameter are: boolean or value.')
 
     def get(self, indexes=None, columns=None, as_list=False):
         # returns a copy

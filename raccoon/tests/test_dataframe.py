@@ -766,3 +766,45 @@ def test_add():
 
     res = df.divide('b', 'c', [0, 2])
     assert res == [5/6, 7/10]
+
+
+def test_select_index():
+    # simple index
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
+
+    actual = df.select_index('c', 'value')
+    assert actual == ['c']
+
+    actual = df.select_index('d', 'boolean')
+    assert actual == [False, False, False, True, False, False]
+
+    with pytest.raises(ValueError):
+        df.select_index('a', 'BAD')
+
+    # tuple index
+    tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=tuples)
+
+    compare = ('a', None, None)
+    assert df.select_index(compare) == [True, True, True, False, False, False]
+
+    compare = ('a', None, 3)
+    assert df.select_index(compare, 'boolean') == [True, False, True, False, False, False]
+
+    compare = (None, 2, None)
+    assert df.select_index(compare, 'value') == [('a', 2, 3), ('b', 2, 1)]
+
+    compare = (None, 3, 3)
+    assert df.select_index(compare) == [False, False, False, False, False, True]
+
+    compare = (None, None, 3)
+    assert df.select_index(compare, 'value') == [('a', 1, 3), ('a', 2, 3), ('b', 3, 3)]
+
+    compare = ('a', 1, 4)
+    assert df.select_index(compare, 'value') == [('a', 1, 4)]
+
+    compare = ('a', 100, 99)
+    assert df.select_index(compare, 'value') == []
+
+    compare = (None, None, None)
+    assert df.select_index(compare) == [True] * 6
