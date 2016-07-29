@@ -168,93 +168,93 @@ def test_set_row():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
 
     # change existing row
-    actual.set(index=10, values={'a': 11, 'b': 44, 'c': 77})
+    actual.set(indexes=10, values={'a': 11, 'b': 44, 'c': 77})
     assert actual.data == [[11, 2, 3], [44, 5, 6], [77, 8, 9]]
 
-    actual.set(index=12, values={'a': 33, 'b': 66, 'c': 99})
+    actual.set(indexes=12, values={'a': 33, 'b': 66, 'c': 99})
     assert actual.data == [[11, 2, 33], [44, 5, 66], [77, 8, 99]]
 
     # change subset of existing row
-    actual.set(index=11, values={'a': 22, 'c': 88})
+    actual.set(indexes=11, values={'a': 22, 'c': 88})
     assert actual.data == [[11, 22, 33], [44, 5, 66], [77, 88, 99]]
 
     # add a new row
-    actual.set(index=13, values={'a': 4, 'b': 7, 'c': 10})
+    actual.set(indexes=13, values={'a': 4, 'b': 7, 'c': 10})
     assert actual.data == [[11, 22, 33, 4], [44, 5, 66, 7], [77, 88, 99, 10]]
 
-    actual.set(index=14, values={'b': 8, 'c': 11})
+    actual.set(indexes=14, values={'b': 8, 'c': 11})
     assert actual.data == [[11, 22, 33, 4, None], [44, 5, 66, 7, 8], [77, 88, 99, 10, 11]]
     assert actual.index == [10, 11, 12, 13, 14]
 
     # bad column names
     with pytest.raises(ValueError):
-        actual.set(index=14, values={'a': 0, 'bad': 1})
+        actual.set(indexes=14, values={'a': 0, 'bad': 1})
 
     # bad values type
     with pytest.raises(TypeError):
-        actual.set(index=14, values=[1, 2, 3, 4, 5])
+        actual.set(indexes=14, values=[1, 2, 3, 4, 5])
 
 
 def test_set_column():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
 
     # change existing column
-    actual.set(column='b', values=[44, 55, 66])
+    actual.set(columns='b', values=[44, 55, 66])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
 
     # add a new column
-    actual.set(column='e', values=[10, 11, 12])
+    actual.set(columns='e', values=[10, 11, 12])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
 
     # not enough values
     with pytest.raises(ValueError):
-        actual.set(column='e', values=[1, 2])
+        actual.set(columns='e', values=[1, 2])
 
     # too many values
     with pytest.raises(ValueError):
-        actual.set(column='e', values=[1, 2, 3, 4])
+        actual.set(columns='e', values=[1, 2, 3, 4])
 
 
 def test_set_column_index_subset():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'])
 
     # by index value
-    actual.set(column='b', index=[12, 11, 10], values=[66, 55, 44])
+    actual.set(columns='b', indexes=[12, 11, 10], values=[66, 55, 44])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
 
-    actual.set(column='a', index=[12, 10], values=[33, 11])
+    actual.set(columns='a', indexes=[12, 10], values=[33, 11])
     assert actual.data == [[11, 2, 33], [44, 55, 66], [7, 8, 9]]
 
     # new rows
-    actual.set(column='c', index=[12, 13, 14], values=[120, 130, 140])
+    actual.set(columns='c', indexes=[12, 13, 14], values=[120, 130, 140])
     assert actual.data == [[11, 2, 33, None, None], [44, 55, 66, None, None], [7, 8, 120, 130, 140]]
     assert actual.index == [10, 11, 12, 13, 14]
 
     # new row new columns
-    actual.set(column='z', index=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
+    actual.set(columns='z', indexes=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
     assert actual.data == [[11, 2, 33, None, None, None, None], [44, 55, 66, None, None, None, None],
                            [7, 8, 120, 130, 140, None, None], [None, None, None, None, 'zoo', 'boo', 'hoo']]
     assert actual.index == [10, 11, 12, 13, 14, 15, 16]
 
     # values list shorter than indexes, raise error
     with pytest.raises(ValueError):
-        actual.set(index=[10, 11], column='a', values=[1])
+        actual.set(indexes=[10, 11], columns='a', values=[1])
 
     # by boolean list
     actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'])
-    actual.set(column='c', index=[False, True], values=[99])
+    actual.set(columns='c', indexes=[False, True], values=[99])
     assert actual.data == [[4, 5], [7, 8], [1, 99]]
 
     # boolean list not size of existing index
     with pytest.raises(ValueError):
-        actual.set(index=[True, False, True], column='a', values=[1, 2])
+        actual.set(indexes=[True, False, True], columns='a', values=[1, 2])
 
     # boolean list True entries not same size as values list
     with pytest.raises(ValueError):
-        actual.set(index=[True, True, False], column='b', values=[4, 5, 6])
+        actual.set(indexes=[True, True, False], columns='b', values=[4, 5, 6])
 
     with pytest.raises(ValueError):
-        actual.set(index=[True, True, False], column='b', values=[4])
+        actual.set(indexes=[True, True, False], columns='b', values=[4])
 
 
 def test_set_single_value():
@@ -265,25 +265,25 @@ def test_set_single_value():
     assert df.data == [[99, 2, 99], [4, 5, 6], [7, 8, 9]]
 
     # set entire column to one value
-    df.set(column='c', values=88)
+    df.set(columns='c', values=88)
     assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88]]
 
     # can be anything that isn't a list
-    df.set(column='e', values={1, 2, 3})
+    df.set(columns='e', values={1, 2, 3})
     assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88], [{1, 2, 3}, {1, 2, 3}, {1, 2, 3}]]
 
 
 def test_set_from_blank_df():
     # single cell
     df = rc.DataFrame()
-    df.set(index=1, column='a', values=9)
+    df.set(indexes=1, columns='a', values=9)
     assert df.columns == ['a']
     assert df.index == [1]
     assert df.data == [[9]]
 
     # single column
     df = rc.DataFrame()
-    df.set(index=[1, 2, 3], column='a', values=[9, 10, 11])
+    df.set(indexes=[1, 2, 3], columns='a', values=[9, 10, 11])
     assert df.columns == ['a']
     assert df.index == [1, 2, 3]
     assert df.data == [[9, 10, 11]]
@@ -307,7 +307,7 @@ def test_set_square_brackets():
 def test_bar():
     df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     for x in range(10):
-        df.set(index=x, values={'datetime': '2001-01-01', 'open': 100.0, 'high': 101.0, 'low': 99.5,
+        df.set(indexes=x, values={'datetime': '2001-01-01', 'open': 100.0, 'high': 101.0, 'low': 99.5,
                                 'close': 99.75, 'volume': 10000})
 
     assert df.index == list(range(10))
@@ -690,7 +690,7 @@ def test_input_data_mutability():
     df[1, 'a'] = [2, 22]
     assert input_data['a'] == [[1, 11], [2], [3]]
 
-    df.set(column='b', values=[44, 55, 66])
+    df.set(columns='b', values=[44, 55, 66])
     assert input_data['b'] == [4, 5, 6]
 
 
@@ -741,7 +741,7 @@ def test_equality():
     assert df.equality('z', [False, False, False, True, True, True], 1) == [False, True, True]
 
     # change all 1 to 3
-    df.set(index=df.equality('z', value=1), column='z', values=3)
+    df.set(indexes=df.equality('z', value=1), columns='z', values=3)
     assert df.data == [[3, 2, 3, 2, 3, 3]]
 
 
