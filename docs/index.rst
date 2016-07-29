@@ -1,12 +1,18 @@
-# raccoon
-Python DataFrame with fast insert and appends
+.. Raccoon documentation master file, created by
+   sphinx-quickstart on Fri Jul 29 08:26:04 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-Documentation:
-
+Raccoon documentation
+=====================
 Overview
 --------
 Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case
 where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code.
+
+Source location
+~~~~~~~~~~~~~~~
+Hosted on GitHub: https://github.com/rsheftel/raccoon
 
 Inspiration
 ~~~~~~~~~~~
@@ -32,3 +38,24 @@ This package serves the needs it was originally created for. Any future addition
 needs, but it is completely open source to I encourage anyone to add on and expand.
 
 My hope is that one day Pandas solves the speed problem with growing DataFrames and this package becomes obsolete.
+
+Make Docs
+~~~~~~~~~
+There is helper function to generate these docs from the source code. On windows cd into the docs directory and
+execute make_docs.bat from the command line.
+
+Contents:
+---------
+.. toctree::
+   :maxdepth: 2
+
+   modules.rst
+   raccoon.rst
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

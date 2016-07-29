@@ -1,8 +1,5 @@
 """
-DataFrame class. The raccoon DataFrame implements a simplified version of the pandas DataFrame with the key objective
-difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is expanding
-frequently. This is known to be slow with Pandas due to the use of numbpy as the underlying data structure. Raccoon
-uses BList as the underlying data structure which is quick to expand and grow the size.
+DataFrame class
 """
 
 from itertools import compress
@@ -12,16 +9,19 @@ from blist import blist
 
 
 class DataFrame(object):
-    def __init__(self, data=None, columns=None, index=None, use_blist=True):
-        """
-        Initialize the DataFrame
+    """
+    DataFrame class. The raccoon DataFrame implements a simplified version of the pandas DataFrame with the key
+    objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
+    expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
+    Raccoon uses BList as the underlying data structure which is quick to expand and grow the size.
 
-        :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and
-        the lists will be used for the column data.
-        :param columns: (optional) list of column names that will define the order
-        :param index: (optional) list of index values. If None then the index will be integers starting with zero
-        :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
-        """
+    :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
+    the lists will be used for the column data.
+    :param columns: (optional) list of column names that will define the order
+    :param index: (optional) list of index values. If None then the index will be integers starting with zero
+    :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
+    """
+    def __init__(self, data=None, columns=None, index=None, use_blist=True):
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
             raise TypeError('index must be a list.')
@@ -85,7 +85,7 @@ class DataFrame(object):
     def print(self, index=True, **kwargs):
         """
         Print the contents of the DataFrame. This method uses the tabulate function from the tabulate package. Use the
-        **kwargs to pass along any argurments to the tabulate function.
+        kwargs to pass along any arguments to the tabulate function.
 
         :param index: If True then include the indexes as a column in the output, if False ignore the index
         :param kwargs: Parameters to pass along to the tabulate function
@@ -182,7 +182,7 @@ class DataFrame(object):
 
         :param indexes: index value, list of index values, or a list of booleans. If None then all indexes are used
         :param columns: column name or list of column names. If None then all columns are used
-        :param as_list: if True then return the values as a list, if False return a DataFrame. This is only used if
+        :param as_list: if True then return the values as a list, if False return a DataFrame. This is only used if\
         the get is for a single column
         :return: either DataFrame, list or single value. The return is a shallow copy
         """
@@ -324,10 +324,10 @@ class DataFrame(object):
         contains values not in the DataFrame then new rows or columns will be added.
 
         :param indexes: indexes value, list of indexes values, or a list of booleans. If None then all indexes are used
-        :param columns: columns name, if None then all columns are used. Currently can only handle a single column or
+        :param columns: columns name, if None then all columns are used. Currently can only handle a single column or\
         all columns
-        :param values: value or list of values to set (index, column) to. If setting just a single row, then must be a
-        dict where the keys are the column names. If a list then must be the same length as the indexes parameter, if
+        :param values: value or list of values to set (index, column) to. If setting just a single row, then must be a\
+        dict where the keys are the column names. If a list then must be the same length as the indexes parameter, if\
         indexes=None, then must be the same and length of DataFrame
         :return: nothing
         """
@@ -391,10 +391,10 @@ class DataFrame(object):
         Set a column to a single value or list of values. If any of the index values are not in the current indexes
         then a new row will be created.
 
-        :param index: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param index: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :param column: column name
-        :param values: either a single value or a list. The list must be the same length as the index list if the index
+        :param values: either a single value or a list. The list must be the same length as the index list if the index\
         list is values, or the length of the True values in the index list if the index list is booleans
         :return: nothing
         """
@@ -511,7 +511,7 @@ class DataFrame(object):
         """
         Returns a dict where the keys are the column names and the values are lists of the values for that column.
 
-        :param index: If True then include the index as a key in the dict with name "index"
+        :param index: If True then include the index in the dict with the index_name as the key
         :param ordered: If True then return an OrderedDict() to perserve the order of the columns in the DataFrame
         :return: dict or OrderedDict()
         """
@@ -685,7 +685,7 @@ class DataFrame(object):
         value for that index in the DataFrame to the value parameter.
 
         :param column: column name to compare
-        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :param value: value to compare
         :return: list of booleans
@@ -707,7 +707,7 @@ class DataFrame(object):
 
         :param left_column: first column name
         :param right_column: second column name
-        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :return: list
         """
@@ -721,7 +721,7 @@ class DataFrame(object):
 
         :param left_column: first column name
         :param right_column: name of column to subtract from the left_column
-        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :return: list
         """
@@ -735,7 +735,7 @@ class DataFrame(object):
 
         :param left_column: first column name
         :param right_column: second column name
-        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :return: list
         """
@@ -749,7 +749,7 @@ class DataFrame(object):
 
         :param left_column: column name of dividend
         :param right_column: column name of divisor
-        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same
+        :param indexes: list of index values or list of booleans. If a list of booleans then the list must be the same\
         length as the DataFrame
         :return: list
         """
