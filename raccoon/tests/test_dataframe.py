@@ -808,3 +808,7 @@ def test_select_index():
 
     compare = (None, None, None)
     assert df.select_index(compare) == [True] * 6
+
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]})
+    assert df.select_index(3) == [False, False, False, True, False, False]
+    assert df.select_index(3, 'value') == [3]

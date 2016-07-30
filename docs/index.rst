@@ -8,7 +8,8 @@ Raccoon documentation
 Overview
 --------
 Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case
-where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code.
+where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code. A simple speed
+comparison is below in the contents.
 
 Source location
 ~~~~~~~~~~~~~~~
@@ -28,6 +29,11 @@ supporting simple and tuple indexes to mimic the hierarchical indexes of Pandas.
 about setting values of the data frame, growing and appending the data frame and getting values from the data frame.
 The raccoon DataFrame is not intended for math operations like pandas and only limited basic math methods are included.
 
+Underlying Data Structure
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Raccoon uses the fast blist http://stutzbachenterprises.com/blist/ list replacement for the underlying data structure.
+There is an option on object constructure to use standard built in lists.
+
 Why Raccoon?
 ~~~~~~~~~~~~
 According to wikipedia some scientists believe the panda is related to the raccoon
@@ -44,13 +50,15 @@ Make Docs
 There is helper function to generate these docs from the source code. On windows cd into the docs directory and
 execute make_docs.bat from the command line.
 
-Contents:
----------
+Contents
+--------
 .. toctree::
    :maxdepth: 2
 
    modules.rst
    raccoon.rst
+   usage.rst
+   speed_test.rst
 
 Indices and tables
 ==================
@@ -58,4 +66,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

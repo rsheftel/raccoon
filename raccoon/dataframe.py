@@ -163,10 +163,13 @@ class DataFrame(object):
         :param result: 'boolean' = returns a list of booleans, 'value' = returns a list of index values that match
         :return: list of booleans or values
         """
-        compare = compare if isinstance(compare, tuple) else (compare,)
-        # this crazy list comprehension will match all the tuples in the list with None being an * wildcard
-        booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)]) for x, v in
-                    enumerate(self._index)]
+        if isinstance(compare, tuple):
+            # this crazy list comprehension will match all the tuples in the list with None being an * wildcard
+            booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)]) for x, v in
+                        enumerate(self._index)]
+        else:
+            booleans = [False] * len(self._index)
+            booleans[self._index.index(compare)] = True
         if result=='boolean':
             return booleans
         elif result=='value':
@@ -604,7 +607,7 @@ class DataFrame(object):
 
     def sort_index(self):
         """
-        Sort the DataFrame by the index
+        Sort the DataFrame by the index. The sort modifies the DataFrame inplace
 
         :return: nothing
         """
@@ -617,7 +620,7 @@ class DataFrame(object):
 
     def sort_columns(self, column):
         """
-        Sort the DataFrame by one of the columns
+        Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace
 
         :param column: column name to use for the sort
         :return: nothing
