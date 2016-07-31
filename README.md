@@ -2,7 +2,7 @@
 Python DataFrame with fast insert and appends
 
 ##Documentation
-
+http://raccoon.readthedocs.io/en/latest/
 
 ##Overview
 Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case

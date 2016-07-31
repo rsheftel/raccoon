@@ -13,10 +13,11 @@ def test_initialization():
     assert actual.index == [0, 1, 2]
 
     # solid matrix, no columns, with index
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'])
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], index_name='letters')
     assert set(tuple(x) for x in actual.data) == {(1, 2, 3), (4, 5, 6)}
     assert set(actual.columns) == {'a', 'b'}
     assert actual.index == ['a', 'b', 'c']
+    assert actual.index_name == 'letters'
 
     # solid matrix, columns, index
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
@@ -120,6 +121,9 @@ def test_index():
     assert actual.index_name == 'index'
     actual.index_name = 'new name'
     assert actual.index_name == 'new name'
+
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], index_name='letters')
+    assert actual.index_name == 'letters'
 
 
 def test_data():
@@ -325,9 +329,9 @@ def test_get_cell():
 
 def test_get_rows():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
-                      columns=['a', 'b', 'c'])
+                      columns=['a', 'b', 'c'], index_name='start_10')
 
-    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12])
+    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12], index_name='start_10')
     actual = df.get([11, 12], 'c')
     assert_frame_equal(actual, expected)
 
@@ -347,9 +351,9 @@ def test_get_rows():
 
 def test_get_columns():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
-                      columns=['a', 'b', 'c'])
+                      columns=['a', 'b', 'c'], index_name='start_10')
 
-    expected = rc.DataFrame({'a': [4], 'c': [None]}, index=[99], columns=['a', 'c'])
+    expected = rc.DataFrame({'a': [4], 'c': [None]}, index=[99], columns=['a', 'c'], index_name='start_10')
     actual = df.get(99, ['a', 'c'])
     assert_frame_equal(actual, expected)
 
@@ -360,9 +364,9 @@ def test_get_columns():
 
 def test_get_row_and_col():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, index=['x', 'y', 'z'],
-                      columns=['a', 'b', 'c', 'd'])
+                      columns=['a', 'b', 'c', 'd'], index_name='letters')
 
-    expected = rc.DataFrame({'b': [4, 6], 'd': [10, 12]}, index=['x', 'z'], columns=['b', 'd'])
+    expected = rc.DataFrame({'b': [4, 6], 'd': [10, 12]}, index=['x', 'z'], columns=['b', 'd'], index_name='letters')
     actual = df.get(['x', 'z'], ['b', 'd'])
     assert_frame_equal(actual, expected)
 

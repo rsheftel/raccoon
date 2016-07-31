@@ -19,9 +19,10 @@ class DataFrame(object):
     the lists will be used for the column data.
     :param columns: (optional) list of column names that will define the order
     :param index: (optional) list of index values. If None then the index will be integers starting with zero
+    :param index_name: (optional) name for the index. Default is "index"
     :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
     """
-    def __init__(self, data=None, columns=None, index=None, use_blist=True):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=True):
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
             raise TypeError('index must be a list.')
@@ -30,7 +31,7 @@ class DataFrame(object):
 
         # standard variable setup
         self._index = None
-        self._index_name = 'index'
+        self._index_name = index_name
         self._columns = None
         self._blist = use_blist
 
@@ -236,7 +237,7 @@ class DataFrame(object):
         else:
             data = list(compress(self._data[c], indexes))
             index = list(compress(self._index, indexes))
-        return data if as_list else DataFrame(data={column: data}, index=index)
+        return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name)
 
     def get_columns(self, index, columns):
         """
@@ -253,7 +254,7 @@ class DataFrame(object):
         for column in columns:
             c = self._columns.index(column)
             data[column] = [self._data[c][i]]
-        return DataFrame(data=data, index=[index], columns=columns)
+        return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name)
 
     def get_matrix(self, indexes, columns):
         """
@@ -282,7 +283,7 @@ class DataFrame(object):
         for x, column in enumerate(columns):
             data_dict[column] = list(compress(data[x], i))
 
-        return DataFrame(data=data_dict, index=indexes, columns=columns)
+        return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name)
 
     def _add_row(self, index):
         """
