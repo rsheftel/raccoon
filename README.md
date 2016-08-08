@@ -28,3 +28,8 @@ This package serves the needs it was originally created for. Any future addition
 needs, but it is completely open source to I encourage anyone to add on and expand.
 
 My hope is that one day Pandas solves the speed problem with growing DataFrames and this package becomes obsolete.
+
+#Updates
+
+## 1.0.1
+- Added isin() method

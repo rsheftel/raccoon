@@ -50,6 +50,12 @@ Make Docs
 There is helper function to generate these docs from the source code. On windows cd into the docs directory and
 execute make_docs.bat from the command line.
 
+Updates
+-------
+1.0.1
+~~~~~
+- Added isin() method
+
 Contents
 --------
 .. toctree::

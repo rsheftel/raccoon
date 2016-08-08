@@ -816,3 +816,15 @@ def test_select_index():
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]})
     assert df.select_index(3) == [False, False, False, True, False, False]
     assert df.select_index(3, 'value') == [3]
+
+
+def test_isin():
+    df = rc.DataFrame({'first': [1, 2, 3, 4, 5], 'second': ['a', 2, 'b', None, 5]})
+
+    assert df.isin('first', [2, 3, 4]) == [False, True, True, True, False]
+    assert df.isin('first', [3]) == [False, False, True, False, False]
+    assert df.isin('first', [6, 7]) == [False, False, False, False, False]
+
+    assert df.isin('second', ['a', 2]) == [True, True, False, False, False]
+    assert df.isin('second', ['a', 'b']) == [True, False, True, False, False]
+    assert df.isin('second', ['a', 'b', None]) == [True, False, True, True, False]
