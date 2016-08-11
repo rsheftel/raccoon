@@ -8,7 +8,8 @@ python:
   - "nightly" # currently points to 3.6-dev
 # command to install dependencies
 install: 
-  - "pip install -r raccoon.egg-info/requires.txt"
+  - "pip install blist"
+  - "pip install tabulate"
   - "python setup.py install"
 # command to run tests
 script: py.test
