@@ -2,6 +2,9 @@ raccoon
 =======
 Python DataFrame with fast insert and appends
 
+.. image:: https://travis-ci.org/rsheftel/raccoon.svg?branch=master
+    :target: https://travis-ci.org/rsheftel/raccoon
+    
 Documentation
 -------------
 http://raccoon.readthedocs.io/en/latest/
