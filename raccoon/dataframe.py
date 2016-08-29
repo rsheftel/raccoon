@@ -3,7 +3,7 @@ DataFrame class
 """
 
 from itertools import compress
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from tabulate import tabulate
 from blist import blist
 
@@ -14,15 +14,16 @@ class DataFrame(object):
     objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
     Raccoon uses BList as the underlying data structure which is quick to expand and grow the size.
-
-    :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
-    the lists will be used for the column data.
-    :param columns: (optional) list of column names that will define the order
-    :param index: (optional) list of index values. If None then the index will be integers starting with zero
-    :param index_name: (optional) name for the index. Default is "index"
-    :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
     """
     def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=True):
+        """
+        :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
+        the lists will be used for the column data.
+        :param columns: (optional) list of column names that will define the order
+        :param index: (optional) list of index values. If None then the index will be integers starting with zero
+        :param index_name: (optional) name for the index. Default is "index"
+        :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
+        """
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
             raise TypeError('index must be a list.')
@@ -171,9 +172,9 @@ class DataFrame(object):
         else:
             booleans = [False] * len(self._index)
             booleans[self._index.index(compare)] = True
-        if result=='boolean':
+        if result == 'boolean':
             return booleans
-        elif result=='value':
+        elif result == 'value':
             return list(compress(self._index, booleans))
         else:
             raise ValueError('only valid values for result parameter are: boolean or value.')
@@ -347,14 +348,14 @@ class DataFrame(object):
         else:
             raise ValueError('either or both of indexes or columns must be provided')
 
-    def set_cell(self, index, column, values):
+    def set_cell(self, index, column, value):
         """
         Sets the value of a single cell. If the index and/or column is not in the current index/columns then a new
         index and/or column will be created.
 
         :param index: index value
         :param column: column name
-        :param values: value to set
+        :param value: value to set
         :return: nothing
         """
         try:
@@ -367,7 +368,7 @@ class DataFrame(object):
         except ValueError:
             c = len(self._columns)
             self._add_column(column)
-        self._data[c][i] = values
+        self._data[c][i] = value
 
     def set_row(self, index, values):
         """
@@ -432,11 +433,11 @@ class DataFrame(object):
                     self._data[c][i] = values[x]
         else:  # no index, only values
             if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
-                values = [values for x in self._index]
+                values = blist([values for x in self._index]) if self._blist else [values for x in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
             else:
-                self._data[c] = values
+                self._data[c] = blist(values) if self._blist else values
 
     def _slice_index(self, slicer):
         try:
@@ -617,7 +618,7 @@ class DataFrame(object):
         self._index = blist([self._index[x] for x in sort])
         # each column
         for c in range(len(self._data)):
-            self._data[c] = [self._data[c][i] for i in sort]
+            self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
 
     def sort_columns(self, column):
         """
@@ -633,7 +634,7 @@ class DataFrame(object):
         self._index = blist([self._index[x] for x in sort])
         # each column
         for c in range(len(self._data)):
-            self._data[c] = [self._data[c][i] for i in sort]
+            self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
 
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
@@ -716,7 +717,7 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l + r for l,r in zip(left_list, right_list)]
+        return [l + r for l, r in zip(left_list, right_list)]
 
     def subtract(self, left_column, right_column, indexes=None):
         """
@@ -730,7 +731,7 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l - r for l,r in zip(left_list, right_list)]
+        return [l - r for l, r in zip(left_list, right_list)]
 
     def multiply(self, left_column, right_column, indexes=None):
         """
@@ -744,7 +745,7 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l * r for l,r in zip(left_list, right_list)]
+        return [l * r for l, r in zip(left_list, right_list)]
 
     def divide(self, left_column, right_column, indexes=None):
         """
@@ -758,7 +759,7 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l / r for l,r in zip(left_list, right_list)]
+        return [l / r for l, r in zip(left_list, right_list)]
 
     def isin(self, column, compare_list):
         """
@@ -769,3 +770,31 @@ class DataFrame(object):
         :return: list of booleans
         """
         return [x in compare_list for x in self._data[self._columns.index(column)]]
+
+    def iterrows(self):
+        """
+        Iterates over DataFrame rows as dictionary of the values. The index will be included.
+
+        :return: dictionary
+        """
+        for i in range(len(self._index)):
+            row = {self._index_name: self._index[i]}
+            for c, col in enumerate(self._columns):
+                row[col] = self._data[c][i]
+            yield row
+
+    def itertuples(self, name='Raccoon'):
+        """
+        Iterates over DataFrame rows as tuple of the values.
+
+        :param name: name of the namedtuple
+        :return: namedtuple
+        """
+        fields = [self._index_name]
+        fields.extend(self._columns)
+        row_tuple = namedtuple(name, fields)
+        for i in range(len(self._index)):
+            row = {self._index_name: self._index[i]}
+            for c, col in enumerate(self._columns):
+                row[col] = self._data[c][i]
+            yield row_tuple(**row)

@@ -44,3 +44,9 @@ Updates
 1.0.1
 -----
 - Added isin() method
+
+1.0.2
+-----
+- Fixed several small bugs
+- Added iterrows() method
+- Added itertuples() method

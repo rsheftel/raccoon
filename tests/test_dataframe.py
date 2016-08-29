@@ -1,7 +1,8 @@
 import pytest
 import raccoon as rc
+from blist import blist
 from raccoon.utils import assert_frame_equal
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from copy import deepcopy
 
 
@@ -31,6 +32,8 @@ def test_initialization():
     assert actual.index == [0, 1, 2]
     assert actual.data == [[2, None, None], [1, 2, 3], [1, None, None]]
 
+    assert isinstance(actual.data[0], blist)
+
 
 def test_jagged_data():
     actual = rc.DataFrame({'a': [], 'b': [1], 'c': [1, 2], 'd': [1, 2, 3]}, columns=['a', 'b', 'c', 'd'])
@@ -55,6 +58,8 @@ def test_empty_initialization():
     assert actual.data == [[None, None, None], [None, None, None]]
     assert actual.columns == ['a', 'b']
     assert actual.index == [1, 2, 3]
+
+    assert isinstance(actual.data[0], blist)
 
 
 def test_bad_initialization():
@@ -134,6 +139,7 @@ def test_data():
     new = actual.data
     new[0][0] = 99
     assert actual.data == new
+    assert isinstance(actual.data[0], blist)
 
     new.append(88)
     assert actual.data != new
@@ -161,6 +167,7 @@ def test_set_cell():
     # add a new column
     actual.set(13, 'd', 88)
     assert actual.data == [[11, 2, 3, None], [4, 55, 6, 14], [13, 8, 9, None], [None, None, None, 88]]
+    assert isinstance(actual.data[3], blist)
 
     # add a new row and column
     actual.set(14, 'e', 999)
@@ -209,6 +216,7 @@ def test_set_column():
     # add a new column
     actual.set(columns='e', values=[10, 11, 12])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
+    assert isinstance(actual.data[3], blist)
 
     # not enough values
     with pytest.raises(ValueError):
@@ -239,6 +247,7 @@ def test_set_column_index_subset():
     assert actual.data == [[11, 2, 33, None, None, None, None], [44, 55, 66, None, None, None, None],
                            [7, 8, 120, 130, 140, None, None], [None, None, None, None, 'zoo', 'boo', 'hoo']]
     assert actual.index == [10, 11, 12, 13, 14, 15, 16]
+    assert isinstance(actual.data[3], blist)
 
     # values list shorter than indexes, raise error
     with pytest.raises(ValueError):
@@ -312,7 +321,7 @@ def test_bar():
     df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     for x in range(10):
         df.set(indexes=x, values={'datetime': '2001-01-01', 'open': 100.0, 'high': 101.0, 'low': 99.5,
-                                'close': 99.75, 'volume': 10000})
+                                  'close': 99.75, 'volume': 10000})
 
     assert df.index == list(range(10))
     assert df.columns == ['datetime', 'open', 'high', 'low', 'close', 'volume']
@@ -828,3 +837,32 @@ def test_isin():
     assert df.isin('second', ['a', 2]) == [True, True, False, False, False]
     assert df.isin('second', ['a', 'b']) == [True, False, True, False, False]
     assert df.isin('second', ['a', 'b', None]) == [True, False, True, True, False]
+
+
+def test_iterrows():
+    df = rc.DataFrame({'first': [1, 2, 3, 4, 5], 'second': ['a', 2, 'b', None, 5]})
+
+    expected = [{'index': 0, 'first': 1, 'second': 'a'},
+                {'index': 1, 'first': 2, 'second': 2},
+                {'index': 2, 'first': 3, 'second': 'b'},
+                {'index': 3, 'first': 4, 'second': None},
+                {'index': 4, 'first': 5, 'second': 5}]
+    actual = list()
+    for x in df.iterrows():
+        actual.append(x)
+
+    assert actual == expected
+
+
+def test_itertuples():
+    df = rc.DataFrame({'first': [1, 2], 'second': ['a', 2]}, index=['hi', 'bye'], index_name='greet',
+                      columns=['first', 'second'])
+
+    name_tup = namedtuple('Raccoon', ['greet', 'first', 'second'])
+    expected = [name_tup(greet= 'hi', first=1, second='a'),
+                name_tup(greet='bye', first=2, second=2)]
+    actual = list()
+    for x in df.itertuples():
+        actual.append(x)
+
+    assert actual == expected
