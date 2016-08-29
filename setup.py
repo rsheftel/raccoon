@@ -18,7 +18,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='raccoon',
-    version='1.0.1',
+    version='1.0.2',
 
     description='Python DataFrame with fast insert and appends',
     long_description=long_description,
