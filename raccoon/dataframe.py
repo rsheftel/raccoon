@@ -4,8 +4,38 @@ DataFrame class
 
 from itertools import compress
 from collections import OrderedDict, namedtuple
+from bisect import bisect_left, bisect_right
 from tabulate import tabulate
 from blist import blist
+
+
+def sorted_exists(values, x):
+    """
+    For list, values, returns the insert position for item x and whether the item already exists in the list. This
+    allows one function call to return either the index to overwrite an existing value in the list, or the index to
+    insert a new item in the list and keep the list in sorted order.
+
+    :param values: list
+    :param x: item
+    :return: (exists, index) tuple
+    """
+    i = bisect_left(values, x)
+    j = bisect_right(values, x)
+    exists = x in values[i:j]
+    return exists, i
+
+
+def sorted_index(values, x):
+    """
+    For list, values, returns the index location of element x. If x does not exist will raise an error.
+
+    :param values: list
+    :param x: item
+    :return: integer index
+    """
+    i = bisect_left(values, x)
+    j = bisect_right(values, x)
+    return values[i:j].index(x) + i
 
 
 class DataFrame(object):
@@ -13,9 +43,11 @@ class DataFrame(object):
     DataFrame class. The raccoon DataFrame implements a simplified version of the pandas DataFrame with the key
     objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
-    Raccoon uses BList as the underlying data structure which is quick to expand and grow the size.
+    Raccoon uses BList as the underlying data structure which is quick to expand and grow the size. The DataFrame can
+    be designated as sorted, in which case the rows will be sorted by index on construction, and then any addition of a
+    new row will insert it into the DataFrame so that the index remains sorted.
     """
-    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=True):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=True, sorted=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.
@@ -23,6 +55,7 @@ class DataFrame(object):
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param index_name: (optional) name for the index. Default is "index"
         :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
+        :param sorted: if True then DataFrame will keep the index sorted. If True all index values must be of same type
         """
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
@@ -72,6 +105,16 @@ class DataFrame(object):
         # sort by columns if provided
         if columns:
             self._sort_columns(columns)
+
+        # setup sorted
+        self._sorted = None
+        if sorted is not None:
+            self.sorted = sorted
+        else:
+            if index:
+                self.sorted = False
+            else:
+                self.sorted = True
 
     def __repr__(self):
         return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns,
@@ -154,6 +197,16 @@ class DataFrame(object):
     def index_name(self, name):
         self._index_name = name
 
+    @property
+    def sorted(self):
+        return self._sorted
+
+    @sorted.setter
+    def sorted(self, boolean):
+        self._sorted = boolean
+        if self._sorted:
+            self.sort_index()
+
     def select_index(self, compare, result='boolean'):
         """
         Finds the elements in the index that match the compare parameter and returns either a list of the values that
@@ -213,7 +266,7 @@ class DataFrame(object):
         :param column: column name
         :return: value
         """
-        i = self._index.index(index)
+        i = sorted_index(self._index, index) if self._sorted else self._index.index(index)
         c = self._columns.index(column)
         return self._data[c][i]
 
@@ -285,6 +338,21 @@ class DataFrame(object):
             data_dict[column] = list(compress(data[x], i))
 
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name)
+
+    def _insert_row(self, i, index):
+        """
+        Insert a new row in the DataFrame.
+
+        :param i: index location to insert
+        :param index: index value to insert into the index list
+        :return: nothing
+        """
+        if i == len(self._index):
+            self._add_row(index)
+        else:
+            self._index.insert(i, index)
+            for c in range(len(self._columns)):
+                self._data[c].insert(i, None)
 
     def _add_row(self, index):
         """
@@ -358,11 +426,16 @@ class DataFrame(object):
         :param value: value to set
         :return: nothing
         """
-        try:
-            i = self._index.index(index)
-        except ValueError:
-            i = len(self._index)
-            self._add_row(index)
+        if self._sorted:
+            exists, i = sorted_exists(self._index, index)
+            if not exists:
+                self._insert_row(i, index)
+        else:
+            try:
+                i = self._index.index(index)
+            except ValueError:
+                i = len(self._index)
+                self._add_row(index)
         try:
             c = self._columns.index(column)
         except ValueError:
@@ -378,11 +451,16 @@ class DataFrame(object):
         :param values: dict with the keys as the column names and the values what to set that column to
         :return: nothing
         """
-        try:
-            i = self._index.index(index)
-        except ValueError:  # new row
-            i = len(self._index)
-            self._add_row(index)
+        if self._sorted:
+            exists, i = sorted_exists(self._index, index)
+            if not exists:
+                self._insert_row(i, index)
+        else:
+            try:
+                i = self._index.index(index)
+            except ValueError:  # new row
+                i = len(self._index)
+                self._add_row(index)
         if isinstance(values, dict):
             if not (set(values.keys()).issubset(self._columns)):
                 raise ValueError('keys of values are not all in existing columns')
@@ -425,14 +503,18 @@ class DataFrame(object):
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
                 try:  # all index in current index
+                    # TODO: sorted index for sorted
                     indexes = [self._index.index(x) for x in index]
                 except ValueError:  # new rows need to be added
+                    # TODO: insert missing rows for sorted
                     self._add_missing_rows(index)
+                    # TODO: sorted index for sorted
                     indexes = [self._index.index(x) for x in index]
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
         else:  # no index, only values
             if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
+                # TODO: Don't need the transform of list to blist here below vvvvv
                 values = blist([values for x in self._index]) if self._blist else [values for x in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
@@ -517,7 +599,7 @@ class DataFrame(object):
         Returns a dict where the keys are the column names and the values are lists of the values for that column.
 
         :param index: If True then include the index in the dict with the index_name as the key
-        :param ordered: If True then return an OrderedDict() to perserve the order of the columns in the DataFrame
+        :param ordered: If True then return an OrderedDict() to preserve the order of the columns in the DataFrame
         :return: dict or OrderedDict()
         """
         result = OrderedDict() if ordered else dict()
@@ -532,7 +614,7 @@ class DataFrame(object):
 
     def rename_columns(self, rename_dict):
         """
-        Reanmes the columns
+        Renames the columns
 
         :param rename_dict: dict where the keys are the current column names and the values are the new names
         :return: nothing
