@@ -2,43 +2,6 @@ import pytest
 import raccoon as rc
 
 
-def test_sorted_init():
-    # initialized with index defaults to False
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'], index=[12, 11, 13])
-    assert df.sorted is False
-
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'], index=[12, 11, 13], sorted=True)
-    assert df.sorted is True
-    assert df.index == [11, 12, 13]
-    assert df.data == [[1, 2, 3], [4, 5, 6]]
-
-    # initialized with no index defaults to True
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'])
-    assert df.sorted is True
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'], sorted=False)
-    assert df.sorted is False
-
-    # if sorted is true, but no index provided it will assume already in sorted order
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'], sorted=True)
-    assert df.sorted is True
-    assert df.index == [0, 1, 2]
-    assert df.data == [[2, 1, 3], [5, 4, 6]]
-
-    # start un-sorted, then set to sorted
-    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, columns=['a', 'b'], index=[12, 11, 13], sorted=False)
-    assert df.sorted is False
-    assert df.index == [12, 11, 13]
-    assert df.data == [[2, 1, 3], [5, 4, 6]]
-
-    df.sorted = True
-    assert df.index == [11, 12, 13]
-    assert df.data == [[1, 2, 3], [4, 5, 6]]
-
-    # mixed type index will bork on sorted=True
-    with pytest.raises(TypeError):
-        rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, index=[1, 'b', 3], sorted=True)
-
-
 def test_sorted_exists():
     a = [1, 2, 3, 6, 7, 8]
 

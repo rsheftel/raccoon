@@ -119,7 +119,7 @@ def test_set_row():
         actual.set(indexes=14, values=[1, 2, 3, 4, 5])
 
 
-def test_set_sorted():
+def test_set_row_sorted():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
                           sorted=False)
 
@@ -173,7 +173,29 @@ def test_set_column():
         actual.set(columns='e', values=[1, 2, 3, 4])
 
 
-def test_set_column_index_subset():
+def test_set_column_sorted():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
+                          sorted=True)
+
+    # change existing column
+    actual.set(columns='b', values=[44, 55, 66])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
+
+    # add a new column
+    actual.set(columns='e', values=[10, 11, 12])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
+    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+
+    # not enough values
+    with pytest.raises(ValueError):
+        actual.set(columns='e', values=[1, 2])
+
+    # too many values
+    with pytest.raises(ValueError):
+        actual.set(columns='e', values=[1, 2, 3, 4])
+
+
+def test_set_col_index_subset():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
                           sorted=False)
 
@@ -203,6 +225,70 @@ def test_set_column_index_subset():
     # by boolean list
     actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'],
                           sorted=False)
+    actual.set(columns='c', indexes=[False, True], values=[99])
+    assert actual.data == [[4, 5], [7, 8], [1, 99]]
+
+    # boolean list not size of existing index
+    with pytest.raises(ValueError):
+        actual.set(indexes=[True, False, True], columns='a', values=[1, 2])
+
+    # boolean list True entries not same size as values list
+    with pytest.raises(ValueError):
+        actual.set(indexes=[True, True, False], columns='b', values=[4, 5, 6])
+
+    with pytest.raises(ValueError):
+        actual.set(indexes=[True, True, False], columns='b', values=[4])
+
+
+def test_set_col_index_subset_sorted():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
+                          sorted=True)
+
+    # by index value
+    actual.set(columns='b', indexes=[12, 11, 10], values=[66, 55, 44])
+    assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9]]
+
+    actual.set(columns='a', indexes=[12, 10], values=[33, 11])
+    assert actual.data == [[11, 2, 33], [44, 55, 66], [7, 8, 9]]
+    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+
+    # new rows at end
+    actual.set(columns='c', indexes=[12, 14, 15], values=[120, 130, 140])
+    assert actual.data == [[11, 2, 33, None, None], [44, 55, 66, None, None], [7, 8, 120, 130, 140]]
+    assert actual.index == [10, 11, 12, 14, 15]
+
+    # new rows at beginning
+    actual.set(columns='a', indexes=[10, 4, 5], values=[-140, -120, -130])
+    assert actual.data == [[-120, -130, -140, 2, 33, None, None],
+                           [None, None, 44, 55, 66, None, None],
+                           [None, None, 7, 8, 120, 130, 140]]
+    assert actual.index == [4, 5, 10, 11, 12, 14, 15]
+
+    # new rows in middle
+    actual.set(columns='b', indexes=[13, 6], values=[3131, 6060])
+    assert actual.data == [[-120, -130, None, -140, 2, 33, None, None, None],
+                           [None, None, 6060, 44, 55, 66, 3131, None, None],
+                           [None, None, None, 7, 8, 120, None, 130, 140]]
+    assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15]
+    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+
+    # new row new columns
+    actual.set(columns='z', indexes=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
+    assert actual.data == [[-120, -130, None, -140, 2, 33, None, None, None, None],
+                           [None, None, 6060, 44, 55, 66, 3131, None, None, None],
+                           [None, None, None, 7, 8, 120, None, 130, 140, None],
+                           [None, None, None, None, None, None, None, 'zoo', 'boo', 'hoo']]
+    assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15, 16]
+    assert actual.columns == ['a', 'b', 'c', 'z']
+    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+
+    # values list shorter than indexes, raise error
+    with pytest.raises(ValueError):
+        actual.set(indexes=[10, 11], columns='a', values=[1])
+
+    # by boolean list
+    actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'],
+                          sorted=True)
     actual.set(columns='c', indexes=[False, True], values=[99])
     assert actual.data == [[4, 5], [7, 8], [1, 99]]
 

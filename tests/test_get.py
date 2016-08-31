@@ -11,6 +11,15 @@ def test_get_cell():
     assert actual.get(12, 'c') == 9
 
 
+def test_get_cell_sorted():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
+                          sorted=True)
+
+    assert actual.get(10, 'a') == 1
+    assert actual.get(11, 'a') == 2
+    assert actual.get(12, 'c') == 9
+
+
 def test_get_rows():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
                       columns=['a', 'b', 'c'], index_name='start_10', sorted=False)

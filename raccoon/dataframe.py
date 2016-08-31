@@ -354,6 +354,18 @@ class DataFrame(object):
             for c in range(len(self._columns)):
                 self._data[c].insert(i, None)
 
+    def _insert_missing_rows(self, indexes):
+        """
+        Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
+        that index, inserting into the index. This requires the DataFrame to be sorted=True
+
+        :param indexes: list of indexes
+        :return: nothing
+        """
+        new_indexes = [x for x in indexes if x not in self._index]
+        for x in new_indexes:
+            self._insert_row(bisect_left(self._index, x), x)
+
     def _add_row(self, index):
         """
         Add a new row to the DataFrame
@@ -368,7 +380,7 @@ class DataFrame(object):
     def _add_missing_rows(self, indexes):
         """
         Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
-        that index
+        that index by appending to the DataFrame. This does not maintain sorted order for the index.
 
         :param indexes: list of indexes
         :return: nothing
@@ -502,20 +514,25 @@ class DataFrame(object):
                     values = [values for x in index]
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
-                try:  # all index in current index
-                    # TODO: sorted index for sorted
-                    indexes = [self._index.index(x) for x in index]
-                except ValueError:  # new rows need to be added
-                    # TODO: insert missing rows for sorted
-                    self._add_missing_rows(index)
-                    # TODO: sorted index for sorted
-                    indexes = [self._index.index(x) for x in index]
+                # insert or append indexes as needed
+                if self._sorted:
+                    exists_tuples = list(zip(*[sorted_exists(self._index, x) for x in index]))
+                    exists = exists_tuples[0]
+                    indexes = exists_tuples[1]
+                    if not all(exists):
+                        self._insert_missing_rows(index)
+                        indexes = [sorted_index(self._index, x) for x in index]
+                else:
+                    try:  # all index in current index
+                        indexes = [self._index.index(x) for x in index]
+                    except ValueError:  # new rows need to be added
+                        self._add_missing_rows(index)
+                        indexes = [self._index.index(x) for x in index]
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
         else:  # no index, only values
             if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
-                # TODO: Don't need the transform of list to blist here below vvvvv
-                values = blist([values for x in self._index]) if self._blist else [values for x in self._index]
+                values = [values for x in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
             else:
