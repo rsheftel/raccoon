@@ -1,23 +1,44 @@
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
+import pytest
 
 
 def test_get_cell():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 13], columns=['a', 'b', 'c'],
                           sorted=False)
 
     assert actual.get(10, 'a') == 1
     assert actual.get(11, 'a') == 2
-    assert actual.get(12, 'c') == 9
+    assert actual.get(13, 'c') == 9
+
+    # test items not in index raise errors
+    with pytest.raises(ValueError):
+        actual.get(1, 'a')
+
+    with pytest.raises(ValueError):
+        actual.get(100, 'a')
+
+    with pytest.raises(ValueError):
+        actual.get(12, 'a')
 
 
 def test_get_cell_sorted():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 13], columns=['a', 'b', 'c'],
                           sorted=True)
 
     assert actual.get(10, 'a') == 1
     assert actual.get(11, 'a') == 2
-    assert actual.get(12, 'c') == 9
+    assert actual.get(13, 'c') == 9
+
+    # test items not in index raise errors
+    with pytest.raises(ValueError):
+        actual.get(1, 'a')
+
+    with pytest.raises(ValueError):
+        actual.get(100, 'a')
+
+    with pytest.raises(ValueError):
+        actual.get(12, 'a')
 
 
 def test_get_rows():
@@ -41,6 +62,44 @@ def test_get_rows():
     # get entire column
     assert df.get(columns='b', as_list=True) == [4, 5, 6, 7]
 
+    # items not in index raise errors
+    with pytest.raises(ValueError):
+        df.get([11, 88], 'c', as_list=True)
+
+    # not enough items in boolean list
+    with pytest.raises(ValueError):
+        df.get([True, True], 'c')
+
+
+def test_get_rows_sorted():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'], index_name='start_10', sorted=True)
+
+    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12], index_name='start_10', sorted=False)
+    actual = df.get([11, 12], 'c')
+    assert_frame_equal(actual, expected)
+
+    # get as a list
+    assert df.get([11, 12], 'c', as_list=True) == [8, 9]
+
+    # test with boolean list
+    actual = df.get([False, True, True, False], 'c')
+    assert_frame_equal(actual, expected)
+
+    # get as a list
+    assert df.get([False, True, True, False], 'c', as_list=True) == [8, 9]
+
+    # get entire column
+    assert df.get(columns='b', as_list=True) == [4, 5, 6, 7]
+
+    # items not in index raise errors
+    with pytest.raises(ValueError):
+        df.get([11, 88], 'c', as_list=True)
+
+    # not enough items in boolean list
+    with pytest.raises(ValueError):
+        df.get([True, True], 'c')
+
 
 def test_get_columns():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
@@ -56,7 +115,7 @@ def test_get_columns():
     assert_frame_equal(actual, expected)
 
 
-def test_get_row_and_col():
+def test_get_matrix():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, index=['x', 'y', 'z'],
                       columns=['a', 'b', 'c', 'd'], index_name='letters', sorted=False)
 

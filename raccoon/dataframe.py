@@ -279,18 +279,21 @@ class DataFrame(object):
         :param as_list: if True return a list, if False return DataFrame
         :return: DataFrame is as_list if False, a list if as_list is True
         """
-        if len(indexes) != (indexes.count(True) + indexes.count(False)):  # index list
-            bool_indexes = [False] * len(self._index)
-            for i in indexes:
-                bool_indexes[self._index.index(i)] = True
-            indexes = bool_indexes
         c = self._columns.index(column)
-        if all(indexes):  # the entire column
-            data = self._data[c]
-            index = self._index
-        else:
-            data = list(compress(self._data[c], indexes))
-            index = list(compress(self._index, indexes))
+        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+            if len(indexes) != len(self._index):
+                raise ValueError('boolean index list must be same size of existing index')
+            if all(indexes):  # the entire column
+                data = self._data[c]
+                index = self._index
+            else:
+                data = list(compress(self._data[c], indexes))
+                index = list(compress(self._index, indexes))
+        else:  # index values list
+            locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+                else [self._index.index(x) for x in indexes]
+            data = [self._data[c][i] for i in locations]
+            index = [self._index[i] for i in locations]
         return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name)
 
     def get_columns(self, index, columns):
@@ -319,6 +322,7 @@ class DataFrame(object):
         :return: DataFrame
         """
         if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+            # TODO: Add check that the index len and boolean list len are the same
             i = indexes
             indexes = list(compress(self._index, indexes))
         else:  # index list
@@ -331,7 +335,6 @@ class DataFrame(object):
             columns = list(compress(self._columns, columns))
         else:  # name list
             c = [x in columns for x in self._columns]
-
         data_dict = dict()
         data = list(compress(self._data, c))
         for x, column in enumerate(columns):
@@ -794,12 +797,12 @@ class DataFrame(object):
         :param value: value to compare
         :return: list of booleans
         """
-        indexes = [] if indexes is None else indexes
+        indexes = [True] * len(self._index) if indexes is None else indexes
         compare_list = self.get_rows(indexes, column, as_list=True)
         return [x == value for x in compare_list]
 
     def _get_lists(self, left_column, right_column, indexes):
-        indexes = [] if indexes is None else indexes
+        indexes = [True] * len(self._index) if indexes is None else indexes
         left_list = self.get_rows(indexes, left_column, as_list=True)
         right_list = self.get_rows(indexes, right_column, as_list=True)
         return left_list, right_list
