@@ -12,7 +12,9 @@ http://raccoon.readthedocs.io/en/latest/
 Overview
 --------
 Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case
-where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code.
+where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code. Additionally
+Raccoon DataFrames can be parametrized to be sorted so that additions to the DataFrame keep the index in sorted order
+to speed inserts and retrievals.
 
 Inspiration
 -----------
@@ -38,15 +40,3 @@ This package serves the needs it was originally created for. Any future addition
 needs, but it is completely open source to I encourage anyone to add on and expand.
 
 My hope is that one day Pandas solves the speed problem with growing DataFrames and this package becomes obsolete.
-
-Updates
-=======
-1.0.1
------
-- Added isin() method
-
-1.0.2
------
-- Fixed several small bugs
-- Added iterrows() method
-- Added itertuples() method

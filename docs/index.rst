@@ -62,6 +62,14 @@ Updates
 - Added iterrows() method
 - Added itertuples() method
 
+1.1.0
+~~~~~
+- Multiple bug fixes
+- Speed improvements
+- Removed using slices to set values which did not work
+- Added sorted functionality
+- Added iterators: iterrows and itertuples
+
 Contents
 --------
 .. toctree::
