@@ -96,6 +96,7 @@ def test_print():
     assert actual == expected
 
     # print() method will pass along any argument for the tabulate.tabulate function
+    df.print()
 
 
 def test_input_data_mutability():
@@ -174,6 +175,7 @@ def test_len():
 
 def test_equality():
     df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]})
+    assert df.sorted is True
 
     assert df.equality('z', value=1) == [True, False, True, False, True, True]
     assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
@@ -182,6 +184,17 @@ def test_equality():
     # change all 1 to 3
     df.set(indexes=df.equality('z', value=1), columns='z', values=3)
     assert df.data == [[3, 2, 3, 2, 3, 3]]
+
+    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]}, sorted=False)
+    assert df.sorted is False
+
+    assert df.equality('z', value=1) == [True, False, True, False, True, True]
+    assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
+    assert df.equality('z', [False, False, False, True, True, True], 1) == [False, True, True]
+
+    # not enough booleans to match index len
+    with pytest.raises(ValueError):
+        df.equality('z', [True, True], 2)
 
 
 def test_math():
@@ -205,6 +218,9 @@ def test_math():
 
     res = df.divide('b', 'c', [0, 2])
     assert res == [5/6, 7/10]
+
+    with pytest.raises(ValueError):
+        df.multiply('a', 'c', [True, True])
 
 
 def test_select_index():

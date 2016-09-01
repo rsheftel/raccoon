@@ -90,8 +90,7 @@ class DataFrame(object):
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = blist([blist(x) if isinstance(x, (list, blist)) else blist([x]) for x in data.values()]) if \
-                self._blist else \
-                [x if isinstance(x, (list, blist)) else [x] for x in data.values()]
+                self._blist else [x if isinstance(x, (list, blist)) else [x] for x in data.values()]
             # setup columns from directory keys
             self.columns = blist(data.keys())
             # pad the data
@@ -220,8 +219,8 @@ class DataFrame(object):
         """
         if isinstance(compare, tuple):
             # this crazy list comprehension will match all the tuples in the list with None being an * wildcard
-            booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)]) for x, v in
-                        enumerate(self._index)]
+            booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)])
+                        for x, v in enumerate(self._index)]
         else:
             booleans = [False] * len(self._index)
             booleans[self._index.index(compare)] = True
@@ -294,7 +293,8 @@ class DataFrame(object):
                 else [self._index.index(x) for x in indexes]
             data = [self._data[c][i] for i in locations]
             index = [self._index[i] for i in locations]
-        return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name)
+        return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name,
+                                              sorted=self._sorted)
 
     def get_columns(self, index, columns):
         """
@@ -306,12 +306,14 @@ class DataFrame(object):
         """
         data = dict()
         if len(columns) == (columns.count(True) + columns.count(False)):
+            if len(columns) != len(self._columns):
+                raise ValueError('boolean column list must be same size of existing columns')
             columns = list(compress(self._columns, columns))
-        i = self._index.index(index)
+        i = sorted_index(self._index, index) if self._sorted else self._index.index(index)
         for column in columns:
             c = self._columns.index(column)
             data[column] = [self._data[c][i]]
-        return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name)
+        return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name, sorted=self._sorted)
 
     def get_matrix(self, indexes, columns):
         """
@@ -322,15 +324,19 @@ class DataFrame(object):
         :return: DataFrame
         """
         if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
-            # TODO: Add check that the index len and boolean list len are the same
-            i = indexes
+            is_bool_indexes = True
+            if len(indexes) != len(self._index):
+                raise ValueError('boolean index list must be same size of existing index')
+            bool_indexes = indexes
             indexes = list(compress(self._index, indexes))
-        else:  # index list
-            i = [False] * len(self._index)
-            for x in indexes:
-                i[self._index.index(x)] = True
+        else:
+            is_bool_indexes = False
+            locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+                else [self._index.index(x) for x in indexes]
 
         if len(columns) == (columns.count(True) + columns.count(False)):  # boolean list
+            if len(columns) != len(self._columns):
+                raise ValueError('boolean column list must be same size of existing columns')
             c = columns
             columns = list(compress(self._columns, columns))
         else:  # name list
@@ -338,9 +344,11 @@ class DataFrame(object):
         data_dict = dict()
         data = list(compress(self._data, c))
         for x, column in enumerate(columns):
-            data_dict[column] = list(compress(data[x], i))
+            data_dict[column] = list(compress(data[x], bool_indexes)) if is_bool_indexes \
+                else [data[x][i] for i in locations]
 
-        return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name)
+        return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
+                         sorted=self._sorted)
 
     def _insert_row(self, i, index):
         """
@@ -599,8 +607,6 @@ class DataFrame(object):
         if isinstance(index, tuple):  # index and column
             indexes = self._slice_index(index[0]) if isinstance(index[0], slice) else index[0]
             return self.set(indexes=indexes, columns=index[1], values=value)
-        if isinstance(index, slice):  # just a slice of index
-            return self.set(indexes=self._slice_index(index), columns=None, values=value)
         else:  # just the columns
             return self.set(indexes=None, columns=index, values=value)
 

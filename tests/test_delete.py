@@ -10,7 +10,7 @@ def test_delete_row():
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
 
     df.delete_rows('b')
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a']))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
 
     # insert back in data
     df[1, 'a'] = 9
@@ -32,7 +32,7 @@ def test_delete_row():
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
 
     df.delete_rows([True])
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a']))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
 
 
 def test_delete_columns():

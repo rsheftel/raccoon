@@ -52,3 +52,14 @@ def test_validate_columns():
     with pytest.raises(ValueError):
         df.validate_integrity()
 
+
+def test_validate_data():
+    df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9])
+    df.validate_integrity()
+
+    df._data[1] = ['a', 'c']
+    assert df.data == [[2, 1, 3], ['a', 'c']]
+
+    with pytest.raises(ValueError):
+        df.validate_integrity()
+

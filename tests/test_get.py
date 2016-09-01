@@ -75,7 +75,7 @@ def test_get_rows_sorted():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
                       columns=['a', 'b', 'c'], index_name='start_10', sorted=True)
 
-    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12], index_name='start_10', sorted=False)
+    expected = rc.DataFrame({'c': [8, 9]}, index=[11, 12], index_name='start_10', sorted=True)
     actual = df.get([11, 12], 'c')
     assert_frame_equal(actual, expected)
 
@@ -114,6 +114,36 @@ def test_get_columns():
     actual = df.get(99, [True, False, True])
     assert_frame_equal(actual, expected)
 
+    # test boolean list not same length as columns
+    with pytest.raises(ValueError):
+        df.get(99, [True, False])
+
+    # test index out of bounds
+    with pytest.raises(ValueError):
+        df.get(88, ['a', 'c'])
+
+
+def test_get_columns_sorted():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'], index_name='start_10', sorted=True)
+
+    expected = rc.DataFrame({'a': [4], 'c': [None]}, index=[99], columns=['a', 'c'], index_name='start_10',
+                            sorted=True)
+    actual = df.get(99, ['a', 'c'])
+    assert_frame_equal(actual, expected)
+
+    # test with boolean list
+    actual = df.get(99, [True, False, True])
+    assert_frame_equal(actual, expected)
+
+    # test boolean list not same length as columns
+    with pytest.raises(ValueError):
+        df.get(99, [True, False])
+
+    # test index out of bounds
+    with pytest.raises(ValueError):
+        df.get(88, ['a', 'c'])
+
 
 def test_get_matrix():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, index=['x', 'y', 'z'],
@@ -131,6 +161,56 @@ def test_get_matrix():
     # get everything
     everything = df.get()
     assert_frame_equal(everything, df)
+
+    # boolean list does not match index length
+    with pytest.raises(ValueError):
+        df.get([True, False], [False, True, False, True])
+
+    # boolean list does not match columns length
+    with pytest.raises(ValueError):
+        df.get([True, False, True], [False, True])
+
+    # missing index
+    with pytest.raises(ValueError):
+        df.get_matrix(['BAD', 'x'], ['a', 'b'])
+
+    # missing column
+    with pytest.raises(IndexError):
+        df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
+
+
+def test_get_matrix_sorted():
+    df = rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6], 'c': [8, 7, 9], 'd': [11, 10, 12]}, index=['y', 'x', 'z'],
+                      columns=['a', 'b', 'c', 'd'], index_name='letters', sorted=True)
+
+    expected = rc.DataFrame({'b': [4, 6], 'd': [10, 12]}, index=['x', 'z'], columns=['b', 'd'], index_name='letters',
+                            sorted=True)
+    actual = df.get(['x', 'z'], ['b', 'd'])
+    assert_frame_equal(actual, expected)
+
+    # test with booleans
+    actual = df.get([True, False, True], [False, True, False, True])
+    assert_frame_equal(actual, expected)
+
+    # get everything
+    everything = df.get()
+    assert_frame_equal(everything, df)
+
+    # boolean list does not match index length
+    with pytest.raises(ValueError):
+        df.get([True, False], [False, True, False, True])
+
+    # boolean list does not match columns length
+    with pytest.raises(ValueError):
+        df.get([True, False, True], [False, True])
+
+    # missing index
+    with pytest.raises(ValueError):
+        df.get_matrix(['BAD', 'x'], ['a', 'b'])
+
+    # missing column
+    with pytest.raises(IndexError):
+        df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
 
 
 def test_get_square_brackets():
@@ -175,6 +255,16 @@ def test_get_slicer():
 
     # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sorted=False))
+
+    # test indexes not in the range
+    with pytest.raises(IndexError):
+        x = df[4:5, 'c']
+
+    with pytest.raises(IndexError):
+        x = df[0:8, 'c']
+
+    with pytest.raises(IndexError):
+        x = df[2:1, 'c']
 
 
 def test_head():

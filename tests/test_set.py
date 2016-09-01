@@ -168,6 +168,10 @@ def test_set_column():
     with pytest.raises(ValueError):
         actual.set(columns='e', values=[1, 2])
 
+    # number of values must equal number of True indexes
+    with pytest.raises(ValueError):
+        actual.set(indexes=[True, False, True], columns='e', values=[1, 2, 3])
+
     # too many values
     with pytest.raises(ValueError):
         actual.set(columns='e', values=[1, 2, 3, 4])
@@ -335,6 +339,10 @@ def test_set_from_blank_df():
     assert df.columns == ['a']
     assert df.index == [1, 2, 3]
     assert df.data == [[9, 10, 11]]
+
+    # test fails
+    with pytest.raises(ValueError):
+        df.set(values=9)
 
 
 def test_set_square_brackets():
