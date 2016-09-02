@@ -114,6 +114,9 @@ def test_get_columns():
     actual = df.get(99, [True, False, True])
     assert_frame_equal(actual, expected)
 
+    # as_dict
+    assert df.get_columns(11, ['b', 'c'], as_dict=True) == {'start_10': 11, 'b': 5, 'c': 8}
+
     # test boolean list not same length as columns
     with pytest.raises(ValueError):
         df.get(99, [True, False])
@@ -255,6 +258,33 @@ def test_get_slicer():
 
     # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sorted=False))
+
+    # test indexes not in the range
+    with pytest.raises(IndexError):
+        x = df[4:5, 'c']
+
+    with pytest.raises(IndexError):
+        x = df[0:8, 'c']
+
+    with pytest.raises(IndexError):
+        x = df[2:1, 'c']
+
+
+def test_get_slicer_sorted():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'],
+                      sorted=True)
+
+    # df[1:2] -- get slice from index 1 to 2, all columns
+    assert_frame_equal(df[1:2],
+                       rc.DataFrame({'a': [2, 3], 'b': [5, 6], 'c': [8, 9], 'd': [11, 12]},
+                                    columns=['a', 'b', 'c', 'd'], index=[1, 2], sorted=True))
+
+    # df[0:1, ['c', 'd']] -- get slice from index 0 to 1, columns ['c', 'd']
+    assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]},
+                                                         columns=['c', 'd'], index=[0, 1], sorted=True))
+
+    # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
+    assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sorted=True))
 
     # test indexes not in the range
     with pytest.raises(IndexError):

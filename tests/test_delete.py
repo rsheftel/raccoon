@@ -35,6 +35,40 @@ def test_delete_row():
     assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
 
 
+def test_delete_row_sorted():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'],
+                      sorted=True, use_blist=False)
+
+    df.delete_rows(['a', 'c'])
+    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b'],
+                                        sorted=True, use_blist=False))
+
+    df.delete_rows('b')
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=True, use_blist=False))
+
+    # insert back in data
+    df[1, 'a'] = 9
+    assert df.data == [[None], [9]]
+
+    df[2, 'b'] = 8
+    assert df.data == [[None, 8], [9, None]]
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    # cannot delete values not in index
+    with pytest.raises(ValueError):
+        df.delete_rows(['bad'])
+
+    # length of boolean must be len of index
+    with pytest.raises(ValueError):
+        df.delete_rows([True, False])
+
+    df.delete_rows([True, False, True])
+    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
+
+    df.delete_rows([True])
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
+
+
 def test_delete_columns():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, columns=['a', 'b', 'c'])
 

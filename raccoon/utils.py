@@ -16,3 +16,4 @@ def assert_frame_equal(left, right):
     assert left.columns == right.columns
     assert left.index_name == right.index_name
     assert left.sorted == right.sorted
+    assert left.blist == right.blist

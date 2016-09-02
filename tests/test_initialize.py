@@ -140,6 +140,8 @@ def test_jagged_data():
     assert actual.columns == ['a', 'b', 'c', 'd']
     assert actual.index == [0, 1, 2]
     assert actual.sorted is True
+    assert isinstance(actual.index, blist)
+    assert isinstance(actual.columns, blist)
 
 
 def test_bad_initialization():

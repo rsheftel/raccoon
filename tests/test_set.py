@@ -358,6 +358,22 @@ def test_set_square_brackets():
     # df[1:2, 'b'] - - set index slice 1:2, column = b
     df[1:3, 'b'] = 5
     assert df.data == [[2, None, None], [5, 5, 5]]
+    assert df.sorted is False
+
+    # with sorted = True
+    df = rc.DataFrame(sorted=True)
+
+    df[1, 'a'] = 2
+    assert df.data == [[2]]
+
+    # df[[0, 3], 'b'] - - set index = [0, 3], column = b
+    df[[0, 3], 'b'] = 4
+    assert df.data == [[None, 2, None], [4, None, 4]]
+
+    # df[1:2, 'b'] - - set index slice 1:2, column = b
+    df[1:3, 'b'] = 5
+    assert df.data == [[None, 2, None], [4, 5, 5]]
+    assert df.sorted is True
 
 
 def test_bar():

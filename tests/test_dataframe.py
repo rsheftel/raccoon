@@ -5,6 +5,42 @@ from copy import deepcopy
 from raccoon.utils import assert_frame_equal
 
 
+def test_blist_or_list():
+    def check_list():
+        assert isinstance(df.index, list)
+        assert isinstance(df.columns, list)
+        assert isinstance(df.data, list)
+        assert all([isinstance(df.data[x], list) for x in range(len(df.columns))])
+
+    df = rc.DataFrame(use_blist=False)
+    assert isinstance(df, rc.DataFrame)
+    assert df.data == []
+    assert df.columns == []
+    assert df.index == []
+    assert df.sorted is True
+    check_list()
+
+    # add a new row and col
+    df.set_cell(1, 'a', 1)
+    check_list()
+
+    # add a new row
+    df.set_cell(2, 'a', 2)
+    check_list()
+
+    # add a new col
+    df.set_cell(1, 'b', 3)
+    check_list()
+
+    # add a complete new row
+    df.set_row(3, {'a': 4, 'b': 5})
+    check_list()
+
+    # add a complete new col
+    df.set_column([2, 3], 'c', [6, 7])
+    check_list()
+
+
 def test_to_dict():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
 
@@ -224,8 +260,17 @@ def test_math():
 
 
 def test_select_index():
-    # simple index
+    # simple index, not sorted
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
+
+    actual = df.select_index('c', 'value')
+    assert actual == ['c']
+
+    actual = df.select_index('d', 'boolean')
+    assert actual == [False, False, False, True, False, False]
+
+    # simple index, sorted
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], sorted=True)
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']

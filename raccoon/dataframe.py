@@ -76,30 +76,30 @@ class DataFrame(object):
                 # expand to the number of columns
                 self._data = blist([blist() for x in range(len(columns))]) if self._blist \
                     else [[] for x in range(len(columns))]
-                self.columns = blist(columns)
+                self.columns = columns
             else:
-                self.columns = blist()
+                self.columns = list()
             if index:
                 if not columns:
                     raise ValueError('cannot initialize with index but no columns')
                 # pad out to the number of rows
                 self._pad_data(max_len=len(index))
-                self.index = blist(index)
+                self.index = index
             else:
-                self.index = blist()
+                self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = blist([blist(x) if isinstance(x, (list, blist)) else blist([x]) for x in data.values()]) if \
                 self._blist else [x if isinstance(x, (list, blist)) else [x] for x in data.values()]
             # setup columns from directory keys
-            self.columns = blist(data.keys())
+            self.columns = data.keys()
             # pad the data
             self._pad_data()
             # setup index
             if index:
-                self.index = blist(index)
+                self.index = index
             else:
-                self.index = blist(range(len(self._data[0])))
+                self.index = range(len(self._data[0]))
 
         # sort by columns if provided
         if columns:
@@ -149,7 +149,8 @@ class DataFrame(object):
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
         self._data = blist([self._data[x] for x in new_sort]) if self._blist else [self._data[x] for x in new_sort]
-        self._columns = blist([self._columns[x] for x in new_sort])
+        self._columns = blist([self._columns[x] for x in new_sort]) if self._blist \
+            else [self._columns[x] for x in new_sort]
 
     def _pad_data(self, max_len=None):
         """
@@ -177,7 +178,7 @@ class DataFrame(object):
     @columns.setter
     def columns(self, columns_list):
         self._validate_columns(columns_list)
-        self._columns = blist(columns_list)
+        self._columns = blist(columns_list) if self._blist else list(columns_list)
 
     @property
     def index(self):
@@ -186,7 +187,7 @@ class DataFrame(object):
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
-        self._index = blist(index_list)
+        self._index = blist(index_list) if self._blist else list(index_list)
 
     @property
     def index_name(self):
@@ -195,6 +196,10 @@ class DataFrame(object):
     @index_name.setter
     def index_name(self, name):
         self._index_name = name
+
+    @property
+    def blist(self):
+        return self._blist
 
     @property
     def sorted(self):
@@ -223,7 +228,10 @@ class DataFrame(object):
                         for x, v in enumerate(self._index)]
         else:
             booleans = [False] * len(self._index)
-            booleans[self._index.index(compare)] = True
+            if self._blist:
+                booleans[sorted_index(self._index, compare)] = True
+            else:
+                booleans[self._index.index(compare)] = True
         if result == 'boolean':
             return booleans
         elif result == 'value':
@@ -296,13 +304,15 @@ class DataFrame(object):
         return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name,
                                               sorted=self._sorted)
 
-    def get_columns(self, index, columns):
+    def get_columns(self, index, columns, as_dict=False):
         """
-        For a single index and list of column names return a DataFrame of the values in that index
+        For a single index and list of column names return a DataFrame of the values in that index as either a dict
+        or a DataFrame
 
         :param index: single index value
         :param columns: list of column names
-        :return: DataFrame
+        :param as_dict: if True then return the result as a dictionary
+        :return: DataFrame or dictionary
         """
         data = dict()
         if len(columns) == (columns.count(True) + columns.count(False)):
@@ -313,7 +323,12 @@ class DataFrame(object):
         for column in columns:
             c = self._columns.index(column)
             data[column] = [self._data[c][i]]
-        return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name, sorted=self._sorted)
+        if as_dict:
+            data = {k:data[k][0] for k in data}  # this makes the dict items single values from lists
+            data[self._index_name] = index
+            return data
+        else:
+            return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name, sorted=self._sorted)
 
     def get_matrix(self, indexes, columns):
         """
@@ -551,11 +566,11 @@ class DataFrame(object):
 
     def _slice_index(self, slicer):
         try:
-            start_index = self._index.index(slicer.start)
+            start_index = sorted_index(self._index, slicer.start) if self._sorted else self._index.index(slicer.start)
         except ValueError:
             raise IndexError('start of slice not in the index')
         try:
-            end_index = self._index.index(slicer.stop)
+            end_index = sorted_index(self._index, slicer.stop) if self._sorted else self._index.index(slicer.stop)
         except ValueError:
             raise IndexError('end of slice not in the index')
         if end_index < start_index:
@@ -685,7 +700,8 @@ class DataFrame(object):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
             indexes = [i for i, x in enumerate(indexes) if x]
         else:
-            indexes = [self._index.index(x) for x in indexes]
+            indexes = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+                else [self._index.index(x) for x in indexes]
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
         for c, column in enumerate(self._columns):
             for i in indexes:
@@ -709,7 +725,7 @@ class DataFrame(object):
             del self._data[c]
             del self._columns[c]
         if not len(self._data):  # if all the columns have been deleted, remove index
-            self._index = blist()
+            self.index = list()
 
     @staticmethod
     def _sorted_list_indexes(list_to_sort):
@@ -723,7 +739,7 @@ class DataFrame(object):
         """
         sort = self._sorted_list_indexes(self._index)
         # sort index
-        self._index = blist([self._index[x] for x in sort])
+        self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
             self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
@@ -739,7 +755,7 @@ class DataFrame(object):
             raise TypeError('Can only sort by a single column  ')
         sort = self._sorted_list_indexes(self._data[self._columns.index(column)])
         # sort index
-        self._index = blist([self._index[x] for x in sort])
+        self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
             self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
