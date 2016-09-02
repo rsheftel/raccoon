@@ -32,7 +32,7 @@ The raccoon DataFrame is not intended for math operations like pandas and only l
 Underlying Data Structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Raccoon uses the fast blist http://stutzbachenterprises.com/blist/ list replacement for the underlying data structure.
-There is an option on object constructure to use standard built in lists.
+There is an option on object construction to use standard built in lists.
 
 Why Raccoon?
 ~~~~~~~~~~~~
@@ -45,10 +45,14 @@ needs, but it is completely open source to I encourage anyone to add on and expa
 
 My hope is that one day Pandas solves the speed problem with growing DataFrames and this package becomes obsolete.
 
-Make Docs
-~~~~~~~~~
+Python Version
+~~~~~~~~~~~~~~
+Raccoon required Python 3.3 or greater to run because it utilizes "yield from" which was introduced in 3.3
+
+Helper scripts
+~~~~~~~~~~~~~~
 There is helper function to generate these docs from the source code. On windows cd into the docs directory and
-execute make_docs.bat from the command line.
+execute make_docs.bat from the command line. To run the test coverage report run the coverage.sh script.
 
 Updates
 -------

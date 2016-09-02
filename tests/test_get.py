@@ -216,6 +216,14 @@ def test_get_matrix_sorted():
         df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
 
 
+def test_get_locations():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+
+    assert_frame_equal(df.get_locations([0, 2]), rc.DataFrame({'a': [1, 3], 'b': [5, 7]}, index=[2, 6]))
+    assert_frame_equal(df.get_locations([1, 3], 'a'), rc.DataFrame({'a': [2, 4]}, index=[4, 8]))
+    assert df.get_locations([0, 2], 'b', as_list=True) == [5, 7]
+
+
 def test_get_square_brackets():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'],
                       sorted=False)

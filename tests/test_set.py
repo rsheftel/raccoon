@@ -1,6 +1,7 @@
 import pytest
 import raccoon as rc
 from blist import blist
+from raccoon.utils import assert_frame_equal
 
 
 def test_set_cell():
@@ -323,6 +324,16 @@ def test_set_single_value():
     # can be anything that isn't a list
     df.set(columns='e', values={1, 2, 3})
     assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88], [{1, 2, 3}, {1, 2, 3}, {1, 2, 3}]]
+
+
+def test_get_locations():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+
+    df.set_locations([0, 2], 'a', [-1, -3])
+    assert_frame_equal(df, rc.DataFrame({'a': [-1, 2, -3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8]))
+
+    df.set_locations([1, 3], 'a', -10)
+    assert_frame_equal(df, rc.DataFrame({'a': [-1, -10, -3, -10], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8]))
 
 
 def test_set_from_blank_df():

@@ -365,6 +365,19 @@ class DataFrame(object):
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
                          sorted=self._sorted)
 
+    def get_locations(self, locations, columns=None, **kwargs):
+        """
+        For a list of locations and list of columns return a DataFrame of the values.
+
+        :param locations: list of index locations
+        :param columns: list of column names
+        :param kwargs: will pass along these parameters to the get() method
+        :return: DataFrame
+        """
+
+        indexes = [self._index[x] for x in locations]
+        return self.get(indexes, columns, **kwargs)
+
     def _insert_row(self, i, index):
         """
         Insert a new row in the DataFrame.
@@ -563,6 +576,19 @@ class DataFrame(object):
                 raise ValueError('values list must be at same length as current index length.')
             else:
                 self._data[c] = blist(values) if self._blist else values
+
+    def set_locations(self, locations, column, values):
+        """
+        For a list of locations and a column set the values.
+
+        :param locations: list of index locations
+        :param column: column name
+        :param values: ilst of values or a single value
+        :return: nothin
+        """
+
+        indexes = [self._index[x] for x in locations]
+        self.set(indexes, column, values)
 
     def _slice_index(self, slicer):
         try:
