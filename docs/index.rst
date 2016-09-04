@@ -74,6 +74,14 @@ Updates
 - Added sorted functionality
 - Added iterators: iterrows and itertuples
 
+1.1.1
+~~~~~
+- Multiple bug fixes
+- The index and columns data type follow the use_blist parameter
+- Added set_locations() and get_locations() methods
+- Added as_dict() parameter to get_columns()
+
+
 Contents
 --------
 .. toctree::
