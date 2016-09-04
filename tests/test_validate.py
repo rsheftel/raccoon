@@ -63,3 +63,6 @@ def test_validate_data():
     with pytest.raises(ValueError):
         df.validate_integrity()
 
+    # validate empty
+    df = rc.DataFrame()
+    df.validate_integrity()

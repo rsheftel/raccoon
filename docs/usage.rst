@@ -5,8 +5,6 @@ Example Usage for Raccoon
 .. code:: python
 
     # import libraries
-    import sys
-    sys.path.append("..")
     import raccoon as rc
 
 Initialize
@@ -23,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 52176560
+    object id: 84084216
     columns:
     blist([])
     data:
@@ -44,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 52363152
+    object id: 84423736
     columns:
     blist(['a', 'b', 'c'])
     data:
@@ -65,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 52433296
+    object id: 84424688
     columns:
     blist(['a', 'b'])
     data:
@@ -445,6 +443,69 @@ Get Values
          11    2    2
     
 
+.. code:: python
+
+    # get a column, return as a list
+    df.get(columns='a', as_list=True)
+
+
+
+
+.. parsed-literal::
+
+    blist([100, 2, 33, 33])
+
+
+
+.. code:: python
+
+    # get a row and return as a dictionary
+    df.get_columns(index=13, columns=['a', 'b'], as_dict=True)
+
+
+
+
+.. parsed-literal::
+
+    {'a': 33, 'b': 55, 'index': 13}
+
+
+
+Set and Get by Location
+-----------------------
+
+Locations are the index of the index, in other words the index locations
+from 0...len(index)
+
+.. code:: python
+
+    df.get_locations(locations=[0, 2]).print()
+
+
+.. parsed-literal::
+
+      index    a    b    c
+    -------  ---  ---  ---
+         10  100   88    1
+         12   33   99    3
+    
+
+.. code:: python
+
+    df.set_locations(locations=[0, 2], column='a', values=-9)
+    df.print()
+
+
+.. parsed-literal::
+
+      index    a    b    c
+    -------  ---  ---  ---
+         10   -9   88    1
+         11    2   55    2
+         12   -9   99    3
+         13   33   55    9
+    
+
 Head and Tail
 -------------
 
@@ -457,7 +518,7 @@ Head and Tail
 
       index    a    b    c
     -------  ---  ---  ---
-         10  100   88    1
+         10   -9   88    1
          11    2   55    2
     
 
@@ -470,7 +531,7 @@ Head and Tail
 
       index    a    b    c
     -------  ---  ---  ---
-         12   33   99    3
+         12   -9   99    3
          13   33   55    9
     
 
@@ -488,7 +549,7 @@ Delete colunmns and rows
       index    a    b    c
     -------  ---  ---  ---
          11    2   55    2
-         12   33   99    3
+         12   -9   99    3
     
 
 .. code:: python
@@ -502,7 +563,7 @@ Delete colunmns and rows
       index    a    c
     -------  ---  ---
          11    2    2
-         12   33    3
+         12   -9    3
     
 
 Convert
@@ -518,7 +579,7 @@ Convert
 
 .. parsed-literal::
 
-    {'a': blist([2, 33]), 'c': blist([2, 3]), 'index': blist([11, 12])}
+    {'a': blist([2, -9]), 'c': blist([2, 3]), 'index': blist([11, 12])}
 
 
 
@@ -532,7 +593,7 @@ Convert
 
 .. parsed-literal::
 
-    {'a': blist([2, 33]), 'c': blist([2, 3])}
+    {'a': blist([2, -9]), 'c': blist([2, 3])}
 
 
 
@@ -547,7 +608,7 @@ Convert
 .. parsed-literal::
 
     OrderedDict([('index', blist([11, 12])),
-                 ('a', blist([2, 33])),
+                 ('a', blist([2, -9])),
                  ('c', blist([2, 3]))])
 
 
@@ -644,10 +705,10 @@ Append
 
 .. parsed-literal::
 
-      index    c    b
+      index    b    c
     -------  ---  ---
-          3   11    7
-          4   12    8
+          3    7   11
+          4    8   12
     
 
 .. code:: python
@@ -854,6 +915,213 @@ a wild card for matching.
 .. parsed-literal::
 
     [True, True, True, True, True, True]
+
+
+
+Iterators
+---------
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [1, 2, 'c'], 'b': [5, 6, 'd']}, index=[1, 2, 3])
+
+.. code:: python
+
+    for row in df.iterrows():
+        print(row)
+
+
+.. parsed-literal::
+
+    {'a': 1, 'index': 1, 'b': 5}
+    {'a': 2, 'index': 2, 'b': 6}
+    {'a': 'c', 'index': 3, 'b': 'd'}
+    
+
+.. code:: python
+
+    for row in df.itertuples():
+        print(row)
+
+
+.. parsed-literal::
+
+    Raccoon(index=1, a=1, b=5)
+    Raccoon(index=2, a=2, b=6)
+    Raccoon(index=3, a='c', b='d')
+    
+
+Sorted DataFrames
+-----------------
+
+DataFrames will be set to sorted by default if no index is given at
+initialization. If an index is given at initialization then the
+parameter sorted must be set to True
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [3, 5, 4], 'b': [6, 8, 7]}, index=[12, 15, 14], sorted=True)
+
+When sorted=True on initialization the data will be sorted by index to
+start
+
+.. code:: python
+
+    df.print()
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+         12    3    6
+         14    4    7
+         15    5    8
+    
+
+.. code:: python
+
+    # inserts are done in sorted order on index
+    df[11, 'a'] = 2
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+         11    2
+         12    3    6
+         14    4    7
+         15    5    8
+    
+
+.. code:: python
+
+    df[16, 'b'] = 9
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+         11    2
+         12    3    6
+         14    4    7
+         15    5    8
+         16         9
+    
+
+.. code:: python
+
+    df.set(indexes=13, values={'a': 3.5, 'b': 6.5})
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+         11  2
+         12  3    6
+         13  3.5  6.5
+         14  4    7
+         15  5    8
+         16       9
+    
+
+List or BList
+-------------
+
+The underlying data structure can be either blist (default) or list
+
+.. code:: python
+
+    # Construct with blist=True, the default
+    df_blist = rc.DataFrame({'a': [1, 2, 3]}, index=[5, 6, 7], use_blist=True)
+
+.. code:: python
+
+    # see that the data structures are all blists
+    df_blist.data
+
+
+
+
+.. parsed-literal::
+
+    blist([blist([1, 2, 3])])
+
+
+
+.. code:: python
+
+    df_blist.index
+
+
+
+
+.. parsed-literal::
+
+    blist([5, 6, 7])
+
+
+
+.. code:: python
+
+    df_blist.columns
+
+
+
+
+.. parsed-literal::
+
+    blist(['a'])
+
+
+
+.. code:: python
+
+    # now construct as blist = False and they are all lists
+    df_list = rc.DataFrame({'a': [1, 2, 3]}, index=[5, 6, 7], use_blist=False)
+
+.. code:: python
+
+    df_list.data
+
+
+
+
+.. parsed-literal::
+
+    [[1, 2, 3]]
+
+
+
+.. code:: python
+
+    df_list.index
+
+
+
+
+.. parsed-literal::
+
+    [5, 6, 7]
+
+
+
+.. code:: python
+
+    df_list.columns
+
+
+
+
+.. parsed-literal::
+
+    ['a']
 
 
 

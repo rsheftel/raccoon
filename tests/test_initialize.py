@@ -171,3 +171,7 @@ def test_bad_initialization():
     # columns is not a list
     with pytest.raises(TypeError):
         rc.DataFrame({'a': [1]}, columns='a')
+
+    # bad data type
+    with pytest.raises(TypeError):
+        rc.DataFrame(data=[1, 2, 3])

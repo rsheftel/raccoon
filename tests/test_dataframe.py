@@ -281,6 +281,15 @@ def test_select_index():
     with pytest.raises(ValueError):
         df.select_index('a', 'BAD')
 
+    # simple index, not sorted, native list
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=False)
+
+    actual = df.select_index('c', 'value')
+    assert actual == ['c']
+
+    actual = df.select_index('d', 'boolean')
+    assert actual == [False, False, False, True, False, False]
+
     # tuple index
     tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=tuples)

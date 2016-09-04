@@ -2,13 +2,12 @@
 Raccoon vs. Pandas speed test
 =============================
 
-Setup pythonpath, import libraries and initialized DataFrame to store results
------------------------------------------------------------------------------
+Setup pythonpath, import libraries and initialized DataFrame to store
+results
 
 .. code:: python
 
     import sys
-    sys.path.append("c:/rmbaries/git/raccoon")
     from copy import deepcopy
 
 .. code:: python
@@ -18,7 +17,7 @@ Setup pythonpath, import libraries and initialized DataFrame to store results
 
 .. code:: python
 
-    results = rc.DataFrame(columns=['raccoon', 'pandas', 'ratio'])
+    results = rc.DataFrame(columns=['raccoon', 'pandas', 'ratio'], sorted=False)
 
 .. code:: python
 
@@ -47,7 +46,7 @@ Initialize 10,000 empty DataFrames
 
 .. parsed-literal::
 
-    10 loops, best of 3: 38.4 ms per loop
+    10 loops, best of 3: 86.3 ms per loop
     
 
 .. code:: python
@@ -57,12 +56,8 @@ Initialize 10,000 empty DataFrames
 
 .. parsed-literal::
 
-    1 loop, best of 3: 2.5 s per loop
+    1 loop, best of 3: 2.67 s per loop
     
-
-.. code:: python
-
-    ratio = res_rc.best / res_pd.best
 
 .. code:: python
 
@@ -77,7 +72,7 @@ Initialize 10,000 empty DataFrames
 
     index               raccoon    pandas      ratio
     ----------------  ---------  --------  ---------
-    initialize empty  0.0383512   2.50005  0.0153402
+    initialize empty  0.0862797   2.67235  0.0322861
     
 
 Initialize 100 row X 100 col DataFrame()
@@ -91,13 +86,12 @@ Initialize 100 row X 100 col DataFrame()
 
 .. code:: python
 
-    res_rc = %timeit -o df=rc.DataFrame(data=data)
+    res_rc = %timeit -o df=rc.DataFrame(data=data, sorted=False)
 
 
 .. parsed-literal::
 
-    The slowest run took 4.10 times longer than the fastest. This could mean that an intermediate result is being cached.
-    1000 loops, best of 3: 179 µs per loop
+    10000 loops, best of 3: 173 µs per loop
     
 
 .. code:: python
@@ -107,7 +101,7 @@ Initialize 100 row X 100 col DataFrame()
 
 .. parsed-literal::
 
-    100 loops, best of 3: 10.5 ms per loop
+    100 loops, best of 3: 9.69 ms per loop
     
 
 .. code:: python
@@ -121,10 +115,10 @@ Initialize 100 row X 100 col DataFrame()
 
 .. parsed-literal::
 
-    index                       raccoon    pandas      ratio
-    ----------------------  -----------  --------  ---------
-    initialize empty        0.0383512    2.50005   0.0153402
-    initialize with matrix  0.000179355  0.010501  0.0170797
+    index                       raccoon      pandas      ratio
+    ----------------------  -----------  ----------  ---------
+    initialize empty        0.0862797    2.67235     0.0322861
+    initialize with matrix  0.000173366  0.00969091  0.0178896
     
 
 Add 10,000 items in 1 column to empty DataFrame
@@ -149,7 +143,7 @@ Add 10,000 items in 1 column to empty DataFrame
 
 .. parsed-literal::
 
-    1 loop, best of 3: 695 ms per loop
+    10 loops, best of 3: 53 ms per loop
     
 
 .. code:: python
@@ -159,7 +153,7 @@ Add 10,000 items in 1 column to empty DataFrame
 
 .. parsed-literal::
 
-    1 loop, best of 3: 22 s per loop
+    1 loop, best of 3: 20.9 s per loop
     
 
 .. code:: python
@@ -173,11 +167,11 @@ Add 10,000 items in 1 column to empty DataFrame
 
 .. parsed-literal::
 
-    index                       raccoon     pandas      ratio
-    ----------------------  -----------  ---------  ---------
-    initialize empty        0.0383512     2.50005   0.0153402
-    initialize with matrix  0.000179355   0.010501  0.0170797
-    add rows one column     0.695244     22.0031    0.0315975
+    index                       raccoon       pandas       ratio
+    ----------------------  -----------  -----------  ----------
+    initialize empty        0.0862797     2.67235     0.0322861
+    initialize with matrix  0.000173366   0.00969091  0.0178896
+    add rows one column     0.0530035    20.9206      0.00253355
     
 
 Add 100 rows of 100 columns to empty DataFrame
@@ -191,7 +185,7 @@ Add 100 rows of 100 columns to empty DataFrame
     def matrix_add_rc():
         df = rc.DataFrame(columns=columns)
         for x in range(100):
-            df.set(index=x, values=new_row)
+            df.set(indexes=x, values=new_row)
     
     def matrix_add_pd():
         df = pd.DataFrame(columns=columns)
@@ -205,7 +199,7 @@ Add 100 rows of 100 columns to empty DataFrame
 
 .. parsed-literal::
 
-    10 loops, best of 3: 7.95 ms per loop
+    100 loops, best of 3: 7.87 ms per loop
     
 
 .. code:: python
@@ -215,7 +209,7 @@ Add 100 rows of 100 columns to empty DataFrame
 
 .. parsed-literal::
 
-    1 loop, best of 3: 200 ms per loop
+    1 loop, best of 3: 205 ms per loop
     
 
 .. code:: python
@@ -229,12 +223,12 @@ Add 100 rows of 100 columns to empty DataFrame
 
 .. parsed-literal::
 
-    index                       raccoon     pandas      ratio
-    ----------------------  -----------  ---------  ---------
-    initialize empty        0.0383512     2.50005   0.0153402
-    initialize with matrix  0.000179355   0.010501  0.0170797
-    add rows one column     0.695244     22.0031    0.0315975
-    add matrix              0.00794682    0.199503  0.0398331
+    index                       raccoon       pandas       ratio
+    ----------------------  -----------  -----------  ----------
+    initialize empty        0.0862797     2.67235     0.0322861
+    initialize with matrix  0.000173366   0.00969091  0.0178896
+    add rows one column     0.0530035    20.9206      0.00253355
+    add matrix              0.00786965    0.2049      0.0384073
     
 
 Append 10x10 DataFrame 1000 times
@@ -267,7 +261,7 @@ Append 10x10 DataFrame 1000 times
 
 .. parsed-literal::
 
-    10 loops, best of 3: 107 ms per loop
+    10 loops, best of 3: 67.2 ms per loop
     
 
 .. code:: python
@@ -277,7 +271,7 @@ Append 10x10 DataFrame 1000 times
 
 .. parsed-literal::
 
-    1 loop, best of 3: 212 ms per loop
+    1 loop, best of 3: 175 ms per loop
     
 
 .. code:: python
@@ -291,13 +285,13 @@ Append 10x10 DataFrame 1000 times
 
 .. parsed-literal::
 
-    index                       raccoon     pandas      ratio
-    ----------------------  -----------  ---------  ---------
-    initialize empty        0.0383512     2.50005   0.0153402
-    initialize with matrix  0.000179355   0.010501  0.0170797
-    add rows one column     0.695244     22.0031    0.0315975
-    add matrix              0.00794682    0.199503  0.0398331
-    append                  0.10712       0.212473  0.504158
+    index                       raccoon       pandas       ratio
+    ----------------------  -----------  -----------  ----------
+    initialize empty        0.0862797     2.67235     0.0322861
+    initialize with matrix  0.000173366   0.00969091  0.0178896
+    add rows one column     0.0530035    20.9206      0.00253355
+    add matrix              0.00786965    0.2049      0.0384073
+    append                  0.0672455     0.175002    0.384256
     
 
 Get
@@ -334,7 +328,7 @@ Get
 
 .. parsed-literal::
 
-    1 loop, best of 3: 1.05 s per loop
+    1 loop, best of 3: 797 ms per loop
     
 
 .. code:: python
@@ -344,7 +338,7 @@ Get
 
 .. parsed-literal::
 
-    1 loop, best of 3: 1.12 s per loop
+    1 loop, best of 3: 976 ms per loop
     
 
 .. code:: python
@@ -358,14 +352,14 @@ Get
 
 .. parsed-literal::
 
-    index                       raccoon     pandas      ratio
-    ----------------------  -----------  ---------  ---------
-    initialize empty        0.0383512     2.50005   0.0153402
-    initialize with matrix  0.000179355   0.010501  0.0170797
-    add rows one column     0.695244     22.0031    0.0315975
-    add matrix              0.00794682    0.199503  0.0398331
-    append                  0.10712       0.212473  0.504158
-    get cell                1.05107       1.12222   0.936592
+    index                       raccoon       pandas       ratio
+    ----------------------  -----------  -----------  ----------
+    initialize empty        0.0862797     2.67235     0.0322861
+    initialize with matrix  0.000173366   0.00969091  0.0178896
+    add rows one column     0.0530035    20.9206      0.00253355
+    add matrix              0.00786965    0.2049      0.0384073
+    append                  0.0672455     0.175002    0.384256
+    get cell                0.797316      0.97588     0.817023
     
 
 .. code:: python
@@ -387,7 +381,7 @@ Get
 
 .. parsed-literal::
 
-    100 loops, best of 3: 11.6 ms per loop
+    10 loops, best of 3: 42.5 ms per loop
     
 
 .. code:: python
@@ -397,7 +391,7 @@ Get
 
 .. parsed-literal::
 
-    1000 loops, best of 3: 410 µs per loop
+    1000 loops, best of 3: 305 µs per loop
     
 
 .. code:: python
@@ -411,15 +405,15 @@ Get
 
 .. parsed-literal::
 
-    index                       raccoon        pandas       ratio
-    ----------------------  -----------  ------------  ----------
-    initialize empty        0.0383512     2.50005       0.0153402
-    initialize with matrix  0.000179355   0.010501      0.0170797
-    add rows one column     0.695244     22.0031        0.0315975
-    add matrix              0.00794682    0.199503      0.0398331
-    append                  0.10712       0.212473      0.504158
-    get cell                1.05107       1.12222       0.936592
-    get column all index    0.0116453     0.000409797  28.4172
+    index                       raccoon        pandas         ratio
+    ----------------------  -----------  ------------  ------------
+    initialize empty        0.0862797     2.67235        0.0322861
+    initialize with matrix  0.000173366   0.00969091     0.0178896
+    add rows one column     0.0530035    20.9206         0.00253355
+    add matrix              0.00786965    0.2049         0.0384073
+    append                  0.0672455     0.175002       0.384256
+    get cell                0.797316      0.97588        0.817023
+    get column all index    0.0424636     0.000304916  139.263
     
 
 .. code:: python
@@ -445,7 +439,7 @@ Get
 
 .. parsed-literal::
 
-    1 loop, best of 3: 1.32 s per loop
+    1 loop, best of 3: 711 ms per loop
     
 
 .. code:: python
@@ -455,7 +449,7 @@ Get
 
 .. parsed-literal::
 
-    1 loop, best of 3: 7.25 s per loop
+    1 loop, best of 3: 7.04 s per loop
     
 
 .. code:: python
@@ -469,16 +463,16 @@ Get
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
     
 
 .. code:: python
@@ -500,7 +494,7 @@ Get
 
 .. parsed-literal::
 
-    1 loop, best of 3: 742 ms per loop
+    1 loop, best of 3: 819 ms per loop
     
 
 .. code:: python
@@ -510,7 +504,7 @@ Get
 
 .. parsed-literal::
 
-    10 loops, best of 3: 150 ms per loop
+    10 loops, best of 3: 139 ms per loop
     
 
 .. code:: python
@@ -524,17 +518,17 @@ Get
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
     
 
 Set
@@ -571,7 +565,7 @@ Set
 
 .. parsed-literal::
 
-    1 loop, best of 3: 987 ms per loop
+    1 loop, best of 3: 686 ms per loop
     
 
 .. code:: python
@@ -581,7 +575,7 @@ Set
 
 .. parsed-literal::
 
-    1 loop, best of 3: 1.18 s per loop
+    1 loop, best of 3: 1.12 s per loop
     
 
 .. code:: python
@@ -595,18 +589,18 @@ Set
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
-    set cell                 0.986949      1.17592       0.839302
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
     
 
 .. code:: python
@@ -615,7 +609,7 @@ Set
     
     def set_column_all_rc():
         for c in df_rc.columns:
-            x = df_rc.set(column=c, values=99)
+            x = df_rc.set(columns=c, values=99)
             
     def set_column_all_pd():
         for c in df_pd.columns:
@@ -628,7 +622,7 @@ Set
 
 .. parsed-literal::
 
-    100 loops, best of 3: 4.97 ms per loop
+    100 loops, best of 3: 4.89 ms per loop
     
 
 .. code:: python
@@ -638,7 +632,7 @@ Set
 
 .. parsed-literal::
 
-    100 loops, best of 3: 19.8 ms per loop
+    100 loops, best of 3: 14.9 ms per loop
     
 
 .. code:: python
@@ -652,19 +646,19 @@ Set
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
-    set cell                 0.986949      1.17592       0.839302
-    set column all index     0.00496821    0.0198105     0.250786
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
     
 
 .. code:: python
@@ -675,7 +669,7 @@ Set
         for c in df_rc.columns:
             for r in range(100):
                 rows = list(range(r*10, r*10 + 10))
-                x = df_rc.set(index=rows, column=c, values=list(range(10)))
+                x = df_rc.set(indexes=rows, columns=c, values=list(range(10)))
             
     def set_column_subset_pd():
         for c in df_pd.columns:
@@ -690,7 +684,7 @@ Set
 
 .. parsed-literal::
 
-    1 loop, best of 3: 748 ms per loop
+    1 loop, best of 3: 514 ms per loop
     
 
 .. code:: python
@@ -700,7 +694,7 @@ Set
 
 .. parsed-literal::
 
-    1 loop, best of 3: 25 s per loop
+    1 loop, best of 3: 25.5 s per loop
     
 
 .. code:: python
@@ -714,20 +708,20 @@ Set
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
-    set cell                 0.986949      1.17592       0.839302
-    set column all index     0.00496821    0.0198105     0.250786
-    set column subset index  0.747562     24.9955        0.0299078
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
     
 
 .. code:: python
@@ -740,7 +734,7 @@ Set
     
     def set_index_all_rc():
         for i in df_rc.index:
-            x = df_rc.set(index=i, values=row)
+            x = df_rc.set(indexes=i, values=row)
             
     def set_index_all_pd():
         for i in df_pd.index:
@@ -753,7 +747,7 @@ Set
 
 .. parsed-literal::
 
-    10 loops, best of 3: 64.8 ms per loop
+    10 loops, best of 3: 64.3 ms per loop
     
 
 .. code:: python
@@ -763,7 +757,7 @@ Set
 
 .. parsed-literal::
 
-    1 loop, best of 3: 718 ms per loop
+    1 loop, best of 3: 599 ms per loop
     
 
 .. code:: python
@@ -777,21 +771,21 @@ Set
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
-    set cell                 0.986949      1.17592       0.839302
-    set column all index     0.00496821    0.0198105     0.250786
-    set column subset index  0.747562     24.9955        0.0299078
-    set index all columns    0.0647692     0.717767      0.0902371
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
+    set index all columns    0.0643082     0.599027       0.107354
     
 
 Sort
@@ -813,7 +807,7 @@ Sort
 
 .. parsed-literal::
 
-    100 loops, best of 3: 13.8 ms per loop
+    100 loops, best of 3: 12.6 ms per loop
     
 
 .. code:: python
@@ -823,8 +817,8 @@ Sort
 
 .. parsed-literal::
 
-    The slowest run took 9.49 times longer than the fastest. This could mean that an intermediate result is being cached.
-    1000 loops, best of 3: 1.02 ms per loop
+    The slowest run took 10.73 times longer than the fastest. This could mean that an intermediate result is being cached.
+    1000 loops, best of 3: 711 µs per loop
     
 
 .. code:: python
@@ -838,20 +832,251 @@ Sort
 
 .. parsed-literal::
 
-    index                        raccoon        pandas       ratio
-    -----------------------  -----------  ------------  ----------
-    initialize empty         0.0383512     2.50005       0.0153402
-    initialize with matrix   0.000179355   0.010501      0.0170797
-    add rows one column      0.695244     22.0031        0.0315975
-    add matrix               0.00794682    0.199503      0.0398331
-    append                   0.10712       0.212473      0.504158
-    get cell                 1.05107       1.12222       0.936592
-    get column all index     0.0116453     0.000409797  28.4172
-    get column subset index  1.3213        7.2466        0.182333
-    get index all columns    0.742481      0.150376      4.93751
-    set cell                 0.986949      1.17592       0.839302
-    set column all index     0.00496821    0.0198105     0.250786
-    set column subset index  0.747562     24.9955        0.0299078
-    set index all columns    0.0647692     0.717767      0.0902371
-    sort index               0.0137665     0.00101819   13.5206
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
+    set index all columns    0.0643082     0.599027       0.107354
+    sort index               0.012594      0.000711006   17.7129
+    
+
+Iterators
+---------
+
+.. code:: python
+
+    # First create a 1000 row X 100 col matrix for the test. Index is [0...999]
+    
+    col = [x for x in range(1000)]
+    grid = {'a' + str(x): col[:] for x in range(100)}
+    
+    df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()))
+    df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
+
+.. code:: python
+
+    # iterate over the rows
+    
+    def iter_rc():
+        for row in df_rc.iterrows():
+            x = row
+            
+    def iter_pd():
+        for row in df_pd.itertuples():
+            x = row
+
+.. code:: python
+
+    res_rc = %timeit -o iter_rc() 
+
+
+.. parsed-literal::
+
+    10 loops, best of 3: 23.6 ms per loop
+    
+
+.. code:: python
+
+    res_pd = %timeit -o iter_pd()
+
+
+.. parsed-literal::
+
+    10 loops, best of 3: 22.7 ms per loop
+    
+
+.. code:: python
+
+    add_results('iterate rows')
+
+.. code:: python
+
+    print(results)
+
+
+.. parsed-literal::
+
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
+    set index all columns    0.0643082     0.599027       0.107354
+    sort index               0.012594      0.000711006   17.7129
+    iterate rows             0.0236283     0.0227241      1.03979
+    
+
+Insert in the middle
+--------------------
+
+.. code:: python
+
+    # First create a 500 row X 100 col matrix for the test. Index is [1, 3, 5, 7,...500] every other
+    
+    col = [x for x in range(1, 1000, 2)]
+    grid = {'a' + str(x): col[:] for x in range(100)}
+    
+    df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()), sorted=True)
+    df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
+
+.. code:: python
+
+    row = {x:x for x in grid.keys()}
+
+.. code:: python
+
+    # set index all columns
+    
+    def insert_rows_rc():
+        for i in range(0, 999, 2):
+            x = df_rc.set(indexes=i, values=row)
+            
+    def insert_rows_pd():
+        for i in range(0, 999, 2):
+            x = df_pd.loc[i] = row
+
+.. code:: python
+
+    res_rc = %timeit -o insert_rows_rc() 
+
+
+.. parsed-literal::
+
+    10 loops, best of 3: 44.6 ms per loop
+    
+
+.. code:: python
+
+    res_pd = %timeit -o insert_rows_pd()
+
+
+.. parsed-literal::
+
+    The slowest run took 23.98 times longer than the fastest. This could mean that an intermediate result is being cached.
+    1 loop, best of 3: 280 ms per loop
+    
+
+.. code:: python
+
+    add_results('insert rows')
+
+.. code:: python
+
+    print(results)
+
+
+.. parsed-literal::
+
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
+    set index all columns    0.0643082     0.599027       0.107354
+    sort index               0.012594      0.000711006   17.7129
+    iterate rows             0.0236283     0.0227241      1.03979
+    insert rows              0.0446384     0.279826       0.159522
+    
+
+Time Series Append
+------------------
+
+Simulate the recording of a stock on 1 minute intervals and appending to
+the DataFrame
+
+.. code:: python
+
+    data_row = {'open': 100, 'high': 101, 'low': 99, 'close': 100.5, 'volume': 999}
+    
+    dates = pd.date_range('2010-01-01 09:30:00', periods=10000, freq='1min')
+    
+    def time_series_rc():
+        ts = rc.DataFrame(columns=['open', 'high', 'low', 'close', 'volume'], index_name='datetime', sorted=True,
+                          use_blist=False)
+        for date in dates:
+            ts.set_row(date, data_row)
+    
+    def time_series_pd():
+        ts = pd.DataFrame(columns=['open', 'high', 'low', 'close', 'volume'])
+        for date in dates:
+            ts.loc[date] = data_row
+
+.. code:: python
+
+    res_rc = %timeit -o time_series_rc() 
+
+
+.. parsed-literal::
+
+    10 loops, best of 3: 127 ms per loop
+    
+
+.. code:: python
+
+    res_pd = %timeit -o time_series_pd()
+
+
+.. parsed-literal::
+
+    1 loop, best of 3: 30.6 s per loop
+    
+
+.. code:: python
+
+    add_results('time series')
+
+.. code:: python
+
+    print(results)
+
+
+.. parsed-literal::
+
+    index                        raccoon        pandas         ratio
+    -----------------------  -----------  ------------  ------------
+    initialize empty         0.0862797     2.67235        0.0322861
+    initialize with matrix   0.000173366   0.00969091     0.0178896
+    add rows one column      0.0530035    20.9206         0.00253355
+    add matrix               0.00786965    0.2049         0.0384073
+    append                   0.0672455     0.175002       0.384256
+    get cell                 0.797316      0.97588        0.817023
+    get column all index     0.0424636     0.000304916  139.263
+    get column subset index  0.711387      7.04383        0.100994
+    get index all columns    0.818751      0.138998       5.89036
+    set cell                 0.685851      1.11982        0.612463
+    set column all index     0.00489008    0.0148631      0.329008
+    set column subset index  0.514223     25.5079         0.0201594
+    set index all columns    0.0643082     0.599027       0.107354
+    sort index               0.012594      0.000711006   17.7129
+    iterate rows             0.0236283     0.0227241      1.03979
+    insert rows              0.0446384     0.279826       0.159522
+    time series              0.126713     30.5804         0.00414359
     

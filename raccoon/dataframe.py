@@ -100,6 +100,8 @@ class DataFrame(object):
                 self.index = index
             else:
                 self.index = range(len(self._data[0]))
+        else:
+            raise TypeError('Not valid data type.')
 
         # sort by columns if provided
         if columns:
