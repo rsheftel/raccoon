@@ -81,7 +81,7 @@ Updates
 - Added set_locations() and get_locations() methods
 - Added as_dict() parameter to get_columns()
 
-1.1.1
+1.1.2
 ~~~~~
 - Changed the default for use_blist to False on object initialization
 
