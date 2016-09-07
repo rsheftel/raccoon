@@ -47,7 +47,7 @@ class DataFrame(object):
     be designated as sorted, in which case the rows will be sorted by index on construction, and then any addition of a
     new row will insert it into the DataFrame so that the index remains sorted.
     """
-    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=True, sorted=None):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=False, sorted=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.

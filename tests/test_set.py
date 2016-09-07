@@ -1,6 +1,5 @@
 import pytest
 import raccoon as rc
-from blist import blist
 from raccoon.utils import assert_frame_equal
 
 
@@ -36,7 +35,7 @@ def test_set_cell():
                            [None, None, None, 88, None, None], [None, None, None, None, 999, None]]
     assert actual.index == [10, 11, 12, 13, 14, 1]
 
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
 
 def test_set_cell_sorted():
@@ -71,7 +70,7 @@ def test_set_cell_sorted():
     assert actual.index == [10, 11, 12, 13, 14, 15]
     assert actual.data == [[11, -1, 2, 3, None, None], [4, None, 55, 6, 14, None], [13, None, 8, 9, None, None],
                            [None, None, None, 88, None, None], [None, None, None, None, None, 999]]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # fails for mixed index type
     with pytest.raises(TypeError):
@@ -163,7 +162,7 @@ def test_set_column():
     # add a new column
     actual.set(columns='e', values=[10, 11, 12])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # not enough values
     with pytest.raises(ValueError):
@@ -189,7 +188,7 @@ def test_set_column_sorted():
     # add a new column
     actual.set(columns='e', values=[10, 11, 12])
     assert actual.data == [[1, 2, 3], [44, 55, 66], [7, 8, 9], [10, 11, 12]]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # not enough values
     with pytest.raises(ValueError):
@@ -221,7 +220,7 @@ def test_set_col_index_subset():
     assert actual.data == [[11, 2, 33, None, None, None, None], [44, 55, 66, None, None, None, None],
                            [7, 8, 120, 130, 140, None, None], [None, None, None, None, 'zoo', 'boo', 'hoo']]
     assert actual.index == [10, 11, 12, 13, 14, 15, 16]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # values list shorter than indexes, raise error
     with pytest.raises(ValueError):
@@ -255,7 +254,7 @@ def test_set_col_index_subset_sorted():
 
     actual.set(columns='a', indexes=[12, 10], values=[33, 11])
     assert actual.data == [[11, 2, 33], [44, 55, 66], [7, 8, 9]]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # new rows at end
     actual.set(columns='c', indexes=[12, 14, 15], values=[120, 130, 140])
@@ -275,7 +274,7 @@ def test_set_col_index_subset_sorted():
                            [None, None, 6060, 44, 55, 66, 3131, None, None],
                            [None, None, None, 7, 8, 120, None, 130, 140]]
     assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # new row new columns
     actual.set(columns='z', indexes=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
@@ -285,7 +284,7 @@ def test_set_col_index_subset_sorted():
                            [None, None, None, None, None, None, None, 'zoo', 'boo', 'hoo']]
     assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15, 16]
     assert actual.columns == ['a', 'b', 'c', 'z']
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # values list shorter than indexes, raise error
     with pytest.raises(ValueError):

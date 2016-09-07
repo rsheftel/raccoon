@@ -31,8 +31,8 @@ The raccoon DataFrame is not intended for math operations like pandas and only l
 
 Underlying Data Structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Raccoon uses the fast blist http://stutzbachenterprises.com/blist/ list replacement for the underlying data structure.
-There is an option on object construction to use standard built in lists.
+Raccoon uses the standard built in lists. There is an option on object construction to use fast blist
+http://stutzbachenterprises.com/blist/ list replacement for the underlying data structure.
 
 Why Raccoon?
 ~~~~~~~~~~~~
@@ -81,6 +81,9 @@ Updates
 - Added set_locations() and get_locations() methods
 - Added as_dict() parameter to get_columns()
 
+1.1.1
+~~~~~
+- Changed the default for use_blist to False on object initialization
 
 Contents
 --------

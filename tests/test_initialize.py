@@ -10,29 +10,39 @@ def test_default_empty_init():
     assert actual.columns == []
     assert actual.index == []
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     actual = rc.DataFrame(sorted=False)
     assert actual.sorted is False
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     actual = rc.DataFrame(columns=['a', 'b', 'c'])
     assert actual.data == [[], [], []]
     assert actual.columns == ['a', 'b', 'c']
     assert actual.index == []
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'])
+    assert actual.data == [[None, None, None], [None, None, None]]
+    assert actual.columns == ['a', 'b']
+    assert actual.index == [1, 2, 3]
+    assert actual.sorted is False
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
+
+    actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'], use_blist=True)
     assert actual.data == [[None, None, None], [None, None, None]]
     assert actual.columns == ['a', 'b']
     assert actual.index == [1, 2, 3]
@@ -44,10 +54,10 @@ def test_default_empty_init():
 
     actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'], sorted=True)
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
 
 def test_default_init():
@@ -57,10 +67,10 @@ def test_default_init():
     assert set(actual.columns) == {'a', 'b'}
     assert actual.index == [0, 1, 2]
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # solid matrix, no columns, with index
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], index_name='letters')
@@ -69,10 +79,10 @@ def test_default_init():
     assert actual.index == ['a', 'b', 'c']
     assert actual.index_name == 'letters'
     assert actual.sorted is False
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # solid matrix, columns, index
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
@@ -80,10 +90,10 @@ def test_default_init():
     assert actual.columns == ['b', 'a']
     assert actual.index == ['a', 'b', 'c']
     assert actual.sorted is False
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # dict values are not lists
     actual = rc.DataFrame({'a': 1, 'b': 2, 'c': [1, 2, 3]}, columns=['b', 'c', 'a'])
@@ -91,10 +101,10 @@ def test_default_init():
     assert actual.index == [0, 1, 2]
     assert actual.data == [[2, None, None], [1, 2, 3], [1, None, None]]
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
+    assert isinstance(actual.data, list)
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
 
 def test_sorted_init():
@@ -140,8 +150,8 @@ def test_jagged_data():
     assert actual.columns == ['a', 'b', 'c', 'd']
     assert actual.index == [0, 1, 2]
     assert actual.sorted is True
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
+    assert isinstance(actual.index, list)
+    assert isinstance(actual.columns, list)
 
 
 def test_bad_initialization():

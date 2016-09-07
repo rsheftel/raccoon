@@ -7,24 +7,6 @@ def test_columns():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
     names = actual.columns
     assert names == ['b', 'a']
-    assert isinstance(names, blist)
-
-    # test that a copy is returned
-    names.append('bad')
-    assert actual.columns == ['b', 'a']
-
-    actual.columns = ['new1', 'new2']
-    assert actual.columns == ['new1', 'new2']
-    assert isinstance(actual.columns, blist)
-
-    with pytest.raises(ValueError):
-        actual.columns = ['list', 'too', 'long']
-
-
-def test_columns_list():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], use_blist=False)
-    names = actual.columns
-    assert names == ['b', 'a']
     assert isinstance(names, list)
 
     # test that a copy is returned
@@ -39,11 +21,29 @@ def test_columns_list():
         actual.columns = ['list', 'too', 'long']
 
 
+def test_columns_blist():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], use_blist=True)
+    names = actual.columns
+    assert names == ['b', 'a']
+    assert isinstance(names, blist)
+
+    # test that a copy is returned
+    names.append('bad')
+    assert actual.columns == ['b', 'a']
+
+    actual.columns = ['new1', 'new2']
+    assert actual.columns == ['new1', 'new2']
+    assert isinstance(actual.columns, blist)
+
+    with pytest.raises(ValueError):
+        actual.columns = ['list', 'too', 'long']
+
+
 def test_index():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
     result = actual.index
     assert result == ['a', 'b', 'c']
-    assert isinstance(result, blist)
+    assert isinstance(result, list)
 
     # test that a copy is returned
     result.append('bad')
@@ -51,7 +51,7 @@ def test_index():
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
-    assert isinstance(result, blist)
+    assert isinstance(result, list)
 
     # index too long
     with pytest.raises(ValueError):
@@ -65,11 +65,11 @@ def test_index():
     assert actual.index_name == 'letters'
 
 
-def test_index_list():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], use_blist=False)
+def test_index_blist():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], use_blist=True)
     result = actual.index
     assert result == ['a', 'b', 'c']
-    assert isinstance(result, list)
+    assert isinstance(result, blist)
 
     # test that a copy is returned
     result.append('bad')
@@ -77,7 +77,7 @@ def test_index_list():
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
-    assert isinstance(result, list)
+    assert isinstance(result, blist)
 
     # index too long
     with pytest.raises(ValueError):
@@ -92,10 +92,16 @@ def test_data():
     new = actual.data
     new[0][0] = 99
     assert actual.data == new
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     new.append(88)
     assert actual.data != new
 
     with pytest.raises(AttributeError):
         actual.data = [4, 5]
+
+
+def test_data_blist():
+    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], use_blist=True)
+    assert actual.data == [[4, 5, 6], [1, 2, 3]]
+    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
