@@ -253,11 +253,14 @@ class DataFrame(object):
         the get is for a single column
         :return: either DataFrame, list or single value. The return is a shallow copy
         """
+        if (indexes is None) and (columns is not None) and (not isinstance(columns, (list, blist))):
+            return self.get_entire_column(columns, as_list)
+
         if indexes is None:
             indexes = [True] * len(self._index)
         if columns is None:
             columns = [True] * len(self._columns)
-        # singe index and column
+
         if isinstance(indexes, (list, blist)) and isinstance(columns, (list, blist)):
             return self.get_matrix(indexes, columns)
         elif isinstance(indexes, (list, blist)) and (not isinstance(columns, (list, blist))):
@@ -331,6 +334,20 @@ class DataFrame(object):
             return data
         else:
             return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name, sorted=self._sorted)
+
+    def get_entire_column(self, column, as_list=False):
+        """
+        Shortcut method to retrieve a single column all rows. Since this is a common use case this method will be
+        faster than the more general method.
+
+        :param column: single column name
+        :param as_list: if True return a list, if False return DataFrame
+        :return: DataFrame is as_list if False, a list if as_list is True
+        """
+        c = self._columns.index(column)
+        data = self._data[c]
+        return data if as_list else DataFrame(data={column: data}, index=self._index, index_name=self._index_name,
+                                              sorted=self._sorted)
 
     def get_matrix(self, indexes, columns):
         """

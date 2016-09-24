@@ -83,9 +83,13 @@ Updates
 ~~~~~
 - Changed the default for use_blist to False on object initialization
 
-1.1.2
+1.1.3
 ~~~~~
 - Added append_row() method
+
+1.1.4
+~~~~~
+- Added get_entire_column() method and changed get() to use that when asking for only a single column
 
 Contents
 --------
