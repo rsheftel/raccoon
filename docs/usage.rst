@@ -21,13 +21,13 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 84084216
+    object id: 83606720
     columns:
-    blist([])
+    []
     data:
-    blist([])
+    []
     index:
-    blist([])
+    []
 
 
 
@@ -42,13 +42,13 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 84423736
+    object id: 83917344
     columns:
-    blist(['a', 'b', 'c'])
+    ['a', 'b', 'c']
     data:
-    blist([blist([None, None, None]), blist([None, None, None]), blist([None, None, None])])
+    [[None, None, None], [None, None, None], [None, None, None]]
     index:
-    blist([1, 2, 3])
+    [1, 2, 3]
 
 
 
@@ -63,13 +63,13 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 84424688
+    object id: 83918184
     columns:
-    blist(['a', 'b'])
+    ['a', 'b']
     data:
-    blist([blist([1, 2, 3]), blist([4, 5, 6])])
+    [[1, 2, 3], [4, 5, 6]]
     index:
-    blist([10, 11, 12])
+    [10, 11, 12]
 
 
 
@@ -103,7 +103,7 @@ Setters and Getters
 
 .. parsed-literal::
 
-    blist(['a', 'b'])
+    ['a', 'b']
 
 
 
@@ -133,7 +133,7 @@ Setters and Getters
 
 .. parsed-literal::
 
-    blist(['a', 'b'])
+    ['a', 'b']
 
 
 
@@ -147,7 +147,7 @@ Setters and Getters
 
 .. parsed-literal::
 
-    blist([10, 11, 12])
+    [10, 11, 12]
 
 
 
@@ -210,7 +210,7 @@ Setters and Getters
 
 .. parsed-literal::
 
-    blist([blist([1, 2, 3]), blist([4, 5, 6])])
+    [[1, 2, 3], [4, 5, 6]]
 
 
 
@@ -350,6 +350,24 @@ Set Values
          13   33   55    9
     
 
+.. code:: python
+
+    # append a row, DANGEROUS as there is not validation checking, but can be used for speed
+    df.append_row(14, {'a': 44, 'c': 100, 'd': 99})
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
+         10  100   88    1
+         11    2   55    2
+         12   33   99    3
+         13   33   55    9
+         14   44       100   99
+    
+
 Get Values
 ----------
 
@@ -381,6 +399,7 @@ Get Values
          11    2
          12    3
          13    9
+         14  100
     
 
 .. code:: python
@@ -397,6 +416,7 @@ Get Values
          11    2    2
          12   33    3
          13   33    9
+         14   44  100
     
 
 .. code:: python
@@ -453,7 +473,7 @@ Get Values
 
 .. parsed-literal::
 
-    blist([100, 2, 33, 33])
+    [100, 2, 33, 33, 44]
 
 
 
@@ -484,8 +504,8 @@ from 0...len(index)
 
 .. parsed-literal::
 
-      index    a    b    c
-    -------  ---  ---  ---
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
          10  100   88    1
          12   33   99    3
     
@@ -498,12 +518,13 @@ from 0...len(index)
 
 .. parsed-literal::
 
-      index    a    b    c
-    -------  ---  ---  ---
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
          10   -9   88    1
          11    2   55    2
          12   -9   99    3
          13   33   55    9
+         14   44       100   99
     
 
 Head and Tail
@@ -516,8 +537,8 @@ Head and Tail
 
 .. parsed-literal::
 
-      index    a    b    c
-    -------  ---  ---  ---
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
          10   -9   88    1
          11    2   55    2
     
@@ -529,10 +550,10 @@ Head and Tail
 
 .. parsed-literal::
 
-      index    a    b    c
-    -------  ---  ---  ---
-         12   -9   99    3
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
          13   33   55    9
+         14   44       100   99
     
 
 Delete colunmns and rows
@@ -546,10 +567,11 @@ Delete colunmns and rows
 
 .. parsed-literal::
 
-      index    a    b    c
-    -------  ---  ---  ---
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
          11    2   55    2
          12   -9   99    3
+         14   44       100   99
     
 
 .. code:: python
@@ -560,10 +582,11 @@ Delete colunmns and rows
 
 .. parsed-literal::
 
-      index    a    c
-    -------  ---  ---
+      index    a    c    d
+    -------  ---  ---  ---
          11    2    2
          12   -9    3
+         14   44  100   99
     
 
 Convert
@@ -579,7 +602,10 @@ Convert
 
 .. parsed-literal::
 
-    {'a': blist([2, -9]), 'c': blist([2, 3]), 'index': blist([11, 12])}
+    {'a': [2, -9, 44],
+     'c': [2, 3, 100],
+     'd': [None, None, 99],
+     'index': [11, 12, 14]}
 
 
 
@@ -593,7 +619,7 @@ Convert
 
 .. parsed-literal::
 
-    {'a': blist([2, -9]), 'c': blist([2, 3])}
+    {'a': [2, -9, 44], 'c': [2, 3, 100], 'd': [None, None, 99]}
 
 
 
@@ -607,9 +633,10 @@ Convert
 
 .. parsed-literal::
 
-    OrderedDict([('index', blist([11, 12])),
-                 ('a', blist([2, -9])),
-                 ('c', blist([2, 3]))])
+    OrderedDict([('index', [11, 12, 14]),
+                 ('a', [2, -9, 44]),
+                 ('c', [2, 3, 100]),
+                 ('d', [None, None, 99])])
 
 
 
@@ -623,7 +650,7 @@ Convert
 
 .. parsed-literal::
 
-    blist([2, 3])
+    [2, 3, 100]
 
 
 
@@ -705,10 +732,10 @@ Append
 
 .. parsed-literal::
 
-      index    b    c
+      index    c    b
     -------  ---  ---
-          3    7   11
-          4    8   12
+          3   11    7
+          4   12    8
     
 
 .. code:: python
@@ -933,9 +960,9 @@ Iterators
 
 .. parsed-literal::
 
-    {'a': 1, 'index': 1, 'b': 5}
-    {'a': 2, 'index': 2, 'b': 6}
-    {'a': 'c', 'index': 3, 'b': 'd'}
+    {'a': 1, 'b': 5, 'index': 1}
+    {'a': 2, 'b': 6, 'index': 2}
+    {'a': 'c', 'b': 'd', 'index': 3}
     
 
 .. code:: python

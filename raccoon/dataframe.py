@@ -585,12 +585,36 @@ class DataFrame(object):
 
         :param locations: list of index locations
         :param column: column name
-        :param values: ilst of values or a single value
-        :return: nothin
+        :param values: list of values or a single value
+        :return: nothing
         """
 
         indexes = [self._index[x] for x in locations]
         self.set(indexes, column, values)
+
+    def append_row(self, index, values, new_cols=True):
+        """
+        Appends a row of values to the end of the data. If there are new columns in the values and new_cols is True
+        they will be added. Be very careful with this function as it will not test for duplicate indexes and for sorted
+        DataFrames it will not enforce sort order. Use this only for speed when needed, be careful.
+
+        :param index: value of the index
+        :param values: dictionary of values
+        :param new_cols: if True add new columns in values, if False ignore
+        :return: nothing
+        """
+
+        if new_cols:
+            for col in values:
+                if col not in self._columns:
+                    self._add_column(col)
+
+        # append index value
+        self._index.append(index)
+
+        # add data values, if not in values then use None
+        for c, col in enumerate(self._columns):
+            self._data[c].append(values.get(col, None))
 
     def _slice_index(self, slicer):
         try:

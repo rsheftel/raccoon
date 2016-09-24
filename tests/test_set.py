@@ -325,7 +325,7 @@ def test_set_single_value():
     assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88], [{1, 2, 3}, {1, 2, 3}, {1, 2, 3}]]
 
 
-def test_get_locations():
+def test_set_locations():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
 
     df.set_locations([0, 2], 'a', [-1, -3])
@@ -384,6 +384,22 @@ def test_set_square_brackets():
     df[1:3, 'b'] = 5
     assert df.data == [[None, 2, None], [4, 5, 5]]
     assert df.sorted is True
+
+
+def test_append_row():
+    actual = rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9]}, index=[10, 12], columns=['a', 'b', 'c'])
+
+    # append row with new columns, ignore new columns
+    actual.append_row(14, {'a': 10, 'c': 13, 'd': 99}, new_cols=False)
+    expected = rc.DataFrame({'a': [1, 3, 10], 'b': [4, 6, None], 'c': [7, 9, 13]}, index=[10, 12, 14],
+                            columns=['a', 'b', 'c'])
+    assert_frame_equal(actual, expected)
+
+    # append row with new columns, add new columns
+    actual.append_row(16, {'a': 14, 'b': 15, 'd': 100})
+    expected = rc.DataFrame({'a': [1, 3, 10, 14], 'b': [4, 6, None, 15], 'c': [7, 9, 13, None],
+                             'd': [None, None, None, 100]}, index=[10, 12, 14, 16], columns=['a', 'b', 'c', 'd'])
+    assert_frame_equal(actual, expected)
 
 
 def test_bar():

@@ -63,8 +63,7 @@ Updates
 1.0.2
 ~~~~~
 - Fixed several small bugs
-- Added iterrows() method
-- Added itertuples() method
+- Added iterators: iterrows() and itertuples()
 
 1.1.0
 ~~~~~
@@ -72,7 +71,6 @@ Updates
 - Speed improvements
 - Removed using slices to set values which did not work
 - Added sorted functionality
-- Added iterators: iterrows and itertuples
 
 1.1.1
 ~~~~~
@@ -84,6 +82,10 @@ Updates
 1.1.2
 ~~~~~
 - Changed the default for use_blist to False on object initialization
+
+1.1.2
+~~~~~
+- Added append_row() method
 
 Contents
 --------
