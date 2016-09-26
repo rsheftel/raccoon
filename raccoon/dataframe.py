@@ -371,15 +371,14 @@ class DataFrame(object):
         if len(columns) == (columns.count(True) + columns.count(False)):  # boolean list
             if len(columns) != len(self._columns):
                 raise ValueError('boolean column list must be same size of existing columns')
-            c = columns
             columns = list(compress(self._columns, columns))
-        else:  # name list
-            c = [x in columns for x in self._columns]
+
+        col_locations = [self._columns.index(x) for x in columns]
         data_dict = dict()
-        data = list(compress(self._data, c))
-        for x, column in enumerate(columns):
-            data_dict[column] = list(compress(data[x], bool_indexes)) if is_bool_indexes \
-                else [data[x][i] for i in locations]
+
+        for c in col_locations:
+            data_dict[self._columns[c]] = list(compress(self._data[c], bool_indexes)) if is_bool_indexes \
+                else [self._data[c][i] for i in locations]
 
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
                          sorted=self._sorted)

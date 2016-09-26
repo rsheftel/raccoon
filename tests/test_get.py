@@ -49,12 +49,17 @@ def test_get_rows():
     actual = df.get([11, 12], 'c')
     assert_frame_equal(actual, expected)
 
-    # get as a list
-    assert df.get([11, 12], 'c', as_list=True) == [8, 9]
-
     # test with boolean list
     actual = df.get([False, True, True, False], 'c')
     assert_frame_equal(actual, expected)
+
+    # index out of order
+    expected = rc.DataFrame({'c': [None, 7]}, index=[99, 10], index_name='start_10', sorted=False)
+    actual = df.get([99, 10], 'c')
+    assert_frame_equal(actual, expected)
+
+    # get as a list
+    assert df.get([11, 12], 'c', as_list=True) == [8, 9]
 
     # get as a list
     assert df.get([False, True, True, False], 'c', as_list=True) == [8, 9]
@@ -86,6 +91,11 @@ def test_get_rows_sorted():
     actual = df.get([False, True, True, False], 'c')
     assert_frame_equal(actual, expected)
 
+    # index out of order
+    expected = rc.DataFrame({'c': [7, None]}, index=[10, 99], index_name='start_10', sorted=True)
+    actual = df.get([99, 10], 'c')
+    assert_frame_equal(actual, expected)
+
     # get as a list
     assert df.get([False, True, True, False], 'c', as_list=True) == [8, 9]
 
@@ -114,6 +124,12 @@ def test_get_columns():
     actual = df.get(99, [True, False, True])
     assert_frame_equal(actual, expected)
 
+    # columns out of order
+    expected = rc.DataFrame({'c': [8], 'b': [5]}, index=[11], columns=['c', 'b'], index_name='start_10',
+                            sorted=False)
+    actual = df.get(11, ['c', 'b'])
+    assert_frame_equal(actual, expected)
+
     # as_dict
     assert df.get_columns(11, ['b', 'c'], as_dict=True) == {'start_10': 11, 'b': 5, 'c': 8}
 
@@ -139,6 +155,12 @@ def test_get_columns_sorted():
     actual = df.get(99, [True, False, True])
     assert_frame_equal(actual, expected)
 
+    # columns out of order
+    expected = rc.DataFrame({'c': [8], 'b': [5]}, index=[11], columns=['c', 'b'], index_name='start_10',
+                            sorted=True)
+    actual = df.get(11, ['c', 'b'])
+    assert_frame_equal(actual, expected)
+
     # test boolean list not same length as columns
     with pytest.raises(ValueError):
         df.get(99, [True, False])
@@ -161,6 +183,12 @@ def test_get_matrix():
     actual = df.get([True, False, True], [False, True, False, True])
     assert_frame_equal(actual, expected)
 
+    # columns out of order
+    expected = rc.DataFrame({'d': [10, 12], 'c': [7, 9]}, index=['x', 'z'], columns=['d', 'c'], index_name='letters',
+                            sorted=False)
+    actual = df.get(['x', 'z'], ['d', 'c'])
+    assert_frame_equal(actual, expected)
+
     # get everything
     everything = df.get()
     assert_frame_equal(everything, df)
@@ -178,7 +206,7 @@ def test_get_matrix():
         df.get_matrix(['BAD', 'x'], ['a', 'b'])
 
     # missing column
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
 
 
@@ -195,6 +223,12 @@ def test_get_matrix_sorted():
     actual = df.get([True, False, True], [False, True, False, True])
     assert_frame_equal(actual, expected)
 
+    # columns out of order
+    expected = rc.DataFrame({'d': [10, 12], 'c': [7, 9]}, index=['x', 'z'], columns=['d', 'c'], index_name='letters',
+                            sorted=True)
+    actual = df.get(['x', 'z'], ['d', 'c'])
+    assert_frame_equal(actual, expected)
+
     # get everything
     everything = df.get()
     assert_frame_equal(everything, df)
@@ -212,7 +246,7 @@ def test_get_matrix_sorted():
         df.get_matrix(['BAD', 'x'], ['a', 'b'])
 
     # missing column
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
 
 
@@ -235,6 +269,8 @@ def test_get_square_brackets():
     assert_frame_equal(df[['a', 'b', 'c']], rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]},
                                                          columns=['a', 'b', 'c'], sorted=False))
 
+    assert_frame_equal(df[['c', 'a']], rc.DataFrame({'c': [7, 8, 9], 'a': [1, 2, 3]}, columns=['c', 'a'], sorted=False))
+
     # df[1, 'd'] -- get cell at index = 5, column = 'b'
     assert df[1, 'd'] == 11
 
@@ -243,12 +279,59 @@ def test_get_square_brackets():
                        rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9], 'd': [10, 12]},
                                     columns=['a', 'b', 'c', 'd'], index=[0, 2], sorted=False))
 
+    assert_frame_equal(df[[2, 1], df.columns],
+                       rc.DataFrame({'a': [3, 2], 'b': [6, 5], 'c': [9, 8], 'd': [12, 11]},
+                                    columns=['a', 'b', 'c', 'd'], index=[2, 1], sorted=False))
+
     # df[[0, 2], 'c'] -- get indexes = [4, 5], column = 'b'
     assert_frame_equal(df[[0, 2], 'c'], rc.DataFrame({'c': [7, 9]}, index=[0, 2], sorted=False))
+
+    assert_frame_equal(df[[2, 0], 'c'], rc.DataFrame({'c': [9, 7]}, index=[2, 0], sorted=False))
 
     # df[[1, 2], ['a', 'd']] -- get indexes = [4, 5], columns = ['a', 'b']
     assert_frame_equal(df[[1, 2], ['a', 'd']], rc.DataFrame({'a': [2, 3], 'd': [11, 12]}, columns=['a', 'd'],
                        index=[1, 2], sorted=False))
+
+    assert_frame_equal(df[[2, 0], ['d', 'a']], rc.DataFrame({'d': [12, 10], 'a': [3, 1]}, columns=['d', 'a'],
+                       index=[2, 0], sorted=False))
+
+
+def test_get_square_brackets_sorted():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'],
+                      sorted=True)
+
+    # df['b'] -- get column
+    assert_frame_equal(df['b'], rc.DataFrame({'b': [4, 5, 6]}, sorted=True))
+
+    # df[['a', 'b', c']] -- get columns
+    assert_frame_equal(df[['a', 'b', 'c']], rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]},
+                                                         columns=['a', 'b', 'c'], sorted=True))
+
+    assert_frame_equal(df[['c', 'a']], rc.DataFrame({'c': [7, 8, 9], 'a': [1, 2, 3]}, columns=['c', 'a'], sorted=True))
+
+    # df[1, 'd'] -- get cell at index = 5, column = 'b'
+    assert df[1, 'd'] == 11
+
+    # df[[0, 2]] -- get indexes = [0, 2] all columns
+    assert_frame_equal(df[[0, 2], df.columns],
+                       rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9], 'd': [10, 12]},
+                                    columns=['a', 'b', 'c', 'd'], index=[0, 2], sorted=True))
+
+    assert_frame_equal(df[[2, 1], df.columns],
+                       rc.DataFrame({'a': [2, 3], 'b': [5, 6], 'c': [8, 9], 'd': [11, 12]},
+                                    columns=['a', 'b', 'c', 'd'], index=[1, 2], sorted=True))
+
+    # df[[0, 2], 'c'] -- get indexes = [4, 5], column = 'b'
+    assert_frame_equal(df[[0, 2], 'c'], rc.DataFrame({'c': [7, 9]}, index=[0, 2], sorted=True))
+
+    assert_frame_equal(df[[2, 0], 'c'], rc.DataFrame({'c': [9, 7]}, index=[2, 0], sorted=True))
+
+    # df[[1, 2], ['a', 'd']] -- get indexes = [4, 5], columns = ['a', 'b']
+    assert_frame_equal(df[[1, 2], ['a', 'd']], rc.DataFrame({'a': [2, 3], 'd': [11, 12]}, columns=['a', 'd'],
+                       index=[1, 2], sorted=True))
+
+    assert_frame_equal(df[[2, 0], ['d', 'a']], rc.DataFrame({'d': [10, 12], 'a': [1, 3]}, columns=['d', 'a'],
+                       index=[0, 2], sorted=True))
 
 
 def test_get_slicer():
@@ -263,6 +346,9 @@ def test_get_slicer():
     # df[0:1, ['c', 'd']] -- get slice from index 0 to 1, columns ['c', 'd']
     assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]},
                                                          columns=['c', 'd'], index=[0, 1], sorted=False))
+
+    assert_frame_equal(df[0:1, ['d', 'c']], rc.DataFrame({'d': [10, 11], 'c': [7, 8]},
+                                                         columns=['d', 'c'], index=[0, 1], sorted=False))
 
     # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sorted=False))
@@ -290,6 +376,9 @@ def test_get_slicer_sorted():
     # df[0:1, ['c', 'd']] -- get slice from index 0 to 1, columns ['c', 'd']
     assert_frame_equal(df[0:1, ['c', 'd']], rc.DataFrame({'c': [7, 8], 'd': [10, 11]},
                                                          columns=['c', 'd'], index=[0, 1], sorted=True))
+
+    assert_frame_equal(df[0:1, ['d', 'c']], rc.DataFrame({'d': [10, 11], 'c': [7, 8]},
+                                                         columns=['d', 'c'], index=[0, 1], sorted=True))
 
     # df[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sorted=True))

@@ -91,6 +91,10 @@ Updates
 ~~~~~
 - Added get_entire_column() method and changed get() to use that when asking for only a single column
 
+1.1.5
+~~~~~
+- Bug fix where df[[columns]] would return wrong results with the column names not matching the correct column data
+
 Contents
 --------
 .. toctree::
