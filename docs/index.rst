@@ -95,6 +95,10 @@ Updates
 ~~~~~
 - Bug fix where df[[columns]] would return wrong results with the column names not matching the correct column data
 
+1.1.6
+~~~~~
+- Added index parameter to iterrows() and itertuples()
+
 Contents
 --------
 .. toctree::
