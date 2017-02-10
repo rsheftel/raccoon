@@ -21,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 83606720
+    object id: 2369135458120
     columns:
     []
     data:
@@ -42,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 83917344
+    object id: 2369135594072
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 83918184
+    object id: 2369135594800
     columns:
     ['a', 'b']
     data:
@@ -504,7 +504,7 @@ from 0...len(index)
 
 .. parsed-literal::
 
-      index    a    b    c    d
+      index    a    b    c  d
     -------  ---  ---  ---  ---
          10  100   88    1
          12   33   99    3
@@ -537,7 +537,7 @@ Head and Tail
 
 .. parsed-literal::
 
-      index    a    b    c    d
+      index    a    b    c  d
     -------  ---  ---  ---  ---
          10   -9   88    1
          11    2   55    2
@@ -732,10 +732,10 @@ Append
 
 .. parsed-literal::
 
-      index    c    b
+      index    b    c
     -------  ---  ---
-          3   11    7
-          4   12    8
+          3    7   11
+          4    8   12
     
 
 .. code:: python
@@ -945,6 +945,135 @@ a wild card for matching.
 
 
 
+Reset Index
+-----------
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+          0    1    4
+          1    2    5
+          2    3    6
+    
+
+.. code:: python
+
+    df.reset_index()
+    df
+
+
+
+
+.. parsed-literal::
+
+    object id: 2369135899256
+    columns:
+    ['a', 'b', 'index']
+    data:
+    [[1, 2, 3], [4, 5, 6], [0, 1, 2]]
+    index:
+    [0, 1, 2]
+
+
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    print(df)
+
+
+.. parsed-literal::
+
+    jelo      a    b
+    ------  ---  ---
+    x         1    4
+    y         2    5
+    z         3    6
+    
+
+.. code:: python
+
+    df.reset_index()
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b  jelo
+    -------  ---  ---  ------
+          0    1    4  x
+          1    2    5  y
+          2    3    6  z
+    
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
+                       index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
+    print(df)
+
+
+.. parsed-literal::
+
+    ('melo', 'helo', 'gelo')      a    b
+    --------------------------  ---  ---
+    ('a', 10, 'x')                1    4
+    ('b', 11, 'y')                2    5
+    ('c', 12, 'z')                3    6
+    
+
+.. code:: python
+
+    df.reset_index()
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b  melo      helo  gelo
+    -------  ---  ---  ------  ------  ------
+          0    1    4  a           10  x
+          1    2    5  b           11  y
+          2    3    6  c           12  z
+    
+
+.. code:: python
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    print(df)
+
+
+.. parsed-literal::
+
+    jelo      a    b
+    ------  ---  ---
+    x         1    4
+    y         2    5
+    z         3    6
+    
+
+.. code:: python
+
+    df.reset_index(drop=True)
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b
+    -------  ---  ---
+          0    1    4
+          1    2    5
+          2    3    6
+    
+
 Iterators
 ---------
 
@@ -960,9 +1089,9 @@ Iterators
 
 .. parsed-literal::
 
-    {'a': 1, 'b': 5, 'index': 1}
-    {'a': 2, 'b': 6, 'index': 2}
-    {'a': 'c', 'b': 'd', 'index': 3}
+    {'index': 1, 'a': 1, 'b': 5}
+    {'index': 2, 'a': 2, 'b': 6}
+    {'index': 3, 'a': 'c', 'b': 'd'}
     
 
 .. code:: python
@@ -1006,22 +1135,6 @@ start
          15    5    8
     
 
-.. code:: python
-
-    # inserts are done in sorted order on index
-    df[11, 'a'] = 2
-    print(df)
-
-
-.. parsed-literal::
-
-      index    a    b
-    -------  ---  ---
-         11    2
-         12    3    6
-         14    4    7
-         15    5    8
-    
 
 .. code:: python
 
@@ -1033,7 +1146,6 @@ start
 
       index    a    b
     -------  ---  ---
-         11    2
          12    3    6
          14    4    7
          15    5    8
@@ -1050,7 +1162,6 @@ start
 
       index    a    b
     -------  ---  ---
-         11  2
          12  3    6
          13  3.5  6.5
          14  4    7

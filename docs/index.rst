@@ -99,6 +99,10 @@ Updates
 ~~~~~
 - Added index parameter to iterrows() and itertuples()
 
+1.1.7
+~~~~~
+- Added reset_index() method
+
 Contents
 --------
 .. toctree::

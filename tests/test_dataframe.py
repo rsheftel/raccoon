@@ -370,3 +370,33 @@ def test_isin():
     assert df.isin('second', ['a', 2]) == [True, True, False, False, False]
     assert df.isin('second', ['a', 'b']) == [True, False, True, False, False]
     assert df.isin('second', ['a', 'b', None]) == [True, False, True, True, False]
+
+
+def test_reset_index():
+    # no index defined
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
+    df.reset_index()
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'index': [0, 1, 2]}, columns=['a', 'b', 'index'])
+    assert_frame_equal(df, expected)
+
+    # with index and index name defined
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    df.reset_index()
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'jelo': ['x', 'y', 'z']}, columns=['a', 'b', 'jelo'],
+                            sorted=False)
+    assert_frame_equal(df, expected)
+
+    # with a tuple multi-index
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
+                      index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
+    df.reset_index()
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'melo': ['a', 'b', 'c'], 'helo': [10, 11, 12],
+                             'gelo': ['x', 'y', 'z']}, columns=['a', 'b', 'melo', 'helo', 'gelo'],
+                            sorted=False)
+    assert_frame_equal(df, expected)
+
+    # drop
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    df.reset_index(drop=True)
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], }, columns=['a', 'b'], sorted=False)
+    assert_frame_equal(df, expected)

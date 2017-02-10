@@ -992,3 +992,23 @@ class DataFrame(object):
             for c, col in enumerate(self._columns):
                 row[col] = self._data[c][i]
             yield row_tuple(**row)
+
+    def reset_index(self, drop=False):
+        """
+        Resets the index of the DataFrame to simple integer list and the index name to 'index'. If drop is True then
+        the existing index is dropped, if drop is False then the current index is made a column in the DataFrame with
+        the index name the name of the column. If the index is a tuple multi-index then each element of the tuple is
+        converted into a separate column.
+
+        :param drop: if True then the currnet index is dropped, if False then index converted to columns
+        :return: nothing
+        """
+        if not drop:
+            if isinstance(self.index_name, tuple):
+                index_data = list(map(list, zip(*self.index)))
+                for i in range(len(self.index_name)):
+                    self.set_column(column=self.index_name[i], values=index_data[i])
+            else:
+                self.set_column(column=self.index_name, values=self.index)
+        self.index = list(range(self.__len__()))
+        self.index_name = 'index'
