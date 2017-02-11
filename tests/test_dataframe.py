@@ -376,7 +376,7 @@ def test_reset_index():
     # no index defined
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
     df.reset_index()
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'index': [0, 1, 2]}, columns=['a', 'b', 'index'])
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'index_0': [0, 1, 2]}, columns=['a', 'b', 'index_0'])
     assert_frame_equal(df, expected)
 
     # with index and index name defined
