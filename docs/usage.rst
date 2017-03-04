@@ -21,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2369135458120
+    object id: 2314446230696
     columns:
     []
     data:
@@ -42,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2369135594072
+    object id: 2314484260704
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2369135594800
+    object id: 2314484417368
     columns:
     ['a', 'b']
     data:
@@ -654,6 +654,34 @@ Convert
 
 
 
+.. code:: python
+
+    # convert to JSON
+    string = df.to_json()
+    print(string)
+
+
+.. parsed-literal::
+
+    {"data": {"a": [2, -9, 44], "c": [2, 3, 100], "d": [null, null, 99]}, "index": [11, 12, 14], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sorted": false, "use_blist": false}}
+    
+
+.. code:: python
+
+    # construct DataFrame from JSON
+    df_from_json = rc.from_json(string)
+    print(df_from_json)
+
+
+.. parsed-literal::
+
+      index    a    c    d
+    -------  ---  ---  ---
+         11    2    2
+         12   -9    3
+         14   44  100   99
+    
+
 Sort by Index and Column
 ------------------------
 
@@ -973,9 +1001,9 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 2369135899256
+    object id: 2314484531272
     columns:
-    ['a', 'b', 'index']
+    ['a', 'b', 'index_0']
     data:
     [[1, 2, 3], [4, 5, 6], [0, 1, 2]]
     index:

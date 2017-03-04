@@ -8,6 +8,11 @@ from bisect import bisect_left, bisect_right
 from tabulate import tabulate
 from blist import blist
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 
 def sorted_exists(values, x):
     """
@@ -721,6 +726,28 @@ class DataFrame(object):
         result.update(data_dict)
         return result
 
+    def to_json(self) -> str:
+        """
+        Returns a JSON of the entire DataFrame that can be reconstructed back with raccoon.from_json(input)
+
+        :return: json string
+        """
+        input_dict = {'data': self.to_dict(index=False), 'index': list(self.index)}
+
+        # if blist, turn into lists
+        if self.blist:
+            input_dict['index'] = list(input_dict['index'])
+            for key in input_dict['data']:
+                input_dict['data'][key] = list(input_dict['data'][key])
+
+        meta_data = dict()
+        for key, value in vars(self).items():
+            if key not in ['_data', '_index']:
+                meta_data[key.lstrip('_')] = value if not isinstance(value, blist) else list(value)
+        meta_data['use_blist'] = meta_data.pop('blist')
+        input_dict['meta_data'] = meta_data
+        return json.dumps(input_dict)
+
     def rename_columns(self, rename_dict):
         """
         Renames the columns
@@ -1014,3 +1041,15 @@ class DataFrame(object):
                 self.set_column(column=col_name, values=self.index)
         self.index = list(range(self.__len__()))
         self.index_name = 'index'
+
+
+# DataFrame creation functions
+def from_json(json_string: str):
+    """
+    Creates and return a DataFrame from a JSON of the type created by to_json
+
+    :param json_string: JSON
+    :return: DataFrame
+    """
+    input_dict = json.loads(json_string)
+    return DataFrame(data=input_dict['data'], index=input_dict['index'], **input_dict['meta_data'])

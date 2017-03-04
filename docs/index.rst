@@ -103,6 +103,10 @@ Updates
 ~~~~~
 - Added reset_index() method
 
+1.1.8
+~~~~~
+- Added methods to serialize and deserialize to JSON
+
 Contents
 --------
 .. toctree::

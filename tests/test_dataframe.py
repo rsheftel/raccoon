@@ -108,6 +108,20 @@ def test_to_list():
         df.to_list()
 
 
+def test_json():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
+
+    str = df.to_json()
+    actual = rc.from_json(str)
+    assert_frame_equal(df, actual)
+
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sorted=False)
+
+    str = df.to_json()
+    actual = rc.from_json(str)
+    assert_frame_equal(df, actual)
+
+
 def test_append():
     # duplicate indexes
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
