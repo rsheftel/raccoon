@@ -1,3 +1,3 @@
 
-__version__ = "1.1.8"
+__version__ = "1.1.9"
 from .dataframe import DataFrame, from_json

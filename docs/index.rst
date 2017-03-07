@@ -56,56 +56,10 @@ execute make_docs.bat from the command line. To run the test coverage report run
 
 Updates
 -------
-1.0.1
-~~~~~
-- Added isin() method
+.. toctree::
+   :maxdepth: 1
 
-1.0.2
-~~~~~
-- Fixed several small bugs
-- Added iterators: iterrows() and itertuples()
-
-1.1.0
-~~~~~
-- Multiple bug fixes
-- Speed improvements
-- Removed using slices to set values which did not work
-- Added sorted functionality
-
-1.1.1
-~~~~~
-- Multiple bug fixes
-- The index and columns data type follow the use_blist parameter
-- Added set_locations() and get_locations() methods
-- Added as_dict() parameter to get_columns()
-
-1.1.2
-~~~~~
-- Changed the default for use_blist to False on object initialization
-
-1.1.3
-~~~~~
-- Added append_row() method
-
-1.1.4
-~~~~~
-- Added get_entire_column() method and changed get() to use that when asking for only a single column
-
-1.1.5
-~~~~~
-- Bug fix where df[[columns]] would return wrong results with the column names not matching the correct column data
-
-1.1.6
-~~~~~
-- Added index parameter to iterrows() and itertuples()
-
-1.1.7
-~~~~~
-- Added reset_index() method
-
-1.1.8
-~~~~~
-- Added methods to serialize and deserialize to JSON
+   change_log.rst
 
 Contents
 --------
