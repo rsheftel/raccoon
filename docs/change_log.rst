@@ -55,3 +55,8 @@ Change Log
 1.1.9 (3/7/17)
 ~~~~~~~~~~~~~~
 - Fixed the from_json() for multi-index DataFrames
+
+1.2 (3/8/17)
+~~~~~~~~~~~~
+- to_json() will convert any non-serializable object to string representation
+- Move to new version numbering scheme

@@ -122,6 +122,20 @@ def test_json():
     assert_frame_equal(df, actual)
 
 
+def test_json_objects():
+    # test with a compound object returning a representation
+    df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
+
+    str = df.to_json()
+    actual = rc.from_json(str)
+
+    # the DataFrames are not equal because the blist() was converted to a representation
+    with pytest.raises(AssertionError):
+        assert_frame_equal(df, actual)
+
+    assert actual[1, 'b'] != blist([5, 6])
+    assert actual[1, 'b'] == 'blist([5, 6])'
+
 def test_json_multi_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
 

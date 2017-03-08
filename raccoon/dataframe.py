@@ -728,7 +728,9 @@ class DataFrame(object):
 
     def to_json(self) -> str:
         """
-        Returns a JSON of the entire DataFrame that can be reconstructed back with raccoon.from_json(input)
+        Returns a JSON of the entire DataFrame that can be reconstructed back with raccoon.from_json(input). Any object
+        that cannot be serialized will be replaced with the representation of the object using repr(). In that instance
+        the DataFrame will have a string representation in place of the object and will not reconstruct exactly.
 
         :return: json string
         """
@@ -746,7 +748,7 @@ class DataFrame(object):
                 meta_data[key.lstrip('_')] = value if not isinstance(value, blist) else list(value)
         meta_data['use_blist'] = meta_data.pop('blist')
         input_dict['meta_data'] = meta_data
-        return json.dumps(input_dict)
+        return json.dumps(input_dict, default=repr)
 
     def rename_columns(self, rename_dict):
         """
