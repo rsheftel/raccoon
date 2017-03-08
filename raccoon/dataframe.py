@@ -1055,9 +1055,10 @@ def from_json(json_string: str):
     """
     input_dict = json.loads(json_string)
     # convert index to tuple if required
-    if isinstance(input_dict['index'][0], list):
+    if input_dict['index'] and isinstance(input_dict['index'][0], list):
         input_dict['index'] = [tuple(x) for x in input_dict['index']]
     # convert index_name to tuple if required
     if isinstance(input_dict['meta_data']['index_name'], list):
         input_dict['meta_data']['index_name'] = tuple(input_dict['meta_data']['index_name'])
-    return DataFrame(data=input_dict['data'], index=input_dict['index'], **input_dict['meta_data'])
+    data = input_dict['data'] if input_dict['data'] else None
+    return DataFrame(data=data, index=input_dict['index'], **input_dict['meta_data'])

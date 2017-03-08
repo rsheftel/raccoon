@@ -121,6 +121,17 @@ def test_json():
     actual = rc.from_json(str)
     assert_frame_equal(df, actual)
 
+    # empty DataFrame
+    df = rc.DataFrame({'a': [], 'b': [], 'c': []})
+    str = df.to_json()
+    actual = rc.from_json(str)
+    assert_frame_equal(df, actual)
+
+    df = rc.DataFrame()
+    str = df.to_json()
+    actual = rc.from_json(str)
+    assert_frame_equal(df, actual)
+
 
 def test_json_objects():
     # test with a compound object returning a representation

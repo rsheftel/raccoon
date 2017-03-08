@@ -60,3 +60,7 @@ Change Log
 ~~~~~~~~~~~~
 - to_json() will convert any non-serializable object to string representation
 - Move to new version numbering scheme
+
+1.2.1 (3/8/17)
+~~~~~~~~~~~~~~
+- bug fix from_json() to work with empty DataFrames
