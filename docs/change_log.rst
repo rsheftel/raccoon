@@ -64,3 +64,7 @@ Change Log
 1.2.1 (3/8/17)
 ~~~~~~~~~~~~~~
 - bug fix from_json() to work with empty DataFrames
+
+1.2.2 (3/10/17)
+~~~~~~~~~~~~~~~
+- Added the ability to pass a function and arguments to the assert_frame_equal function to use when comparing data
