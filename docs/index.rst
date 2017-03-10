@@ -69,6 +69,7 @@ Contents
    modules.rst
    raccoon.rst
    usage.rst
+   convert_pandas.rst
    speed_test.rst
 
 Indices and tables
