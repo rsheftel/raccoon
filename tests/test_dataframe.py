@@ -206,7 +206,7 @@ def test_rename_columns():
         df.rename_columns({'a2': 'a', 'bad': 'nogo'})
 
 
-def test_print():
+def test_show():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
                       index=['row1', 'row2', 'row3'], use_blist=True)
 
@@ -222,8 +222,8 @@ def test_print():
     actual = df.__str__()
     assert actual == expected
 
-    # print() method will pass along any argument for the tabulate.tabulate function
-    df.print()
+    # show() method will pass along any argument for the tabulate.tabulate function
+    df.show()
 
 
 def test_input_data_mutability():
