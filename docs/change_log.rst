@@ -68,3 +68,8 @@ Change Log
 1.2.2 (3/10/17)
 ~~~~~~~~~~~~~~~
 - Added the ability to pass a function and arguments to the assert_frame_equal function to use when comparing data
+
+1.3 (3/26/17)
+~~~~~~~~~~~~~
+- Added `Python2.7 support <https://github.com/rsheftel/raccoon/pull/4>`_  thanks to `tonycpsu <https://github.com/tonycpsu>`_
+- Fixed some logic set_column index check https://github.com/rsheftel/raccoon/issues/5
