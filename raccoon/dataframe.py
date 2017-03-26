@@ -573,7 +573,7 @@ class DataFrame(object):
             c = len(self.columns)
             self._add_column(column)
         if index:  # index was provided
-            if len(index) == (index.count(True) + index.count(False)):  # boolean list
+            if all([isinstance(i, bool) for i in index]):  # boolean list
                 if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
