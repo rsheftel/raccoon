@@ -309,7 +309,7 @@ class DataFrame(object):
         :return: DataFrame is as_list if False, a list if as_list is True
         """
         c = self._columns.index(column)
-        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+        if all([isinstance(i, bool) for i in indexes]): # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean index list must be same size of existing index')
             if all(indexes):  # the entire column
@@ -374,7 +374,7 @@ class DataFrame(object):
         :param columns: list of column names
         :return: DataFrame
         """
-        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+        if all([isinstance(i, bool) for i in indexes]): # boolean list
             is_bool_indexes = True
             if len(indexes) != len(self._index):
                 raise ValueError('boolean index list must be same size of existing index')
@@ -385,7 +385,7 @@ class DataFrame(object):
             locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
                 else [self._index.index(x) for x in indexes]
 
-        if len(columns) == (columns.count(True) + columns.count(False)):  # boolean list
+        if all([isinstance(i, bool) for i in columns]): # boolean list
             if len(columns) != len(self._columns):
                 raise ValueError('boolean column list must be same size of existing columns')
             columns = list(compress(self._columns, columns))
@@ -573,7 +573,7 @@ class DataFrame(object):
             c = len(self.columns)
             self._add_column(column)
         if index:  # index was provided
-            if all([isinstance(i, bool) for i in index]):  # boolean list
+            if all([isinstance(i, bool) for i in index]): # boolean list
                 if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
@@ -804,7 +804,7 @@ class DataFrame(object):
         :return: nothing
         """
         indexes = [indexes] if not isinstance(indexes, (list, blist)) else indexes
-        if len(indexes) == (indexes.count(True) + indexes.count(False)):  # boolean list
+        if all([isinstance(i, bool) for i in indexes]): # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
             indexes = [i for i, x in enumerate(indexes) if x]
