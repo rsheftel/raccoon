@@ -837,8 +837,16 @@ class DataFrame(object):
             self.index = list()
 
     @staticmethod
-    def _sorted_list_indexes(list_to_sort):
-        return sorted(range(len(list_to_sort)), key=list_to_sort.__getitem__)
+    def _sorted_list_indexes(list_to_sort, reverse=False):
+        """
+        Sorts a list but returns the order of the index values of the list for the sort and not the values themselves.
+        For example is the list provided is ['b', 'a', 'c'] then the result will be [2, 1, 3]
+
+        :param list_to_sort: list to sort
+        :param reverse: if True then the list elements are sorted as if each comparison were reversed.
+        :return: list of sorted index values
+        """
+        return sorted(range(len(list_to_sort)), key=list_to_sort.__getitem__, reverse=reverse)
 
     def sort_index(self):
         """
@@ -853,16 +861,17 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
 
-    def sort_columns(self, column):
+    def sort_columns(self, column, reverse=False):
         """
         Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace
 
         :param column: column name to use for the sort
+        :param reverse: if True then the list elements are sorted as if each comparison were reversed.
         :return: nothing
         """
         if isinstance(column, (list, blist)):
             raise TypeError('Can only sort by a single column  ')
-        sort = self._sorted_list_indexes(self._data[self._columns.index(column)])
+        sort = self._sorted_list_indexes(self._data[self._columns.index(column)], reverse)
         # sort index
         self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column

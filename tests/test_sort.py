@@ -62,10 +62,18 @@ def test_sort_column():
     df.sort_columns('b')
     assert_frame_equal(df, rc.DataFrame({'a': [2, 3, 1], 'b': ['a', 'b', 'c']}, columns=['a', 'b'], index=[10, 9, 8]))
 
+    df.sort_columns('b', reverse=True)
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 3, 2], 'b': ['c', 'b', 'a']}, columns=['a', 'b'], index=[8, 9, 10]))
+
     # test on blist
     df = rc.DataFrame({'a': [2, 1, 3], 'b': ['a', 'c', 'b']}, columns=['a', 'b'], index=[10, 8, 9], use_blist=True)
 
     df.sort_columns('a')
     assert isinstance(df.index, blist)
     assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3], 'b': ['c', 'a', 'b']}, columns=['a', 'b'], index=[8, 10, 9],
+                                        use_blist=True))
+
+    df.sort_columns('a', reverse=True)
+    assert isinstance(df.index, blist)
+    assert_frame_equal(df, rc.DataFrame({'a': [3, 2, 1], 'b': ['b', 'a', 'c']}, columns=['a', 'b'], index=[9, 10, 8],
                                         use_blist=True))
