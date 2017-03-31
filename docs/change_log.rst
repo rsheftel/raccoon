@@ -78,3 +78,7 @@ Change Log
 1.3.1 (3/30/17)
 ~~~~~~~~~~~~~~~
 - Added reverse argument to sort_columns()
+
+1.3.2 (3/31/17)
+~~~~~~~~~~~~~~~
+- Added key argument to sort_columns()
