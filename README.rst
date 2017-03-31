@@ -5,6 +5,9 @@ Python DataFrame with fast insert and appends
 .. image:: https://travis-ci.org/rsheftel/raccoon.svg?branch=master
     :target: https://travis-ci.org/rsheftel/raccoon
     
+.. image:: https://coveralls.io/repos/github/rsheftel/raccoon/badge.svg?branch=master
+    :target: https://coveralls.io/github/rsheftel/raccoon?branch=master
+    
 Documentation
 -------------
 http://raccoon.readthedocs.io/en/latest/

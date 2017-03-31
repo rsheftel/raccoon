@@ -47,7 +47,7 @@ My hope is that one day Pandas solves the speed problem with growing DataFrames 
 
 Python Version
 ~~~~~~~~~~~~~~
-Raccoon required Python 3.3 or greater to run because it utilizes "yield from" which was introduced in 3.3
+Raccoon required Python 2.7 or3.3 or greater to run because it utilizes "yield from" which was introduced in 3.3
 
 Helper scripts
 ~~~~~~~~~~~~~~
