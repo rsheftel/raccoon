@@ -17,7 +17,7 @@ install:
   - "python setup.py install"
 
 script:
-   - coverage run --source pandas_market_calendars -m py.test
+   - coverage run --source raccoon -m py.test
    - coverage report -m
 
 after_success:
