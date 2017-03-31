@@ -837,16 +837,22 @@ class DataFrame(object):
             self.index = list()
 
     @staticmethod
-    def _sorted_list_indexes(list_to_sort, reverse=False):
+    def _sorted_list_indexes(list_to_sort, key=None, reverse=False):
         """
         Sorts a list but returns the order of the index values of the list for the sort and not the values themselves.
         For example is the list provided is ['b', 'a', 'c'] then the result will be [2, 1, 3]
 
         :param list_to_sort: list to sort
+        :param key: if not None then a function of one argument that is used to extract a comparison key from each
+                    list element
         :param reverse: if True then the list elements are sorted as if each comparison were reversed.
         :return: list of sorted index values
         """
-        return sorted(range(len(list_to_sort)), key=list_to_sort.__getitem__, reverse=reverse)
+        if key is not None:
+            def key_func(i): return key(list_to_sort.__getitem__(i))
+        else:
+            key_func = list_to_sort.__getitem__
+        return sorted(range(len(list_to_sort)), key=key_func, reverse=reverse)
 
     def sort_index(self):
         """
@@ -861,17 +867,20 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
 
-    def sort_columns(self, column, reverse=False):
+    def sort_columns(self, column, key=None, reverse=False):
         """
-        Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace
+        Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace. The key and reverse
+        parameters have the same meaning as for the built-in sorted() function.
 
         :param column: column name to use for the sort
+        :param key: if not None then a function of one argument that is used to extract a comparison key from each
+                    list element
         :param reverse: if True then the list elements are sorted as if each comparison were reversed.
         :return: nothing
         """
         if isinstance(column, (list, blist)):
             raise TypeError('Can only sort by a single column  ')
-        sort = self._sorted_list_indexes(self._data[self._columns.index(column)], reverse)
+        sort = self._sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
         # sort index
         self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column

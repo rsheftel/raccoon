@@ -77,3 +77,23 @@ def test_sort_column():
     assert isinstance(df.index, blist)
     assert_frame_equal(df, rc.DataFrame({'a': [3, 2, 1], 'b': ['b', 'a', 'c']}, columns=['a', 'b'], index=[9, 10, 8],
                                         use_blist=True))
+
+
+def test_sort_column_w_key():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': ['a', 'b', 'c', 'd']}, columns=['a', 'b'], index=[8, 9, 10, 11])
+
+    # No key, reverse
+    df.sort_columns('a', key=None, reverse=True)
+    assert_frame_equal(df, rc.DataFrame({'a': [4, 3, 2, 1], 'b': ['d', 'c', 'b', 'a']}, columns=['a', 'b'],
+                                        index=[11, 10, 9, 8]))
+
+    # a key function that turns evens into a odds into a negative number
+    def even_to_neg(i): return i * -1 if i % 2 == 0 else i
+    df.sort_columns('a', key=even_to_neg)
+    assert_frame_equal(df, rc.DataFrame({'a': [4, 2, 1, 3], 'b': ['d', 'b', 'a', 'c']}, columns=['a', 'b'],
+                                        index=[11, 9, 8, 10]))
+
+    # with key and reverse
+    df.sort_columns('a', key=even_to_neg, reverse=True)
+    assert_frame_equal(df, rc.DataFrame({'a': [3, 1, 2, 4], 'b': ['c', 'a', 'b', 'd']}, columns=['a', 'b'],
+                                        index=[10, 8, 9, 11]))
