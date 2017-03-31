@@ -74,3 +74,7 @@ Change Log
 - Added `Python2.7 support <https://github.com/rsheftel/raccoon/pull/4>`_  thanks to `tonycpsu <https://github.com/tonycpsu>`_
 - Fixed some logic set_column index check https://github.com/rsheftel/raccoon/issues/5
 - Changed method .print() to .show() for Python2 compliance
+
+1.3.1 (3/30/17)
+~~~~~~~~~~~~~~~
+- Added reverse argument to sort_columns()
