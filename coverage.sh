@@ -4,4 +4,4 @@
 # Excludes slow tests
 
 py3 -m pytest --color=yes --cov=raccoon --cov-report html
-cygstart $TEMP/raccoon_coverage_report/index.html
+cygstart htmlcov/index.html
