@@ -112,24 +112,24 @@ def test_json():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
 
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sorted=False)
 
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
     # empty DataFrame
     df = rc.DataFrame({'a': [], 'b': [], 'c': []})
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame()
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
 
@@ -138,7 +138,7 @@ def test_json_objects():
     df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
 
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
 
     # the DataFrames are not equal because the blist() was converted to a representation
     with pytest.raises(AssertionError):
@@ -151,14 +151,14 @@ def test_json_multi_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
 
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)],
                       index_name=('first', 'second'))
 
     str = df.to_json()
-    actual = rc.from_json(str)
+    actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
 
