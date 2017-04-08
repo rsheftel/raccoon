@@ -8,7 +8,7 @@ Example Usage for Raccoon
     import raccoon as rc
 
 Initialize
-==========
+----------
 
 .. code:: python
 
@@ -21,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 139968555468616
+    object id: 3086351037160
     columns:
     []
     data:
@@ -42,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 139968555466824
+    object id: 3086354089856
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 139968435163880
+    object id: 3086354090808
     columns:
     ['a', 'b']
     data:
@@ -74,7 +74,7 @@ Initialize
 
 
 Print
-=====
+-----
 
 .. code:: python
 
@@ -88,7 +88,7 @@ Print
          10    1    4
          11    2    5
          12    3    6
-
+    
 
 .. code:: python
 
@@ -102,10 +102,10 @@ Print
          10    1    4
          11    2    5
          12    3    6
-
+    
 
 Setters and Getters
-===================
+-------------------
 
 .. code:: python
 
@@ -134,7 +134,7 @@ Setters and Getters
          10        1         4
          11        2         5
          12        3         6
-
+    
 
 .. code:: python
 
@@ -179,7 +179,7 @@ Setters and Getters
     apple      1    4
     pear       2    5
     7.7        3    6
-
+    
 
 .. code:: python
 
@@ -194,7 +194,7 @@ Setters and Getters
          10    1    4
          11    2    5
          12    3    6
-
+    
 
 .. code:: python
 
@@ -240,7 +240,7 @@ Setters and Getters
 
 
 Select Index
-============
+------------
 
 .. code:: python
 
@@ -256,7 +256,7 @@ Select Index
 
 
 Set Values
-==========
+----------
 
 .. code:: python
 
@@ -272,7 +272,7 @@ Set Values
          10  100    4
          11    2    5
          12    3    6
-
+    
 
 .. code:: python
 
@@ -289,7 +289,7 @@ Set Values
          11    2    5
          12    3    6
          13              9
-
+    
 
 .. code:: python
 
@@ -306,7 +306,7 @@ Set Values
          11    2   55
          12    3   55
          13        55    9
-
+    
 
 .. code:: python
 
@@ -323,7 +323,7 @@ Set Values
          11    2   55
          12    3   66
          13        55    9
-
+    
 
 .. code:: python
 
@@ -340,7 +340,7 @@ Set Values
          11    2   55
          12    3   99
          13        55    9
-
+    
 
 .. code:: python
 
@@ -357,7 +357,7 @@ Set Values
          11    2   55
          12   33   99
          13   33   55    9
-
+    
 
 .. code:: python
 
@@ -373,7 +373,7 @@ Set Values
          11    2   55    2
          12   33   99    3
          13   33   55    9
-
+    
 
 .. code:: python
 
@@ -391,10 +391,10 @@ Set Values
          12   33   99    3
          13   33   55    9
          14   44       100   99
-
+    
 
 Get Values
-==========
+----------
 
 .. code:: python
 
@@ -425,7 +425,7 @@ Get Values
          12    3
          13    9
          14  100
-
+    
 
 .. code:: python
 
@@ -442,7 +442,7 @@ Get Values
          12   33    3
          13   33    9
          14   44  100
-
+    
 
 .. code:: python
 
@@ -457,7 +457,7 @@ Get Values
          11   55
          12   99
          13   55
-
+    
 
 .. code:: python
 
@@ -472,7 +472,7 @@ Get Values
          11   55
          12   99
          13   55
-
+    
 
 .. code:: python
 
@@ -486,7 +486,7 @@ Get Values
     -------  ---  ---
          10  100    1
          11    2    2
-
+    
 
 .. code:: python
 
@@ -517,7 +517,7 @@ Get Values
 
 
 Set and Get by Location
-=======================
+-----------------------
 
 Locations are the index of the index, in other words the index locations
 from 0...len(index)
@@ -533,7 +533,7 @@ from 0...len(index)
     -------  ---  ---  ---  ---
          10  100   88    1
          12   33   99    3
-
+    
 
 .. code:: python
 
@@ -550,10 +550,10 @@ from 0...len(index)
          12   -9   99    3
          13   33   55    9
          14   44       100   99
-
+    
 
 Head and Tail
-=============
+-------------
 
 .. code:: python
 
@@ -566,7 +566,7 @@ Head and Tail
     -------  ---  ---  ---  ---
          10   -9   88    1
          11    2   55    2
-
+    
 
 .. code:: python
 
@@ -579,10 +579,10 @@ Head and Tail
     -------  ---  ---  ---  ---
          13   33   55    9
          14   44       100   99
-
+    
 
 Delete colunmns and rows
-========================
+------------------------
 
 .. code:: python
 
@@ -597,7 +597,7 @@ Delete colunmns and rows
          11    2   55    2
          12   -9   99    3
          14   44       100   99
-
+    
 
 .. code:: python
 
@@ -612,10 +612,10 @@ Delete colunmns and rows
          11    2    2
          12   -9    3
          14   44  100   99
-
+    
 
 Convert
-=======
+-------
 
 .. code:: python
 
@@ -689,12 +689,12 @@ Convert
 .. parsed-literal::
 
     {"data": {"a": [2, -9, 44], "c": [2, 3, 100], "d": [null, null, 99]}, "index": [11, 12, 14], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sorted": false, "use_blist": false}}
-
+    
 
 .. code:: python
 
     # construct DataFrame from JSON
-    df_from_json = rc.from_json(string)
+    df_from_json = rc.DataFrame.from_json(string)
     print(df_from_json)
 
 
@@ -705,10 +705,10 @@ Convert
          11    2    2
          12   -9    3
          14   44  100   99
-
+    
 
 Sort by Index and Column
-========================
+------------------------
 
 .. code:: python
 
@@ -724,7 +724,7 @@ Sort by Index and Column
          24    3    7
          23    2    8
          22    1    9
-
+    
 
 .. code:: python
 
@@ -741,7 +741,7 @@ Sort by Index and Column
          23    2    8
          24    3    7
          25    4    6
-
+    
 
 .. code:: python
 
@@ -758,7 +758,7 @@ Sort by Index and Column
          24    3    7
          23    2    8
          22    1    9
-
+    
 
 .. code:: python
 
@@ -775,14 +775,14 @@ Sort by Index and Column
          23    2    8
          24    3    7
          25    4    6
-
+    
 
 .. code:: python
 
     # sorting with a key function is avaialble, see tests for examples
 
 Append
-======
+------
 
 .. code:: python
 
@@ -796,7 +796,7 @@ Append
     -------  ---  ---
           1    1    5
           2    2    6
-
+    
 
 .. code:: python
 
@@ -810,7 +810,7 @@ Append
     -------  ---  ---
           3    7   11
           4    8   12
-
+    
 
 .. code:: python
 
@@ -826,10 +826,10 @@ Append
           2    2    6
           3         7   11
           4         8   12
-
+    
 
 Math Methods
-============
+------------
 
 .. code:: python
 
@@ -920,7 +920,7 @@ Math Methods
 
 
 Multi-Index
-===========
+-----------
 
 Raccoon does not have true hierarchical mulit-index capabilities like
 Pandas, but attempts to mimic some of the capabilities with the use of
@@ -944,7 +944,7 @@ the indexes are all the same length or any other integrity checking.
     ('b', 1, 4)    4
     ('b', 2, 1)    5
     ('b', 3, 3)    6
-
+    
 
 The select\_index method works with tuples by allowing the \* to act as
 a wild card for matching.
@@ -1020,7 +1020,7 @@ a wild card for matching.
 
 
 Reset Index
-===========
+-----------
 
 .. code:: python
 
@@ -1035,7 +1035,7 @@ Reset Index
           0    1    4
           1    2    5
           2    3    6
-
+    
 
 .. code:: python
 
@@ -1047,7 +1047,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 139968435216792
+    object id: 3086354449240
     columns:
     ['a', 'b', 'index_0']
     data:
@@ -1070,7 +1070,7 @@ Reset Index
     x         1    4
     y         2    5
     z         3    6
-
+    
 
 .. code:: python
 
@@ -1085,7 +1085,7 @@ Reset Index
           0    1    4  x
           1    2    5  y
           2    3    6  z
-
+    
 
 .. code:: python
 
@@ -1101,7 +1101,7 @@ Reset Index
     ('a', 10, 'x')                1    4
     ('b', 11, 'y')                2    5
     ('c', 12, 'z')                3    6
-
+    
 
 .. code:: python
 
@@ -1116,7 +1116,7 @@ Reset Index
           0    1    4  a           10  x
           1    2    5  b           11  y
           2    3    6  c           12  z
-
+    
 
 .. code:: python
 
@@ -1131,7 +1131,7 @@ Reset Index
     x         1    4
     y         2    5
     z         3    6
-
+    
 
 .. code:: python
 
@@ -1146,10 +1146,10 @@ Reset Index
           0    1    4
           1    2    5
           2    3    6
-
+    
 
 Iterators
-=========
+---------
 
 .. code:: python
 
@@ -1166,7 +1166,7 @@ Iterators
     {'index': 1, 'a': 1, 'b': 5}
     {'index': 2, 'a': 2, 'b': 6}
     {'index': 3, 'a': 'c', 'b': 'd'}
-
+    
 
 .. code:: python
 
@@ -1179,10 +1179,10 @@ Iterators
     Raccoon(index=1, a=1, b=5)
     Raccoon(index=2, a=2, b=6)
     Raccoon(index=3, a='c', b='d')
-
+    
 
 Sorted DataFrames
-=================
+-----------------
 
 DataFrames will be set to sorted by default if no index is given at
 initialization. If an index is given at initialization then the
@@ -1207,7 +1207,7 @@ start
          12    3    6
          14    4    7
          15    5    8
-
+    
 
 
 .. code:: python
@@ -1224,7 +1224,7 @@ start
          14    4    7
          15    5    8
          16         9
-
+    
 
 .. code:: python
 
@@ -1241,10 +1241,10 @@ start
          14  4    7
          15  5    8
          16       9
-
+    
 
 List or BList
-=============
+-------------
 
 The underlying data structure can be either blist (default) or list
 
