@@ -82,3 +82,7 @@ Change Log
 1.3.2 (3/31/17)
 ~~~~~~~~~~~~~~~
 - Added key argument to sort_columns()
+
+1.3.3 (4/9/17)
+~~~~~~~~~~~~~~
+- Moved from_json() to be a class method. This breaks previous API
