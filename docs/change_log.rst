@@ -86,3 +86,8 @@ Change Log
 1.3.3 (4/9/17)
 ~~~~~~~~~~~~~~
 - Moved from_json() to be a class method. This breaks previous API
+
+1.3.4 (4/12/17)
+~~~~~~~~~~~~~~~
+- Added new get_location() method
+- The get() method can now take as_dict parameter to pass to get_columns

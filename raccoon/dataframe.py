@@ -258,7 +258,7 @@ class DataFrame(object):
         else:
             raise ValueError('only valid values for result parameter are: boolean or value.')
 
-    def get(self, indexes=None, columns=None, as_list=False):
+    def get(self, indexes=None, columns=None, as_list=False, as_dict=False):
         """
         Given indexes and columns will return a sub-set of the DataFrame. This method will direct to the below methods
         based on what types are passed in for the indexes and columns. The type of the return is determined by the
@@ -266,9 +266,11 @@ class DataFrame(object):
 
         :param indexes: index value, list of index values, or a list of booleans. If None then all indexes are used
         :param columns: column name or list of column names. If None then all columns are used
-        :param as_list: if True then return the values as a list, if False return a DataFrame. This is only used if\
-        the get is for a single column
-        :return: either DataFrame, list or single value. The return is a shallow copy
+        :param as_list: if True then return the values as a list, if False return a DataFrame. This is only used if
+            the get is for a single column
+        :param as_dict: if True then return the values as a dictionary, if False return a DataFrame. This is only used
+            if the get is for a single row
+        :return: either DataFrame, list, dict or single value. The return is a shallow copy
         """
         if (indexes is None) and (columns is not None) and (not isinstance(columns, (list, blist))):
             return self.get_entire_column(columns, as_list)
@@ -283,7 +285,7 @@ class DataFrame(object):
         elif isinstance(indexes, (list, blist)) and (not isinstance(columns, (list, blist))):
             return self.get_rows(indexes, columns, as_list)
         elif (not isinstance(indexes, (list, blist))) and isinstance(columns, (list, blist)):
-            return self.get_columns(indexes, columns)
+            return self.get_columns(indexes, columns, as_dict)
         else:
             return self.get_cell(indexes, columns)
 
@@ -336,21 +338,8 @@ class DataFrame(object):
         :param as_dict: if True then return the result as a dictionary
         :return: DataFrame or dictionary
         """
-        data = dict()
-        if len(columns) == (columns.count(True) + columns.count(False)):
-            if len(columns) != len(self._columns):
-                raise ValueError('boolean column list must be same size of existing columns')
-            columns = list(compress(self._columns, columns))
         i = sorted_index(self._index, index) if self._sorted else self._index.index(index)
-        for column in columns:
-            c = self._columns.index(column)
-            data[column] = [self._data[c][i]]
-        if as_dict:
-            data = {k:data[k][0] for k in data}  # this makes the dict items single values from lists
-            data[self._index_name] = index
-            return data
-        else:
-            return DataFrame(data=data, index=[index], columns=columns, index_name=self._index_name, sorted=self._sorted)
+        return self.get_location(i, columns, as_dict)
 
     def get_entire_column(self, column, as_list=False):
         """
@@ -400,9 +389,41 @@ class DataFrame(object):
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
                          sorted=self._sorted)
 
+    def get_location(self, location, columns=None, as_dict=False, index=True):
+        """
+        For an index location and list of columns return a DataFrame of the values. This is optimized for speed because
+        it does not need to lookup the index location with a search. Also can accept relative indexing from the end of
+        the DataFrame in standard python notation [-3, -2, -1]
+        
+        :param location: index location in standard python form of positive or negative number
+        :param columns: list of columns, or None to include all columns
+        :param as_dict: if True then return a dictionary
+        :param index: if True then include the index in the dictionary if as_dict=True
+        :return: DataFrame or dictionary
+        """
+        if columns is None:
+            columns = self._columns
+        elif all([isinstance(i, bool) for i in columns]):
+            if len(columns) != len(self._columns):
+                raise ValueError('boolean column list must be same size of existing columns')
+            columns = list(compress(self._columns, columns))
+        data = dict()
+        for column in columns:
+            c = self._columns.index(column)
+            data[column] = [self._data[c][location]]
+        index_value = self._index[location]
+        if as_dict:
+            data = {k: data[k][0] for k in data}  # this makes the dict items single values from lists
+            if index:
+                data[self._index_name] = index_value
+            return data
+        else:
+            return DataFrame(data=data, index=[index_value], columns=columns, index_name=self._index_name,
+                             sorted=self._sorted)
+
     def get_locations(self, locations, columns=None, **kwargs):
         """
-        For a list of locations and list of columns return a DataFrame of the values.
+        For list of locations and list of columns return a DataFrame of the values.
 
         :param locations: list of index locations
         :param columns: list of column names

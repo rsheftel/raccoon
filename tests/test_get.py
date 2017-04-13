@@ -131,6 +131,7 @@ def test_get_columns():
     assert_frame_equal(actual, expected)
 
     # as_dict
+    assert df.get(11, ['b', 'c'], as_dict=True) == {'start_10': 11, 'b': 5, 'c': 8}
     assert df.get_columns(11, ['b', 'c'], as_dict=True) == {'start_10': 11, 'b': 5, 'c': 8}
 
     # test boolean list not same length as columns
@@ -250,12 +251,42 @@ def test_get_matrix_sorted():
         df.get_matrix(['x', 'y'], ['a', 'b', 'BAD'])
 
 
+def test_get_location():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+
+    # forward indexing, all columns
+    assert_frame_equal(df.get_location(2), rc.DataFrame({'a': [3], 'b': [7]}, index=[6]))
+    assert df.get_location(2, as_dict=True) == {'index': 6, 'a': 3, 'b': 7}
+    assert df.get_location(2, as_dict=True, index=False) == {'a': 3, 'b': 7}
+
+    # reverse indexing, all columns
+    assert_frame_equal(df.get_location(-1), rc.DataFrame({'a': [4], 'b': [8]}, index=[8]))
+    assert df.get_location(-1, as_dict=True) == {'index': 8, 'a': 4, 'b': 8}
+    assert df.get_location(-1, as_dict=True, index=False) == {'a': 4, 'b': 8}
+
+    # forward indexing, one column
+    assert_frame_equal(df.get_location(0, ['a']), rc.DataFrame({'a': [1]}, index=[2]))
+    assert df.get_location(0, ['a'], as_dict=True) == {'index': 2, 'a': 1}
+    assert df.get_location(0, ['a'], as_dict=True, index=False) == {'a': 1}
+
+    # reverse indexing, all columns
+    assert_frame_equal(df.get_location(-2, ['b']), rc.DataFrame({'b': [7]}, index=[6]))
+    assert df.get_location(-2, ['b'], as_dict=True) == {'index': 6, 'b': 7}
+    assert df.get_location(-2, ['b'], as_dict=True, index=False) == {'b': 7}
+
+
 def test_get_locations():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
 
+    # multi row, multi columns
     assert_frame_equal(df.get_locations([0, 2]), rc.DataFrame({'a': [1, 3], 'b': [5, 7]}, index=[2, 6]))
+
+    # multiple rows, single columns
     assert_frame_equal(df.get_locations([1, 3], 'a'), rc.DataFrame({'a': [2, 4]}, index=[4, 8]))
     assert df.get_locations([0, 2], 'b', as_list=True) == [5, 7]
+
+    # single row, multiple columns
+    assert_frame_equal(df.get_locations([2]), rc.DataFrame({'a': [3], 'b': [7]}, index=[6]))
 
 
 def test_get_square_brackets():
