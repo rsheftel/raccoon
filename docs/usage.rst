@@ -21,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 3086351037160
+    object id: 2420698493224
     columns:
     []
     data:
@@ -42,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 3086354089856
+    object id: 2420698494512
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 3086354090808
+    object id: 2420698495072
     columns:
     ['a', 'b']
     data:
@@ -521,6 +521,40 @@ Set and Get by Location
 
 Locations are the index of the index, in other words the index locations
 from 0...len(index)
+
+.. code:: python
+
+    print(df.get_location(2))
+
+
+.. parsed-literal::
+
+      index    a    b    c  d
+    -------  ---  ---  ---  ---
+         12   33   99    3
+    
+
+.. code:: python
+
+    print(df.get_location(0, ['b', 'c'], as_dict=True))
+
+
+.. parsed-literal::
+
+    {'b': 88, 'c': 1, 'index': 10}
+    
+
+.. code:: python
+
+    df.get_location(-1).show()
+
+
+.. parsed-literal::
+
+      index    a  b      c    d
+    -------  ---  ---  ---  ---
+         14   44       100   99
+    
 
 .. code:: python
 
@@ -1047,7 +1081,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 3086354449240
+    object id: 2420698545176
     columns:
     ['a', 'b', 'index_0']
     data:
