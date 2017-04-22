@@ -21,7 +21,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2420698493224
+    object id: 2000238116424
     columns:
     []
     data:
@@ -42,7 +42,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2420698494512
+    object id: 2000238363088
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2420698495072
+    object id: 2000238363928
     columns:
     ['a', 'b']
     data:
@@ -236,6 +236,20 @@ Setters and Getters
 .. parsed-literal::
 
     [[1, 2, 3], [4, 5, 6]]
+
+
+
+.. code:: python
+
+    # get_index() is a view not a copy, be careful when using this
+    df.get_index()
+
+
+
+
+.. parsed-literal::
+
+    [10, 11, 12]
 
 
 
@@ -1081,7 +1095,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 2420698545176
+    object id: 2000238549200
     columns:
     ['a', 'b', 'index_0']
     data:

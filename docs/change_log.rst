@@ -92,7 +92,7 @@ Change Log
 - Added new get_location() method
 - The get() method can now take as_dict parameter to pass to get_columns
 
-1.3.4 (4/22/17)
+1.3.5 (4/22/17)
 ~~~~~~~~~~~~~~~
 - Added new get_index() method
 - Several speed up improvements
