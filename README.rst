@@ -12,6 +12,10 @@ Python DataFrame with fast insert and appends
    :target: https://landscape.io/github/rsheftel/raccoon/master
    :alt: Code Health    
 
+.. image:: https://readthedocs.org/projects/raccoon/badge/?version=latest
+   :target: http://raccoon.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 Documentation
 -------------
 http://raccoon.readthedocs.io/en/latest/

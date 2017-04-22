@@ -443,3 +443,22 @@ def test_tail():
     assert_frame_equal(df.tail(2), rc.DataFrame({1: [1, 2], 2: [4, 5]}, columns=[1, 2], index=[1, 2], sorted=False))
     assert_frame_equal(df.tail(3), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2], sorted=False))
     assert_frame_equal(df.tail(999), rc.DataFrame({1: [0, 1, 2], 2: [3, 4, 5]}, columns=[1, 2], sorted=False))
+
+
+def test_get_index():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'], index_name='start_10', sorted=False)
+
+    assert df.get_index() == df.index
+
+    # test that then using .index returns a copy
+    res = df.index
+    res.append(100)
+    assert res == [10, 11, 12, 99, 100]
+    assert df.index == [10, 11, 12, 99]
+
+    # test that then using .get_index() returns a view
+    res = df.get_index()
+    res.append(100)
+    assert res == [10, 11, 12, 99, 100]
+    assert df.index == [10, 11, 12, 99, 100]

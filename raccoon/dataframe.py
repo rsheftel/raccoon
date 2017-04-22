@@ -434,6 +434,16 @@ class DataFrame(object):
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, columns, **kwargs)
 
+    def get_index(self):
+        """
+        Return a view of the index as a list. Because this is a view any change to the return list from this method
+        will corrupt the DataFrame. Use this as view only. This method is proved because copying the index can be an
+        expensive operation if you only need to view it.
+        
+        :return: list 
+        """
+        return self._index
+
     def _insert_row(self, i, index):
         """
         Insert a new row in the DataFrame.
@@ -591,7 +601,7 @@ class DataFrame(object):
         try:
             c = self._columns.index(column)
         except ValueError:  # new column
-            c = len(self.columns)
+            c = len(self._columns)
             self._add_column(column)
         if index:  # index was provided
             if all([isinstance(i, bool) for i in index]): # boolean list
@@ -767,7 +777,7 @@ class DataFrame(object):
 
         :return: json string
         """
-        input_dict = {'data': self.to_dict(index=False), 'index': list(self.index)}
+        input_dict = {'data': self.to_dict(index=False), 'index': list(self._index)}
 
         # if blist, turn into lists
         if self.blist:
@@ -949,15 +959,16 @@ class DataFrame(object):
         :param data_frame: DataFrame to append
         :return: nothing
         """
-        combined_index = self._index + data_frame.index
+        data_frame_index = data_frame.index
+        combined_index = self._index + data_frame_index
         if len(set(combined_index)) != len(combined_index):
             raise ValueError('duplicate indexes in DataFrames')
 
         for c, column in enumerate(data_frame.columns):
             if PYTHON3:
-                self.set(indexes=data_frame.index, columns=column, values=data_frame.data[c].copy())
+                self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c].copy())
             else:
-                self.set(indexes=data_frame.index, columns=column, values=data_frame.data[c][:])
+                self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c][:])
 
     def equality(self, column, indexes=None, value=None):
         """
@@ -1089,12 +1100,12 @@ class DataFrame(object):
         """
         if not drop:
             if isinstance(self.index_name, tuple):
-                index_data = list(map(list, zip(*self.index)))
+                index_data = list(map(list, zip(*self._index)))
                 for i in range(len(self.index_name)):
                     self.set_column(column=self.index_name[i], values=index_data[i])
             else:
                 col_name = self.index_name if self.index_name is not 'index' else 'index_0'
-                self.set_column(column=col_name, values=self.index)
+                self.set_column(column=col_name, values=self._index)
         self.index = list(range(self.__len__()))
         self.index_name = 'index'
 
