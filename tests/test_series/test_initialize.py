@@ -13,12 +13,13 @@ def test_default_empty_init():
     assert actual.data == []
     assert actual.data_name == 'value'
     assert actual.index == []
-    assert actual.sorted is True
+    assert actual.sort is True
+    assert actual.offset == 0
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
-    actual = rc.Series(sorted=False)
-    assert actual.sorted is False
+    actual = rc.Series(sort=False)
+    assert actual.sort is False
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
@@ -26,7 +27,7 @@ def test_default_empty_init():
     assert actual.data == []
     assert actual.data_name == 'points'
     assert actual.index == []
-    assert actual.sorted is True
+    assert actual.sort is True
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
@@ -34,7 +35,7 @@ def test_default_empty_init():
     assert actual.data == [None, None, None]
     assert actual.data_name == 'points'
     assert actual.index == [1, 2, 3]
-    assert actual.sorted is False
+    assert actual.sort is False
     assert actual.offset == 0
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
@@ -44,17 +45,17 @@ def test_default_empty_init():
     assert actual.data_name == 'points'
     assert actual.index == [1, 2, 3]
     assert actual.index_name == 'index'
-    assert actual.sorted is False
+    assert actual.sort is False
     assert actual.offset == 1
     assert isinstance(actual.index, blist)
     assert isinstance(actual.data, blist)
 
-    actual = rc.Series(index=[1, 2, 3], index_name='dates', data_name='points', sorted=True)
+    actual = rc.Series(index=[1, 2, 3], index_name='dates', data_name='points', sort=True)
     assert actual.data == [None, None, None]
     assert actual.data_name == 'points'
     assert actual.index == [1, 2, 3]
     assert actual.index_name == 'dates'
-    assert actual.sorted is True
+    assert actual.sort is True
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
@@ -65,74 +66,75 @@ def test_default_init():
     assert actual.data == [4, 5, 6]
     assert actual.data_name == 'value'
     assert actual.index == [0, 1, 2]
-    assert actual.sorted is True
+    assert actual.sort is True
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
+    assert len(actual) == 3
 
     # with index
     actual = rc.Series(data=[4, 5, 6], index=['a', 'b', 'c'], index_name='letters')
     assert actual.data == [4, 5, 6]
     assert actual.index == ['a', 'b', 'c']
     assert actual.index_name == 'letters'
-    assert actual.sorted is False
+    assert actual.sort is False
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
+    assert len(actual) == 3
 
 
 def test_views():
-    # assert that df.data is data and df.index is index because they are views not copies
+    # assert that df.data is data and df.index are copies and do not alter input data
     data = [4, 5, 6]
     index = ['a', 'b', 'c']
     actual = rc.Series(data=data, index=index)
 
-    assert actual.data is data
-    assert actual.index is index
-
-    # does NOT work if use_blist is different from what is passed in (ie: pass in list, but use_blist=True)
-    data = [4, 5, 6]
-    index = ['a', 'b', 'c']
-    actual = rc.Series(data=data, index=index, use_blist=True)
-
     assert actual.data is not data
     assert actual.index is not index
+
+    # change input data, no change to series
+    data.append(7)
+    index.append('e')
+
+    assert actual.data == [4, 5, 6]
+    assert actual.index == ['a', 'b', 'c']
 
 
 def test_sorted_init():
     # initialized with index defaults to False
     df = rc.Series([5, 4, 6], index=[12, 11, 13])
-    assert df.sorted is False
+    assert df.sort is False
 
-    df = rc.Series([5, 4, 6], index=[12, 11, 13], sorted=True)
-    assert df.sorted is True
+    df = rc.Series([5, 4, 6], index=[12, 11, 13], sort=True)
+    assert df.sort is True
     assert df.index == [11, 12, 13]
     assert df.data == [4, 5, 6]
 
     # initialized with no index defaults to True
     df = rc.Series([5, 4, 6])
-    assert df.sorted is True
-    df = rc.Series([5, 4, 6], sorted=False)
-    assert df.sorted is False
+    assert df.sort is True
+    df = rc.Series([5, 4, 6], sort=False)
+    assert df.sort is False
 
-    # if sorted is true, but no index provided it will assume already in sorted order
-    df = rc.Series([5, 4, 6], sorted=True)
-    assert df.sorted is True
+    # if sort is true, but no index provided it will assume already in sort order
+    df = rc.Series([5, 4, 6], sort=True)
+    assert df.sort is True
     assert df.index == [0, 1, 2]
     assert df.data == [5, 4, 6]
 
-    # start un-sorted, then set to sorted
-    df = rc.Series([5, 4, 6], index=[12, 11, 13], sorted=False)
-    assert df.sorted is False
+    # start un-sort, then set to sort
+    df = rc.Series([5, 4, 6], index=[12, 11, 13], sort=False)
+    assert df.sort is False
     assert df.index == [12, 11, 13]
     assert df.data == [5, 4, 6]
 
-    df.sorted = True
+    df.sort = True
     assert df.index == [11, 12, 13]
     assert df.data == [4, 5, 6]
 
-    # mixed type index will bork on sorted=True
+    # mixed type index will bork on sort=True
     if PYTHON3:
         with pytest.raises(TypeError):
-            rc.Series([5, 4, 6], index=[1, 'b', 3], sorted=True)
+            rc.Series([5, 4, 6], index=[1, 'b', 3], sort=True)
 
 
 def test_bad_initialization():

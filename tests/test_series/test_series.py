@@ -9,16 +9,13 @@ from blist import blist
 def test_use_blist():
     def check_blist():
         assert isinstance(df.index, blist)
-        assert isinstance(df.columns, blist)
         assert isinstance(df.data, blist)
-        assert all([isinstance(df.data[x], blist) for x in range(len(df.columns))])
 
-    df = rc.DataFrame(use_blist=True)
-    assert isinstance(df, rc.DataFrame)
+    df = rc.Series(use_blist=True)
+    assert isinstance(df, rc.Series)
     assert df.data == []
-    assert df.columns == []
     assert df.index == []
-    assert df.sorted is True
+    assert df.sort is True
     check_blist()
 
     # add a new row and col
@@ -45,16 +42,13 @@ def test_use_blist():
 def test_default_list():
     def check_list():
         assert isinstance(df.index, list)
-        assert isinstance(df.columns, list)
         assert isinstance(df.data, list)
-        assert all([isinstance(df.data[x], list) for x in range(len(df.columns))])
 
-    df = rc.DataFrame()
-    assert isinstance(df, rc.DataFrame)
+    df = rc.Series()
+    assert isinstance(df, rc.Series)
     assert df.data == []
-    assert df.columns == []
     assert df.index == []
-    assert df.sorted is True
+    assert df.sort is True
     check_list()
 
     # add a new row and col
@@ -79,7 +73,7 @@ def test_default_list():
 
 
 def test_to_dict():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'])
 
     # with index
     actual = df.to_dict(index=True)
@@ -96,118 +90,106 @@ def test_to_dict():
 
 
 def test_to_list():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
 
     assert df['b'].to_list() == [4, 5, 6]
     assert df[[4, 6], 'a'].to_list() == [1, 3]
     assert df[4:5, 'c'].to_list() == [7, 8]
     assert df[[6], 'c'].to_list() == [9]
 
-    # cannot to_list on a multi-column DataFrame
+    # cannot to_list on a multi-column Series
     with pytest.raises(TypeError):
         df.to_list()
 
 
 def test_json():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
 
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sorted=False)
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sorted=False)
 
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
-    # empty DataFrame
-    df = rc.DataFrame({'a': [], 'b': [], 'c': []})
+    # empty Series
+    df = rc.Series({'a': [], 'b': [], 'c': []})
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
-    df = rc.DataFrame()
+    df = rc.Series()
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
 
 def test_json_objects():
     # test with a compound object returning a representation
-    df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
+    df = rc.Series({'a': [1, 2], 'b': [4, blist([5, 6])]})
 
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
 
-    # the DataFrames are not equal because the blist() was converted to a representation
+    # the Seriess are not equal because the blist() was converted to a representation
     with pytest.raises(AssertionError):
         assert_frame_equal(df, actual)
 
     assert actual[1, 'b'] != blist([5, 6])
     assert actual[1, 'b'] == 'blist([5, 6])'
 
+
 def test_json_multi_index():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
 
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)],
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)],
                       index_name=('first', 'second'))
 
     str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    actual = rc.Series.from_json(str)
     assert_frame_equal(df, actual)
 
 
 def test_append():
     # duplicate indexes
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
-    df2 = rc.DataFrame({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[2, 3, 4])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.Series({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[2, 3, 4])
     with pytest.raises(ValueError):
         df.append(df2)
 
     # all same columns
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
-    df2 = rc.DataFrame({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[3, 4, 5])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.Series({'a': [11, 12, 13], 'b': [14, 15, 16]}, columns=['a', 'b'], index=[3, 4, 5])
     df.append(df2)
-    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, 11, 12, 13], 'b': [4, 5, 6, 14, 15, 16]},
+    assert_frame_equal(df, rc.Series({'a': [1, 2, 3, 11, 12, 13], 'b': [4, 5, 6, 14, 15, 16]},
                                         columns=['a', 'b'], index=[0, 1, 2, 3, 4, 5]))
 
     # all new columns
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
-    df2 = rc.DataFrame({'x': [11, 12, 13], 'y': [14, 15, 16]}, columns=['x', 'y'], index=[3, 4, 5])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.Series({'x': [11, 12, 13], 'y': [14, 15, 16]}, columns=['x', 'y'], index=[3, 4, 5])
     df.append(df2)
-    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, None, None, None],
+    assert_frame_equal(df, rc.Series({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, None, None, None],
                                          'x': [None, None, None, 11, 12, 13], 'y': [None, None, None, 14, 15, 16]},
                                         columns=['a', 'b', 'x', 'y'], index=[0, 1, 2, 3, 4, 5]))
 
     # some same, some new columns
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
-    df2 = rc.DataFrame({'b': [11, 12, 13], 'y': [14, 15, 16]}, columns=['b', 'y'], index=[3, 4, 5])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[0, 1, 2])
+    df2 = rc.Series({'b': [11, 12, 13], 'y': [14, 15, 16]}, columns=['b', 'y'], index=[3, 4, 5])
     df.append(df2)
-    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, 11, 12, 13],
+    assert_frame_equal(df, rc.Series({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, 11, 12, 13],
                                          'y': [None, None, None, 14, 15, 16]},
                                         columns=['a', 'b', 'y'], index=[0, 1, 2, 3, 4, 5]))
 
 
-def test_rename_columns():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
-
-    df.rename_columns({'b': 'b_new'})
-    assert df.columns == ['b_new', 'a']
-
-    df.rename_columns({'b_new': 'b2', 'a': 'a2'})
-    assert df.columns == ['b2', 'a2']
-
-    with pytest.raises(ValueError):
-        df.rename_columns({'a2': 'a', 'bad': 'nogo'})
-
-
 def test_show():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
+    df = rc.Series({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
                       index=['row1', 'row2', 'row3'], use_blist=True)
 
     # __repr__ produces a simple representation
@@ -230,7 +212,7 @@ def test_input_data_mutability():
     input_data = {'a': [1, 2, 3], 'b': [4, 5, 6]}
 
     # without defining column order
-    df = rc.DataFrame(input_data)
+    df = rc.Series(input_data)
     orig_data = deepcopy(df.data)
 
     # change input_data
@@ -245,15 +227,15 @@ def test_input_data_mutability():
     # Now make an inner element a mutable item, confirm that mutability remains
     input_data = {'a': [[1], [2], [3]], 'b': [4, 5, 6]}
 
-    df = rc.DataFrame(input_data)
+    df = rc.Series(input_data)
     orig_data = deepcopy(df.data)
 
-    # changing the input data changes the inner data in DataFrame
+    # changing the input data changes the inner data in Series
     input_data['a'][0].append(11)
     assert df.data != orig_data
     assert df.get(0, 'a') == [1, 11]
 
-    # using set to change the DataFrame data does not effect the input data
+    # using set to change the Series data does not effect the input data
     df[1, 'a'] = [2, 22]
     assert input_data['a'] == [[1, 11], [2], [3]]
 
@@ -262,8 +244,8 @@ def test_input_data_mutability():
 
 
 def test_get_data_mutability():
-    # the .data method only returns a shallow copy, and changes to the return values will corrupt the DataFrame
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['a', 'b', 'c'])
+    # the .data method only returns a shallow copy, and changes to the return values will corrupt the Series
+    df = rc.Series({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['a', 'b', 'c'])
     orig_data = deepcopy(df.data)
     data = df.data
 
@@ -272,7 +254,7 @@ def test_get_data_mutability():
     assert df.data[0] == [1, 2, 3, 99]
 
     # using the get commands returns a shallow copy
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [[1], [2], [3]]}, columns=['a', 'b'])
+    df = rc.Series({'a': [1, 2, 3], 'b': [[1], [2], [3]]}, columns=['a', 'b'])
     orig_data = deepcopy(df.data)
 
     new_df = df['a']
@@ -290,10 +272,10 @@ def test_get_data_mutability():
 
 
 def test_len():
-    df = rc.DataFrame()
+    df = rc.Series()
     assert len(df) == 0
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1]}, columns=['a', 'b'], sorted=False)
+    df = rc.Series({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1]}, columns=['a', 'b'], sorted=False)
     assert len(df) == 3
 
     df['a', 3] = 99
@@ -301,8 +283,8 @@ def test_len():
 
 
 def test_equality():
-    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]})
-    assert df.sorted is True
+    df = rc.Series({'z': [1, 2, 1, 2, 1, 1]})
+    assert df.sort is True
 
     assert df.equality('z', value=1) == [True, False, True, False, True, True]
     assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
@@ -312,8 +294,8 @@ def test_equality():
     df.set(indexes=df.equality('z', value=1), columns='z', values=3)
     assert df.data == [[3, 2, 3, 2, 3, 3]]
 
-    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]}, sorted=False)
-    assert df.sorted is False
+    df = rc.Series({'z': [1, 2, 1, 2, 1, 1]}, sorted=False)
+    assert df.sort is False
 
     assert df.equality('z', value=1) == [True, False, True, False, True, True]
     assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
@@ -325,7 +307,7 @@ def test_equality():
 
 
 def test_math():
-    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, columns=['a', 'b'])
+    df = rc.Series({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, columns=['a', 'b'])
 
     res = df.add('a', 'b')
     assert res == [6, 8, 10, 12]
@@ -352,7 +334,7 @@ def test_math():
 
 def test_select_index():
     # simple index, not sorted
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
+    df = rc.Series({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']
@@ -361,7 +343,7 @@ def test_select_index():
     assert actual == [False, False, False, True, False, False]
 
     # simple index, sorted
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], sorted=True)
+    df = rc.Series({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], sorted=True)
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']
@@ -373,7 +355,7 @@ def test_select_index():
         df.select_index('a', 'BAD')
 
     # simple index, not sorted, blist
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=True)
+    df = rc.Series({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=True)
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']
@@ -383,7 +365,7 @@ def test_select_index():
 
     # tuple index
     tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=tuples)
+    df = rc.Series({'a': [1, 2, 3, 4, 5, 6]}, index=tuples)
 
     compare = ('a', None, None)
     assert df.select_index(compare) == [True, True, True, False, False, False]
@@ -409,13 +391,13 @@ def test_select_index():
     compare = (None, None, None)
     assert df.select_index(compare) == [True] * 6
 
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]})
+    df = rc.Series({'a': [1, 2, 3, 4, 5, 6]})
     assert df.select_index(3) == [False, False, False, True, False, False]
     assert df.select_index(3, 'value') == [3]
 
 
 def test_isin():
-    df = rc.DataFrame({'first': [1, 2, 3, 4, 5], 'second': ['a', 2, 'b', None, 5]})
+    df = rc.Series({'first': [1, 2, 3, 4, 5], 'second': ['a', 2, 'b', None, 5]})
 
     assert df.isin('first', [2, 3, 4]) == [False, True, True, True, False]
     assert df.isin('first', [3]) == [False, False, True, False, False]
@@ -428,29 +410,29 @@ def test_isin():
 
 def test_reset_index():
     # no index defined
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
     df.reset_index()
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'index_0': [0, 1, 2]}, columns=['a', 'b', 'index_0'])
+    expected = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'index_0': [0, 1, 2]}, columns=['a', 'b', 'index_0'])
     assert_frame_equal(df, expected)
 
     # with index and index name defined
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     df.reset_index()
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'jelo': ['x', 'y', 'z']}, columns=['a', 'b', 'jelo'],
+    expected = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'jelo': ['x', 'y', 'z']}, columns=['a', 'b', 'jelo'],
                             sorted=False)
     assert_frame_equal(df, expected)
 
     # with a tuple multi-index
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
                       index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
     df.reset_index()
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'melo': ['a', 'b', 'c'], 'helo': [10, 11, 12],
+    expected = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], 'melo': ['a', 'b', 'c'], 'helo': [10, 11, 12],
                              'gelo': ['x', 'y', 'z']}, columns=['a', 'b', 'melo', 'helo', 'gelo'],
                             sorted=False)
     assert_frame_equal(df, expected)
 
     # drop
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
+    df = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     df.reset_index(drop=True)
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], }, columns=['a', 'b'], sorted=False)
+    expected = rc.Series({'a': [1, 2, 3], 'b': [4, 5, 6], }, columns=['a', 'b'], sorted=False)
     assert_frame_equal(df, expected)
