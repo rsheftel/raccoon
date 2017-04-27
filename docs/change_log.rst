@@ -96,3 +96,7 @@ Change Log
 ~~~~~~~~~~~~~~~
 - Added new get_index() method
 - Several speed up improvements
+
+1.4.0 (4/26/17)
+~~~~~~~~~~~~~~~
+- Added new Series class

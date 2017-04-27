@@ -7,9 +7,9 @@ Raccoon documentation
 =====================
 Overview
 --------
-Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case
-where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code. A simple speed
-comparison is below in the contents.
+Raccoon is a lightweight DataFrame and Series implementation inspired by the phenomenal Pandas package for the one use
+case where Pandas is known to be sub-optimal: DataFrames and Series that grow in size by rows frequently in the code.
+A simple speed comparison is below in the contents.
 
 Source location
 ~~~~~~~~~~~~~~~

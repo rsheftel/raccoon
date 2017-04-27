@@ -2,12 +2,14 @@
 DataFrame class
 """
 from __future__ import print_function
+
 import sys
-from itertools import compress
+from bisect import bisect_left
 from collections import OrderedDict, namedtuple
-from bisect import bisect_left, bisect_right
-from tabulate import tabulate
+from itertools import compress
 from blist import blist
+from tabulate import tabulate
+from sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 PYTHON3 = (sys.version_info >= (3, 0))
 
@@ -15,35 +17,6 @@ try:
     import simplejson as json
 except ImportError:
     import json
-
-
-def sorted_exists(values, x):
-    """
-    For list, values, returns the insert position for item x and whether the item already exists in the list. This
-    allows one function call to return either the index to overwrite an existing value in the list, or the index to
-    insert a new item in the list and keep the list in sorted order.
-
-    :param values: list
-    :param x: item
-    :return: (exists, index) tuple
-    """
-    i = bisect_left(values, x)
-    j = bisect_right(values, x)
-    exists = x in values[i:j]
-    return exists, i
-
-
-def sorted_index(values, x):
-    """
-    For list, values, returns the index location of element x. If x does not exist will raise an error.
-
-    :param values: list
-    :param x: item
-    :return: integer index
-    """
-    i = bisect_left(values, x)
-    j = bisect_right(values, x)
-    return values[i:j].index(x) + i
 
 
 class DataFrame(object):
@@ -82,8 +55,8 @@ class DataFrame(object):
             self._data = blist() if self._blist else list()
             if columns:
                 # expand to the number of columns
-                self._data = blist([blist() for x in range(len(columns))]) if self._blist \
-                    else [[] for x in range(len(columns))]
+                self._data = blist([blist() for _ in range(len(columns))]) if self._blist \
+                    else [[] for _ in range(len(columns))]
                 self.columns = columns
             else:
                 self.columns = list()
@@ -311,7 +284,7 @@ class DataFrame(object):
         :return: DataFrame is as_list if False, a list if as_list is True
         """
         c = self._columns.index(column)
-        if all([isinstance(i, bool) for i in indexes]): # boolean list
+        if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean index list must be same size of existing index')
             if all(indexes):  # the entire column
@@ -363,7 +336,7 @@ class DataFrame(object):
         :param columns: list of column names
         :return: DataFrame
         """
-        if all([isinstance(i, bool) for i in indexes]): # boolean list
+        if all([isinstance(i, bool) for i in indexes]):  # boolean list
             is_bool_indexes = True
             if len(indexes) != len(self._index):
                 raise ValueError('boolean index list must be same size of existing index')
@@ -374,7 +347,7 @@ class DataFrame(object):
             locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
                 else [self._index.index(x) for x in indexes]
 
-        if all([isinstance(i, bool) for i in columns]): # boolean list
+        if all([isinstance(i, bool) for i in columns]):  # boolean list
             if len(columns) != len(self._columns):
                 raise ValueError('boolean column list must be same size of existing columns')
             columns = list(compress(self._columns, columns))
@@ -604,7 +577,7 @@ class DataFrame(object):
             c = len(self._columns)
             self._add_column(column)
         if index:  # index was provided
-            if all([isinstance(i, bool) for i in index]): # boolean list
+            if all([isinstance(i, bool) for i in index]):  # boolean list
                 if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
@@ -616,7 +589,7 @@ class DataFrame(object):
                     self._data[c][i] = values[x]
             else:  # list of index
                 if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
-                    values = [values for x in index]
+                    values = [values for _ in index]
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
                 # insert or append indexes as needed
@@ -637,7 +610,7 @@ class DataFrame(object):
                     self._data[c][i] = values[x]
         else:  # no index, only values
             if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
-                values = [values for x in self._index]
+                values = [values for _ in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
             else:
@@ -835,7 +808,7 @@ class DataFrame(object):
         :return: nothing
         """
         indexes = [indexes] if not isinstance(indexes, (list, blist)) else indexes
-        if all([isinstance(i, bool) for i in indexes]): # boolean list
+        if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
             indexes = [i for i, x in enumerate(indexes) if x]
@@ -867,31 +840,13 @@ class DataFrame(object):
         if not len(self._data):  # if all the columns have been deleted, remove index
             self.index = list()
 
-    @staticmethod
-    def _sorted_list_indexes(list_to_sort, key=None, reverse=False):
-        """
-        Sorts a list but returns the order of the index values of the list for the sort and not the values themselves.
-        For example is the list provided is ['b', 'a', 'c'] then the result will be [2, 1, 3]
-
-        :param list_to_sort: list to sort
-        :param key: if not None then a function of one argument that is used to extract a comparison key from each
-                    list element
-        :param reverse: if True then the list elements are sorted as if each comparison were reversed.
-        :return: list of sorted index values
-        """
-        if key is not None:
-            def key_func(i): return key(list_to_sort.__getitem__(i))
-        else:
-            key_func = list_to_sort.__getitem__
-        return sorted(range(len(list_to_sort)), key=key_func, reverse=reverse)
-
     def sort_index(self):
         """
         Sort the DataFrame by the index. The sort modifies the DataFrame inplace
 
         :return: nothing
         """
-        sort = self._sorted_list_indexes(self._index)
+        sort = sorted_list_indexes(self._index)
         # sort index
         self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column
@@ -911,7 +866,7 @@ class DataFrame(object):
         """
         if isinstance(column, (list, blist)):
             raise TypeError('Can only sort by a single column  ')
-        sort = self._sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
+        sort = sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
         # sort index
         self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
         # each column

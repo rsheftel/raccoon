@@ -5,6 +5,7 @@ from blist import blist
 import sys
 PYTHON3 = (sys.version_info >= (3, 0))
 
+
 def test_default_empty_init():
     actual = rc.DataFrame()
     assert isinstance(actual, rc.DataFrame)

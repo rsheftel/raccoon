@@ -22,7 +22,7 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 setup(
     name='raccoon',
-    version='1.3.5',
+    version='1.4.0',
 
     description='Python DataFrame with fast insert and appends',
     long_description=long_description,
