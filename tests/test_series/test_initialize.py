@@ -1,8 +1,8 @@
+import sys
 import pytest
 import raccoon as rc
 from blist import blist
-
-import sys
+from raccoon.utils import assert_series_equal
 
 PYTHON3 = (sys.version_info >= (3, 0))
 
@@ -14,7 +14,6 @@ def test_default_empty_init():
     assert actual.data_name == 'value'
     assert actual.index == []
     assert actual.sort is True
-    assert actual.offset == 0
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
@@ -36,17 +35,15 @@ def test_default_empty_init():
     assert actual.data_name == 'points'
     assert actual.index == [1, 2, 3]
     assert actual.sort is False
-    assert actual.offset == 0
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
-    actual = rc.Series(index=[1, 2, 3], data_name='points', use_blist=True, offset=1)
+    actual = rc.Series(index=[1, 2, 3], data_name='points', use_blist=True)
     assert actual.data == [None, None, None]
     assert actual.data_name == 'points'
     assert actual.index == [1, 2, 3]
     assert actual.index_name == 'index'
     assert actual.sort is False
-    assert actual.offset == 1
     assert isinstance(actual.index, blist)
     assert isinstance(actual.data, blist)
 

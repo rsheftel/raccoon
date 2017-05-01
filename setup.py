@@ -22,7 +22,7 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 setup(
     name='raccoon',
-    version='1.4.0',
+    version='2.0.0',
 
     description='Python DataFrame with fast insert and appends',
     long_description=long_description,
@@ -75,7 +75,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['blist', 'tabulate'],
+    install_requires=['blist', 'tabulate', 'six'],
     setup_requires=pytest_runner,
     tests_require=[
         'pytest',

@@ -97,6 +97,12 @@ Change Log
 - Added new get_index() method
 - Several speed up improvements
 
-1.4.0 (4/26/17)
+2.0.0 (4/26/17)
 ~~~~~~~~~~~~~~~
+This is a major release that adds the new Series classes but importantly breaks the DataFrame API by renaming the
+"sorted" argument with "sort" and all associated properties and setters. This is to remove the naming conflict with
+the builtin sorted function
+
 - Added new Series class
+- Added new ViewSeries class
+- Fix performance bug in the select_index() function in DataFrame

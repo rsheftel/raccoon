@@ -220,7 +220,7 @@ class DataFrame(object):
                         for x, v in enumerate(self._index)]
         else:
             booleans = [False] * len(self._index)
-            if self._blist:
+            if self._sorted:
                 booleans[sorted_index(self._index, compare)] = True
             else:
                 booleans[self._index.index(compare)] = True

@@ -2,6 +2,8 @@
 Raccoon utilities
 """
 
+import raccoon as rc
+
 
 def assert_frame_equal(left, right, data_function=None, data_args=None):
     """
@@ -35,6 +37,7 @@ def assert_series_equal(left, right, data_function=None, data_args=None):
     :param data_args: arguments to pass to the data_function
     :return: nothing
     """
+    assert type(left) == type(right)
     if data_function:
         data_args = {} if not data_args else data_args
         data_function(left.data, right.data, **data_args)
@@ -43,6 +46,8 @@ def assert_series_equal(left, right, data_function=None, data_args=None):
     assert left.index == right.index
     assert left.data_name == right.data_name
     assert left.index_name == right.index_name
-    assert left.sorted == right.sorted
-    assert left.blist == right.blist
-    assert left.offset == right.offset
+    assert left.sort == right.sort
+    if isinstance(left, rc.ViewSeries):
+        assert left.offset == right.offset
+    if isinstance(left, rc.Series):
+        assert left.blist == right.blist
