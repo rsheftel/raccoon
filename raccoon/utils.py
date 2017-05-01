@@ -23,7 +23,7 @@ def assert_frame_equal(left, right, data_function=None, data_args=None):
     assert left.index == right.index
     assert left.columns == right.columns
     assert left.index_name == right.index_name
-    assert left.sorted == right.sorted
+    assert left.sort == right.sort
     assert left.blist == right.blist
 
 

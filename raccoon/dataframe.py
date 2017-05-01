@@ -9,7 +9,7 @@ from collections import OrderedDict, namedtuple
 from itertools import compress
 from blist import blist
 from tabulate import tabulate
-from sort_utils import sorted_exists, sorted_index, sorted_list_indexes
+from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 PYTHON3 = (sys.version_info >= (3, 0))
 
@@ -25,10 +25,10 @@ class DataFrame(object):
     objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
     Raccoon uses BList as the underlying data structure which is quick to expand and grow the size. The DataFrame can
-    be designated as sorted, in which case the rows will be sorted by index on construction, and then any addition of a
-    new row will insert it into the DataFrame so that the index remains sorted.
+    be designated as sort, in which case the rows will be sort by index on construction, and then any addition of a
+    new row will insert it into the DataFrame so that the index remains sort.
     """
-    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=False, sorted=None):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=False, sort=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.
@@ -36,7 +36,7 @@ class DataFrame(object):
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param index_name: (optional) name for the index. Default is "index"
         :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
-        :param sorted: if True then DataFrame will keep the index sorted. If True all index values must be of same type
+        :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type
         """
         # quality checks
         if (index is not None) and (not isinstance(index, (list, blist))):
@@ -88,15 +88,15 @@ class DataFrame(object):
         if columns:
             self._sort_columns(columns)
 
-        # setup sorted
-        self._sorted = None
-        if sorted is not None:
-            self.sorted = sorted
+        # setup sort
+        self._sort = None
+        if sort is not None:
+            self.sort = sort
         else:
             if index:
-                self.sorted = False
+                self.sort = False
             else:
-                self.sorted = True
+                self.sort = True
 
     def __repr__(self):
         return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns,
@@ -194,13 +194,13 @@ class DataFrame(object):
         return self._blist
 
     @property
-    def sorted(self):
-        return self._sorted
+    def sort(self):
+        return self._sort
 
-    @sorted.setter
-    def sorted(self, boolean):
-        self._sorted = boolean
-        if self._sorted:
+    @sort.setter
+    def sort(self, boolean):
+        self._sort = boolean
+        if self._sort:
             self.sort_index()
 
     def select_index(self, compare, result='boolean'):
@@ -220,7 +220,7 @@ class DataFrame(object):
                         for x, v in enumerate(self._index)]
         else:
             booleans = [False] * len(self._index)
-            if self._sorted:
+            if self._sort:
                 booleans[sorted_index(self._index, compare)] = True
             else:
                 booleans[self._index.index(compare)] = True
@@ -270,7 +270,7 @@ class DataFrame(object):
         :param column: column name
         :return: value
         """
-        i = sorted_index(self._index, index) if self._sorted else self._index.index(index)
+        i = sorted_index(self._index, index) if self._sort else self._index.index(index)
         c = self._columns.index(column)
         return self._data[c][i]
 
@@ -294,12 +294,12 @@ class DataFrame(object):
                 data = list(compress(self._data[c], indexes))
                 index = list(compress(self._index, indexes))
         else:  # index values list
-            locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+            locations = [sorted_index(self._index, x) for x in indexes] if self._sort \
                 else [self._index.index(x) for x in indexes]
             data = [self._data[c][i] for i in locations]
             index = [self._index[i] for i in locations]
         return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name,
-                                              sorted=self._sorted)
+                                              sort=self._sort)
 
     def get_columns(self, index, columns, as_dict=False):
         """
@@ -311,7 +311,7 @@ class DataFrame(object):
         :param as_dict: if True then return the result as a dictionary
         :return: DataFrame or dictionary
         """
-        i = sorted_index(self._index, index) if self._sorted else self._index.index(index)
+        i = sorted_index(self._index, index) if self._sort else self._index.index(index)
         return self.get_location(i, columns, as_dict)
 
     def get_entire_column(self, column, as_list=False):
@@ -326,7 +326,7 @@ class DataFrame(object):
         c = self._columns.index(column)
         data = self._data[c]
         return data if as_list else DataFrame(data={column: data}, index=self._index, index_name=self._index_name,
-                                              sorted=self._sorted)
+                                              sort=self._sort)
 
     def get_matrix(self, indexes, columns):
         """
@@ -344,7 +344,7 @@ class DataFrame(object):
             indexes = list(compress(self._index, indexes))
         else:
             is_bool_indexes = False
-            locations = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+            locations = [sorted_index(self._index, x) for x in indexes] if self._sort \
                 else [self._index.index(x) for x in indexes]
 
         if all([isinstance(i, bool) for i in columns]):  # boolean list
@@ -360,7 +360,7 @@ class DataFrame(object):
                 else [self._data[c][i] for i in locations]
 
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
-                         sorted=self._sorted)
+                         sort=self._sort)
 
     def get_location(self, location, columns=None, as_dict=False, index=True):
         """
@@ -392,7 +392,7 @@ class DataFrame(object):
             return data
         else:
             return DataFrame(data=data, index=[index_value], columns=columns, index_name=self._index_name,
-                             sorted=self._sorted)
+                             sort=self._sort)
 
     def get_locations(self, locations, columns=None, **kwargs):
         """
@@ -435,7 +435,7 @@ class DataFrame(object):
     def _insert_missing_rows(self, indexes):
         """
         Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
-        that index, inserting into the index. This requires the DataFrame to be sorted=True
+        that index, inserting into the index. This requires the DataFrame to be sort=True
 
         :param indexes: list of indexes
         :return: nothing
@@ -458,7 +458,7 @@ class DataFrame(object):
     def _add_missing_rows(self, indexes):
         """
         Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
-        that index by appending to the DataFrame. This does not maintain sorted order for the index.
+        that index by appending to the DataFrame. This does not maintain sort order for the index.
 
         :param indexes: list of indexes
         :return: nothing
@@ -516,7 +516,7 @@ class DataFrame(object):
         :param value: value to set
         :return: nothing
         """
-        if self._sorted:
+        if self._sort:
             exists, i = sorted_exists(self._index, index)
             if not exists:
                 self._insert_row(i, index)
@@ -541,7 +541,7 @@ class DataFrame(object):
         :param values: dict with the keys as the column names and the values what to set that column to
         :return: nothing
         """
-        if self._sorted:
+        if self._sort:
             exists, i = sorted_exists(self._index, index)
             if not exists:
                 self._insert_row(i, index)
@@ -593,7 +593,7 @@ class DataFrame(object):
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
                 # insert or append indexes as needed
-                if self._sorted:
+                if self._sort:
                     exists_tuples = list(zip(*[sorted_exists(self._index, x) for x in index]))
                     exists = exists_tuples[0]
                     indexes = exists_tuples[1]
@@ -632,7 +632,7 @@ class DataFrame(object):
     def append_row(self, index, values, new_cols=True):
         """
         Appends a row of values to the end of the data. If there are new columns in the values and new_cols is True
-        they will be added. Be very careful with this function as it will not test for duplicate indexes and for sorted
+        they will be added. Be very careful with this function as it will not test for duplicate indexes and for sort
         DataFrames it will not enforce sort order. Use this only for speed when needed, be careful.
 
         :param index: value of the index
@@ -655,11 +655,11 @@ class DataFrame(object):
 
     def _slice_index(self, slicer):
         try:
-            start_index = sorted_index(self._index, slicer.start) if self._sorted else self._index.index(slicer.start)
+            start_index = sorted_index(self._index, slicer.start) if self._sort else self._index.index(slicer.start)
         except ValueError:
             raise IndexError('start of slice not in the index')
         try:
-            end_index = sorted_index(self._index, slicer.stop) if self._sorted else self._index.index(slicer.stop)
+            end_index = sorted_index(self._index, slicer.stop) if self._sort else self._index.index(slicer.stop)
         except ValueError:
             raise IndexError('end of slice not in the index')
         if end_index < start_index:
@@ -813,7 +813,7 @@ class DataFrame(object):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
             indexes = [i for i, x in enumerate(indexes) if x]
         else:
-            indexes = [sorted_index(self._index, x) for x in indexes] if self._sorted \
+            indexes = [sorted_index(self._index, x) for x in indexes] if self._sort \
                 else [self._index.index(x) for x in indexes]
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
         for c, column in enumerate(self._columns):
@@ -856,12 +856,12 @@ class DataFrame(object):
     def sort_columns(self, column, key=None, reverse=False):
         """
         Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace. The key and reverse
-        parameters have the same meaning as for the built-in sorted() function.
+        parameters have the same meaning as for the built-in sort() function.
 
         :param column: column name to use for the sort
         :param key: if not None then a function of one argument that is used to extract a comparison key from each
                     list element
-        :param reverse: if True then the list elements are sorted as if each comparison were reversed.
+        :param reverse: if True then the list elements are sort as if each comparison were reversed.
         :return: nothing
         """
         if isinstance(column, (list, blist)):

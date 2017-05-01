@@ -106,3 +106,5 @@ the builtin sorted function
 - Added new Series class
 - Added new ViewSeries class
 - Fix performance bug in the select_index() function in DataFrame
+- Change sorted argument on DataFrame to sort
+- Change sorted DataFrame property and setters to sort

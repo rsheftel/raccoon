@@ -10,7 +10,7 @@ def test_delete_row():
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
 
     df.delete_rows('b')
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=False))
 
     # insert back in data
     df[1, 'a'] = 9
@@ -32,19 +32,19 @@ def test_delete_row():
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
 
     df.delete_rows([True])
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=False))
 
 
 def test_delete_row_sorted():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'],
-                      sorted=True, use_blist=False)
+                      sort=True, use_blist=False)
 
     df.delete_rows(['a', 'c'])
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b'],
-                                        sorted=True, use_blist=False))
+                                        sort=True, use_blist=False))
 
     df.delete_rows('b')
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=True, use_blist=False))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=True, use_blist=False))
 
     # insert back in data
     df[1, 'a'] = 9
@@ -66,7 +66,7 @@ def test_delete_row_sorted():
     assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b']))
 
     df.delete_rows([True])
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sorted=False))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=False))
 
 
 def test_delete_columns():

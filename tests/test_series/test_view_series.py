@@ -48,7 +48,7 @@ def test_views():
 
 
 def test_sorted_init():
-    # sorted always defaults to False
+    # sort always defaults to False
     df = rc.ViewSeries([5, 4, 6], index=[12, 11, 13])
     assert df.sort is False
 
@@ -128,7 +128,7 @@ def test_from_dataframe():
     expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
     assert_series_equal(actual, expected)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'e'], sorted=True, index_name='date')
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'e'], sort=True, index_name='date')
     actual = rc.ViewSeries.from_dataframe(df, 'a', -1)
     expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
     assert_series_equal(actual, expected)
@@ -140,8 +140,8 @@ def test_from_dataframe():
 
 
 def test_from_df_view():
-    # sorted = False
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], sorted=False)
+    # sort = False
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], sort=False)
     srs = rc.ViewSeries.from_dataframe(df, 'b')
     assert srs.sort is False
     assert srs.index is df.get_index()
@@ -162,8 +162,8 @@ def test_from_df_view():
     assert srs.data == [22, 5, 6, -88, 77]
     assert srs.index == ['a', 'b', 9, 11, 12]
 
-    # sorted = True
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sorted=True)
+    # sort = True
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
     assert srs.sort is True
     assert srs.index is df.get_index()
@@ -194,7 +194,7 @@ def test_from_df_view_breaks():
     # These actions will break the view link between the DataFrame and the ViewSeries
 
     # changing index
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sorted=True)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
     assert srs.index is df.get_index()
     assert srs.data is df.get_entire_column('a', True)
@@ -204,7 +204,7 @@ def test_from_df_view_breaks():
     assert srs.data is df.get_entire_column('a', True)
 
     # sorting index
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sorted=True)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
     assert srs.index is df.get_index()
     assert srs.data is df.get_entire_column('a', True)
@@ -214,7 +214,7 @@ def test_from_df_view_breaks():
     assert srs.data is not df.get_entire_column('a', True)
 
     # sorting column
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sorted=True)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
     assert srs.index is df.get_index()
     assert srs.data is df.get_entire_column('a', True)

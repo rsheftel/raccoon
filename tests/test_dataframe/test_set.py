@@ -8,7 +8,7 @@ PYTHON3 = (sys.version_info >= (3, 0))
 
 def test_set_cell():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=False)
+                          sort=False)
 
     # change existing value
     actual.set(11, 'b', 55)
@@ -43,7 +43,7 @@ def test_set_cell():
 
 def test_set_cell_sorted():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 12, 13], columns=['a', 'b', 'c'],
-                          sorted=True)
+                          sort=True)
 
     # change existing value
     actual.set(12, 'b', 55)
@@ -83,7 +83,7 @@ def test_set_cell_sorted():
 
 def test_set_row():
     actual = rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9]}, index=[10, 12], columns=['a', 'b', 'c'],
-                          sorted=True)
+                          sort=True)
 
     # change existing row
     actual.set(indexes=10, values={'a': 11, 'b': 44, 'c': 77})
@@ -125,7 +125,7 @@ def test_set_row():
 
 def test_set_row_sorted():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=False)
+                          sort=False)
 
     # change existing row
     actual.set(indexes=10, values={'a': 11, 'b': 44, 'c': 77})
@@ -157,7 +157,7 @@ def test_set_row_sorted():
 
 def test_set_column():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=False)
+                          sort=False)
 
     # change existing column
     actual.set(columns='b', values=[44, 55, 66])
@@ -183,7 +183,7 @@ def test_set_column():
 
 def test_set_column_sorted():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=True)
+                          sort=True)
 
     # change existing column
     actual.set(columns='b', values=[44, 55, 66])
@@ -205,7 +205,7 @@ def test_set_column_sorted():
 
 def test_set_col_index_subset():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=False)
+                          sort=False)
 
     # by index value
     actual.set(columns='b', indexes=[12, 11, 10], values=[66, 55, 44])
@@ -232,7 +232,7 @@ def test_set_col_index_subset():
 
     # by boolean list
     actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'],
-                          sorted=False)
+                          sort=False)
     actual.set(columns='c', indexes=[False, True], values=[99])
     assert actual.data == [[4, 5], [7, 8], [1, 99]]
 
@@ -250,7 +250,7 @@ def test_set_col_index_subset():
 
 def test_set_col_index_subset_sorted():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                          sorted=True)
+                          sort=True)
 
     # by index value
     actual.set(columns='b', indexes=[12, 11, 10], values=[66, 55, 44])
@@ -296,7 +296,7 @@ def test_set_col_index_subset_sorted():
 
     # by boolean list
     actual = rc.DataFrame({'c': [1, 2], 'a': [4, 5], 'b': [7, 8]}, index=['first', 'second'], columns=['a', 'b', 'c'],
-                          sorted=True)
+                          sort=True)
     actual.set(columns='c', indexes=[False, True], values=[99])
     assert actual.data == [[4, 5], [7, 8], [1, 99]]
 
@@ -314,7 +314,7 @@ def test_set_col_index_subset_sorted():
 
 def test_set_single_value():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
-                      sorted=False)
+                      sort=False)
 
     # set multiple index to one value
     df.set([10, 12], 'a', 99)
@@ -341,14 +341,14 @@ def test_set_locations():
 
 def test_set_from_blank_df():
     # single cell
-    df = rc.DataFrame(sorted=False)
+    df = rc.DataFrame(sort=False)
     df.set(indexes=1, columns='a', values=9)
     assert df.columns == ['a']
     assert df.index == [1]
     assert df.data == [[9]]
 
     # single column
-    df = rc.DataFrame(sorted=False)
+    df = rc.DataFrame(sort=False)
     df.set(indexes=[1, 2, 3], columns='a', values=[9, 10, 11])
     assert df.columns == ['a']
     assert df.index == [1, 2, 3]
@@ -360,7 +360,7 @@ def test_set_from_blank_df():
 
 
 def test_set_square_brackets():
-    df = rc.DataFrame(sorted=False)
+    df = rc.DataFrame(sort=False)
 
     df[1, 'a'] = 2
     assert df.data == [[2]]
@@ -372,10 +372,10 @@ def test_set_square_brackets():
     # df[1:2, 'b'] - - set index slice 1:2, column = b
     df[1:3, 'b'] = 5
     assert df.data == [[2, None, None], [5, 5, 5]]
-    assert df.sorted is False
+    assert df.sort is False
 
-    # with sorted = True
-    df = rc.DataFrame(sorted=True)
+    # with sort = True
+    df = rc.DataFrame(sort=True)
 
     df[1, 'a'] = 2
     assert df.data == [[2]]
@@ -387,7 +387,7 @@ def test_set_square_brackets():
     # df[1:2, 'b'] - - set index slice 1:2, column = b
     df[1:3, 'b'] = 5
     assert df.data == [[None, 2, None], [4, 5, 5]]
-    assert df.sorted is True
+    assert df.sort is True
 
 
 def test_append_row():
@@ -407,7 +407,7 @@ def test_append_row():
 
 
 def test_bar():
-    df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'], sorted=True)
+    df = rc.DataFrame(columns=['datetime', 'open', 'high', 'low', 'close', 'volume'], sort=True)
     for x in range(10):
         df.set(indexes=x, values={'datetime': '2001-01-01', 'open': 100.0, 'high': 101.0, 'low': 99.5,
                                   'close': 99.75, 'volume': 10000})

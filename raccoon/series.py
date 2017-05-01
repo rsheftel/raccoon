@@ -11,7 +11,7 @@ from collections import OrderedDict
 from itertools import compress
 from tabulate import tabulate
 from blist import blist
-from sort_utils import sorted_exists, sorted_index, sorted_list_indexes
+from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 PYTHON3 = (sys.version_info >= (3, 0))
 
@@ -747,4 +747,4 @@ class ViewSeries(SeriesBase):
         :return: Series
         """
         return cls(data=dataframe.get_entire_column(column, as_list=True), index=dataframe.get_index(),
-                   data_name=column, index_name=dataframe.index_name, sort=dataframe.sorted, offset=offset)
+                   data_name=column, index_name=dataframe.index_name, sort=dataframe.sort, offset=offset)

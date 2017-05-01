@@ -9,21 +9,21 @@ PYTHON3 = (sys.version_info >= (3, 0))
 
 def test_sort_index():
     # test on list
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 8, 9], sorted=False)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 8, 9], sort=False)
 
     df.sort_index()
     assert isinstance(df.index, list)
     assert_frame_equal(df, rc.DataFrame({'a': [2, 3, 1], 'b': [5, 6, 4]}, columns=['a', 'b'], index=[8, 9, 10],
-                                        sorted=False))
+                                        sort=False))
 
     # test on blist
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 8, 9], sorted=False,
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 8, 9], sort=False,
                       use_blist=True)
 
     df.sort_index()
     assert isinstance(df.index, blist)
     assert_frame_equal(df, rc.DataFrame({'a': [2, 3, 1], 'b': [5, 6, 4]}, columns=['a', 'b'], index=[8, 9, 10],
-                                        sorted=False, use_blist=True))
+                                        sort=False, use_blist=True))
 
     # fails on mixed type columns
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 'a', 9])
@@ -34,12 +34,12 @@ def test_sort_index():
 
 def test_sort_multi_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[(10, 'c'), (10, 'a'), (10, 'b')],
-                      sorted=False)
+                      sort=False)
 
     df.sort_index()
     assert isinstance(df.index, list)
     assert_frame_equal(df, rc.DataFrame({'a': [2, 3, 1], 'b': [5, 6, 4]}, columns=['a', 'b'],
-                                        index=[(10, 'a'), (10, 'b'), (10, 'c')], sorted=False))
+                                        index=[(10, 'a'), (10, 'b'), (10, 'c')], sort=False))
 
     # fails on mixed type columns
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[(10, 'c'), 'a', (10, 'b')])

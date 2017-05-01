@@ -18,7 +18,7 @@ def test_use_blist():
     assert df.data == []
     assert df.columns == []
     assert df.index == []
-    assert df.sorted is True
+    assert df.sort is True
     check_blist()
 
     # add a new row and col
@@ -54,7 +54,7 @@ def test_default_list():
     assert df.data == []
     assert df.columns == []
     assert df.index == []
-    assert df.sorted is True
+    assert df.sort is True
     check_list()
 
     # add a new row and col
@@ -115,7 +115,7 @@ def test_json():
     actual = rc.DataFrame.from_json(str)
     assert_frame_equal(df, actual)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sorted=False)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sort=False)
 
     str = df.to_json()
     actual = rc.DataFrame.from_json(str)
@@ -293,7 +293,7 @@ def test_len():
     df = rc.DataFrame()
     assert len(df) == 0
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1]}, columns=['a', 'b'], sorted=False)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1]}, columns=['a', 'b'], sort=False)
     assert len(df) == 3
 
     df['a', 3] = 99
@@ -302,7 +302,7 @@ def test_len():
 
 def test_equality():
     df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]})
-    assert df.sorted is True
+    assert df.sort is True
 
     assert df.equality('z', value=1) == [True, False, True, False, True, True]
     assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
@@ -312,8 +312,8 @@ def test_equality():
     df.set(indexes=df.equality('z', value=1), columns='z', values=3)
     assert df.data == [[3, 2, 3, 2, 3, 3]]
 
-    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]}, sorted=False)
-    assert df.sorted is False
+    df = rc.DataFrame({'z': [1, 2, 1, 2, 1, 1]}, sort=False)
+    assert df.sort is False
 
     assert df.equality('z', value=1) == [True, False, True, False, True, True]
     assert df.equality('z', [1, 2, 3], 2) == [True, False, True]
@@ -351,7 +351,7 @@ def test_math():
 
 
 def test_select_index():
-    # simple index, not sorted
+    # simple index, not sort
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
 
     actual = df.select_index('c', 'value')
@@ -360,8 +360,8 @@ def test_select_index():
     actual = df.select_index('d', 'boolean')
     assert actual == [False, False, False, True, False, False]
 
-    # simple index, sorted
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], sorted=True)
+    # simple index, sort
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], sort=True)
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']
@@ -372,7 +372,7 @@ def test_select_index():
     with pytest.raises(ValueError):
         df.select_index('a', 'BAD')
 
-    # simple index, not sorted, blist
+    # simple index, not sort, blist
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=True)
 
     actual = df.select_index('c', 'value')
@@ -437,7 +437,7 @@ def test_reset_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     df.reset_index()
     expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'jelo': ['x', 'y', 'z']}, columns=['a', 'b', 'jelo'],
-                            sorted=False)
+                            sort=False)
     assert_frame_equal(df, expected)
 
     # with a tuple multi-index
@@ -446,11 +446,11 @@ def test_reset_index():
     df.reset_index()
     expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'melo': ['a', 'b', 'c'], 'helo': [10, 11, 12],
                              'gelo': ['x', 'y', 'z']}, columns=['a', 'b', 'melo', 'helo', 'gelo'],
-                            sorted=False)
+                            sort=False)
     assert_frame_equal(df, expected)
 
     # drop
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     df.reset_index(drop=True)
-    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], }, columns=['a', 'b'], sorted=False)
+    expected = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], }, columns=['a', 'b'], sort=False)
     assert_frame_equal(df, expected)
