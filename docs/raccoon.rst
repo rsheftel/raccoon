@@ -12,6 +12,22 @@ raccoon.dataframe module
     :undoc-members:
     :show-inheritance:
 
+raccoon.series module
+---------------------
+
+.. automodule:: raccoon.series
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+raccoon.sort_utils module
+-------------------------
+
+.. automodule:: raccoon.sort_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 raccoon.utils module
 --------------------
 
