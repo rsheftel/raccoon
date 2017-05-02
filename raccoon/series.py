@@ -73,6 +73,10 @@ class SeriesBase(six.with_metaclass(ABCMeta)):
     def data_name(self):
         return self._data_name
 
+    @data_name.setter
+    def data_name(self, name):
+        self._data_name = name
+
     @property
     def index_name(self):
         return self._index_name

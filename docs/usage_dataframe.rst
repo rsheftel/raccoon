@@ -4,6 +4,11 @@ Example Usage for Raccoon
 
 .. code:: python
 
+    # remove comment to use latest development version
+    import sys; sys.path.insert(0, '../')
+
+.. code:: python
+
     # import libraries
     import raccoon as rc
 
@@ -21,7 +26,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2000238116424
+    object id: 1629588188128
     columns:
     []
     data:
@@ -42,7 +47,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2000238363088
+    object id: 1629588287784
     columns:
     ['a', 'b', 'c']
     data:
@@ -63,7 +68,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2000238363928
+    object id: 1629588288680
     columns:
     ['a', 'b']
     data:
@@ -736,7 +741,7 @@ Convert
 
 .. parsed-literal::
 
-    {"data": {"a": [2, -9, 44], "c": [2, 3, 100], "d": [null, null, 99]}, "index": [11, 12, 14], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sorted": false, "use_blist": false}}
+    {"data": {"a": [2, -9, 44], "c": [2, 3, 100], "d": [null, null, 99]}, "index": [11, 12, 14], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "use_blist": false}}
     
 
 .. code:: python
@@ -1095,7 +1100,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 2000238549200
+    object id: 1629588413240
     columns:
     ['a', 'b', 'index_0']
     data:
@@ -1238,7 +1243,7 @@ parameter sorted must be set to True
 
 .. code:: python
 
-    df = rc.DataFrame({'a': [3, 5, 4], 'b': [6, 8, 7]}, index=[12, 15, 14], sorted=True)
+    df = rc.DataFrame({'a': [3, 5, 4], 'b': [6, 8, 7]}, index=[12, 15, 14], sort=True)
 
 When sorted=True on initialization the data will be sorted by index to
 start
@@ -1256,7 +1261,6 @@ start
          14    4    7
          15    5    8
     
-
 
 .. code:: python
 

@@ -22,8 +22,8 @@ http://raccoon.readthedocs.io/en/latest/
 
 Overview
 --------
-Raccoon is a lightweight DataFrame implementation inspired by the phenomenal Pandas package for the one use case
-where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code. Additionally
+Raccoon is a lightweight DataFrame and Series implementation inspired by the phenomenal Pandas package for the one use
+case where Pandas is known to be sub-optimal: DataFrames that grow in size by rows frequently in the code. Additionally
 Raccoon DataFrames can be parametrized to be sorted so that additions to the DataFrame keep the index in sorted order
 to speed inserts and retrievals.
 
@@ -34,8 +34,8 @@ I had was to use DataFrames as a type of in-memory database table. The issue was
 the rows of the DataFrame, something that is known to be slow in Pandas. The reason it is slow in Pandas is that the
 underlying data structure is numpy which does a complete copy of the data when the size of the array grows.
 
-Limited Functionality
----------------------
+Functionality
+-------------
 Raccoon implements what is needed to use the DataFrame as an in memory store of index and column data structure
 supporting simple and tuple indexes to mimic the hierarchical indexes of Pandas. The methods included are primarily
 about setting values of the data frame, growing and appending the data frame and getting values from the data frame.

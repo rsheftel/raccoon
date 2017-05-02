@@ -6,6 +6,17 @@ from raccoon.utils import assert_series_equal
 from blist import blist
 
 
+def test_names():
+    srs = rc.Series([1, 2])
+    assert srs.index_name == 'index'
+    assert srs.data_name == 'value'
+
+    srs.index_name = 'new_index'
+    srs.data_name = 'data'
+    assert srs.index_name == 'new_index'
+    assert srs.data_name == 'data'
+
+
 def test_use_blist():
     def check_blist():
         assert isinstance(srs.index, blist)

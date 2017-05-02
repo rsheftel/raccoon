@@ -17,13 +17,13 @@ Hosted on GitHub: https://github.com/rsheftel/raccoon
 
 Inspiration
 ~~~~~~~~~~~
-Pandas DataFrames are excellent multi-purpose data structures for data management and analysis. One of the use cases
-I had was to use DataFrames as a type of in-memory database table. The issue was that this required lots of growing
-the rows of the DataFrame, something that is known to be slow in Pandas. The reason it is slow in Pandas is that the
-underlying data structure is numpy which does a complete copy of the data when the size of the array grows.
+Pandas DataFrames and Series are excellent multi-purpose data structures for data management and analysis. One of the
+use cases I had was to use DataFrames as a type of in-memory database table. The issue was that this required lots of
+growing the rows of the DataFrame, something that is known to be slow in Pandas. The reason it is slow in Pandas is
+that the underlying data structure is numpy which does a complete copy of the data when the size of the array grows.
 
-Limited Functionality
-~~~~~~~~~~~~~~~~~~~~~
+Functionality
+~~~~~~~~~~~~~
 Raccoon implements what is needed to use the DataFrame as an in memory store of index and column data structure
 supporting simple and tuple indexes to mimic the hierarchical indexes of Pandas. The methods included are primarily
 about setting values of the data frame, growing and appending the data frame and getting values from the data frame.
@@ -47,7 +47,7 @@ My hope is that one day Pandas solves the speed problem with growing DataFrames 
 
 Python Version
 ~~~~~~~~~~~~~~
-Raccoon required Python 2.7 or3.3 or greater to run because it utilizes "yield from" which was introduced in 3.3
+Raccoon required Python 2.7 or 3.3 or greater to run because it utilizes "yield from" which was introduced in 3.3
 
 Helper scripts
 ~~~~~~~~~~~~~~
@@ -68,7 +68,8 @@ Contents
 
    modules.rst
    raccoon.rst
-   usage.rst
+   usage_dataframe.rst
+   usage_series.rst
    convert_pandas.rst
    speed_test.rst
 
