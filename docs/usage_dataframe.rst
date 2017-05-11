@@ -1,6 +1,6 @@
 
-Example Usage for Raccoon
-=========================
+Example Usage for DataFrame
+===========================
 
 .. code:: python
 
@@ -26,7 +26,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1629588188128
+    object id: 2005747897680
     columns:
     []
     data:
@@ -47,7 +47,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1629588287784
+    object id: 2005747898800
     columns:
     ['a', 'b', 'c']
     data:
@@ -68,7 +68,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1629588288680
+    object id: 2005747899808
     columns:
     ['a', 'b']
     data:
@@ -241,20 +241,6 @@ Setters and Getters
 .. parsed-literal::
 
     [[1, 2, 3], [4, 5, 6]]
-
-
-
-.. code:: python
-
-    # get_index() is a view not a copy, be careful when using this
-    df.get_index()
-
-
-
-
-.. parsed-literal::
-
-    [10, 11, 12]
 
 
 
@@ -1100,7 +1086,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1629588413240
+    object id: 2005748110336
     columns:
     ['a', 'b', 'index_0']
     data:
