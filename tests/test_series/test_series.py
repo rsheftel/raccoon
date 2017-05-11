@@ -139,19 +139,18 @@ def test_input_data_mutability():
 
 
 def test_get_data_mutability():
-    # the .data method only returns a shallow copy, and changes to the return values will corrupt the Series
+    # the .data method only returns a view, and changes to the return values will corrupt the Series
     srs = rc.Series([1.0, 2.55, 3.1])
     orig_data = deepcopy(srs.data)
     data = srs.data
 
-    # regular Series return a copy of data
+    # regular Series return a view of data
     data.append(99)
-    assert srs.data == orig_data
-    assert srs.data == [1.0, 2.55, 3.1]
+    assert srs.data != orig_data
+    assert srs.data == [1.0, 2.55, 3.1, 99]
 
     # using the get commands returns a shallow copy
     srs = rc.Series([[1], [2], [3]])
-    orig_data = deepcopy(srs.data)
 
     # mutate inner value
     srs[1].append(22)

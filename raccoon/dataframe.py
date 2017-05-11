@@ -171,10 +171,13 @@ class DataFrame(object):
 
     @property
     def index(self):
-        if PYTHON3:
-            return self._index.copy()
-        else:
-            return self._index[:]
+        """
+        Return a view of the index as a list. Because this is a view any change to the return list from this method
+        will corrupt the DataFrame.
+
+        :return: list 
+        """
+        return self._index
 
     @index.setter
     def index(self, index_list):
@@ -406,16 +409,6 @@ class DataFrame(object):
 
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, columns, **kwargs)
-
-    def get_index(self):
-        """
-        Return a view of the index as a list. Because this is a view any change to the return list from this method
-        will corrupt the DataFrame. Use this as view only. This method is proved because copying the index can be an
-        expensive operation if you only need to view it.
-        
-        :return: list 
-        """
-        return self._index
 
     def _insert_row(self, i, index):
         """

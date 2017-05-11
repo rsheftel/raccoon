@@ -45,9 +45,9 @@ def test_index():
     assert result == ['a', 'b', 'c']
     assert isinstance(result, list)
 
-    # test that a copy is returned
+    # test that a view is returned
     result.append('bad')
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ['a', 'b', 'c', 'bad']
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -71,9 +71,9 @@ def test_index_blist():
     assert result == ['a', 'b', 'c']
     assert isinstance(result, blist)
 
-    # test that a copy is returned
+    # test that a view is returned
     result.append('bad')
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ['a', 'b', 'c', 'bad']
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -82,6 +82,17 @@ def test_index_blist():
     # index too long
     with pytest.raises(ValueError):
         actual.index = [1, 3, 4, 5, 6]
+
+
+def test_get_index():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
+                      columns=['a', 'b', 'c'], index_name='start_10', sort=False)
+
+    # test that then using .index returns a view
+    res = df.index
+    res.append(100)
+    assert res == [10, 11, 12, 99, 100]
+    assert df.index == [10, 11, 12, 99, 100]
 
 
 def test_data():

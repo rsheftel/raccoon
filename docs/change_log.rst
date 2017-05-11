@@ -108,3 +108,10 @@ the builtin sorted function
 - Fix performance bug in the select_index() function in DataFrame
 - Change sorted argument on DataFrame to sort
 - Change sorted DataFrame property and setters to sort
+
+2.1.0 (5/10/17)
+~~~~~~~~~~~~~~~
+Another potentially backwards incompatible change.
+
+- Changed the Series.data and Series.index properties to return a view and not a copy
+- Changes the DataFrame.index to return a view and not a copy.

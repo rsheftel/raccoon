@@ -144,7 +144,7 @@ def test_from_df_view():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], sort=False)
     srs = rc.ViewSeries.from_dataframe(df, 'b')
     assert srs.sort is False
-    assert srs.index is df.get_index()
+    assert srs.index is df.index
     assert srs.data is df.get_entire_column('b', True)
 
     # change cell
@@ -166,7 +166,7 @@ def test_from_df_view():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
     assert srs.sort is True
-    assert srs.index is df.get_index()
+    assert srs.index is df.index
     assert srs.data is df.get_entire_column('a', True)
 
     # change cell
@@ -196,31 +196,31 @@ def test_from_df_view_breaks():
     # changing index
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
-    assert srs.index is df.get_index()
+    assert srs.index is df.index
     assert srs.data is df.get_entire_column('a', True)
 
     df.index = [1, 2, 3]
-    assert srs.index is not df.get_index()
+    assert srs.index is not df.index
     assert srs.data is df.get_entire_column('a', True)
 
     # sorting index
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
-    assert srs.index is df.get_index()
+    assert srs.index is df.index
     assert srs.data is df.get_entire_column('a', True)
 
     df.sort_index()
-    assert srs.index is not df.get_index()
+    assert srs.index is not df.index
     assert srs.data is not df.get_entire_column('a', True)
 
     # sorting column
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_dataframe(df, 'a')
-    assert srs.index is df.get_index()
+    assert srs.index is df.index
     assert srs.data is df.get_entire_column('a', True)
 
     df.sort_columns('b')
-    assert srs.index is not df.get_index()
+    assert srs.index is not df.index
     assert srs.data is not df.get_entire_column('a', True)
 
 

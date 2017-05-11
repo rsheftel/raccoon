@@ -9,9 +9,9 @@ def test_index():
     assert result == ['a', 'b', 'c']
     assert isinstance(result, list)
 
-    # test that a copy is returned
+    # test that a view is returned
     result.append('bad')
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ['a', 'b', 'c', 'bad']
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -35,9 +35,9 @@ def test_index_blist():
     assert result == ['a', 'b', 'c']
     assert isinstance(result, blist)
 
-    # test that a copy is returned
+    # test that a view is returned
     result.append('bad')
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ['a', 'b', 'c', 'bad']
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -87,14 +87,14 @@ def test_data():
     assert data is not actual.data
     assert actual.data == [4, 5, 6]
 
-    # test data is a copy
+    # test data is a view and changes to the .data will corrupt the Series
     new = actual.data
     new[0] = 99
-    assert actual.data != new
+    assert actual.data == new
 
     new.append(88)
     assert new == [99, 5, 6, 88]
-    assert actual.data == [4, 5, 6]
+    assert actual.data == [99, 5, 6, 88]
 
     with pytest.raises(AttributeError):
         actual.data = [4, 5]

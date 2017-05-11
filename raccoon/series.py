@@ -18,7 +18,8 @@ PYTHON3 = (sys.version_info >= (3, 0))
 
 class SeriesBase(six.with_metaclass(ABCMeta)):
     """
-    Base Series abstract base class that concrete implementations inherit from.
+    Base Series abstract base class that concrete implementations inherit from. Note that the .data and .index property
+    methods in Series are views to the underlying data and not copies.
     """
     def __init__(self):
         """
@@ -359,17 +360,11 @@ class Series(SeriesBase):
 
     @property
     def data(self):
-        if PYTHON3:
-            return self._data.copy()
-        else:
-            return self._data[:]
+        return self._data
 
     @property
     def index(self):
-        if PYTHON3:
-            return self._index.copy()
-        else:
-            return self._index[:]
+        return self._index
 
     @index.setter
     def index(self, index_list):
@@ -750,5 +745,5 @@ class ViewSeries(SeriesBase):
         :param offset: offset value must be provided as there is no equivalent for a DataFrame
         :return: Series
         """
-        return cls(data=dataframe.get_entire_column(column, as_list=True), index=dataframe.get_index(),
+        return cls(data=dataframe.get_entire_column(column, as_list=True), index=dataframe.index,
                    data_name=column, index_name=dataframe.index_name, sort=dataframe.sort, offset=offset)
