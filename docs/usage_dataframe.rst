@@ -26,7 +26,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2005747897680
+    object id: 3013667704504
     columns:
     []
     data:
@@ -47,7 +47,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2005747898800
+    object id: 3013667701144
     columns:
     ['a', 'b', 'c']
     data:
@@ -68,7 +68,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2005747899808
+    object id: 3013667831992
     columns:
     ['a', 'b']
     data:
@@ -398,6 +398,26 @@ Set Values
          14   44       100   99
     
 
+.. code:: python
+
+    # append rows, again use caution
+    df.append_rows([15, 16], {'a': [55, 56], 'd': [100,101]})
+    print(df)
+
+
+.. parsed-literal::
+
+      index    a    b    c    d
+    -------  ---  ---  ---  ---
+         10  100   88    1
+         11    2   55    2
+         12   33   99    3
+         13   33   55    9
+         14   44       100   99
+         15   55            100
+         16   56            101
+    
+
 Get Values
 ----------
 
@@ -430,6 +450,8 @@ Get Values
          12    3
          13    9
          14  100
+         15
+         16
     
 
 .. code:: python
@@ -447,6 +469,8 @@ Get Values
          12   33    3
          13   33    9
          14   44  100
+         15   55
+         16   56
     
 
 .. code:: python
@@ -503,7 +527,7 @@ Get Values
 
 .. parsed-literal::
 
-    [100, 2, 33, 33, 44]
+    [100, 2, 33, 33, 44, 55, 56]
 
 
 
@@ -556,9 +580,9 @@ from 0...len(index)
 
 .. parsed-literal::
 
-      index    a  b      c    d
+      index    a  b    c      d
     -------  ---  ---  ---  ---
-         14   44       100   99
+         16   56            101
     
 
 .. code:: python
@@ -589,6 +613,8 @@ from 0...len(index)
          12   -9   99    3
          13   33   55    9
          14   44       100   99
+         15   55            100
+         16   56            101
     
 
 Head and Tail
@@ -614,10 +640,10 @@ Head and Tail
 
 .. parsed-literal::
 
-      index    a    b    c    d
+      index    a  b    c      d
     -------  ---  ---  ---  ---
-         13   33   55    9
-         14   44       100   99
+         15   55            100
+         16   56            101
     
 
 Delete colunmns and rows
@@ -636,6 +662,8 @@ Delete colunmns and rows
          11    2   55    2
          12   -9   99    3
          14   44       100   99
+         15   55            100
+         16   56            101
     
 
 .. code:: python
@@ -651,6 +679,8 @@ Delete colunmns and rows
          11    2    2
          12   -9    3
          14   44  100   99
+         15   55       100
+         16   56       101
     
 
 Convert
@@ -666,10 +696,10 @@ Convert
 
 .. parsed-literal::
 
-    {'a': [2, -9, 44],
-     'c': [2, 3, 100],
-     'd': [None, None, 99],
-     'index': [11, 12, 14]}
+    {'a': [2, -9, 44, 55, 56],
+     'c': [2, 3, 100, None, None],
+     'd': [None, None, 99, 100, 101],
+     'index': [11, 12, 14, 15, 16]}
 
 
 
@@ -683,7 +713,9 @@ Convert
 
 .. parsed-literal::
 
-    {'a': [2, -9, 44], 'c': [2, 3, 100], 'd': [None, None, 99]}
+    {'a': [2, -9, 44, 55, 56],
+     'c': [2, 3, 100, None, None],
+     'd': [None, None, 99, 100, 101]}
 
 
 
@@ -697,10 +729,10 @@ Convert
 
 .. parsed-literal::
 
-    OrderedDict([('index', [11, 12, 14]),
-                 ('a', [2, -9, 44]),
-                 ('c', [2, 3, 100]),
-                 ('d', [None, None, 99])])
+    OrderedDict([('index', [11, 12, 14, 15, 16]),
+                 ('a', [2, -9, 44, 55, 56]),
+                 ('c', [2, 3, 100, None, None]),
+                 ('d', [None, None, 99, 100, 101])])
 
 
 
@@ -714,7 +746,7 @@ Convert
 
 .. parsed-literal::
 
-    [2, 3, 100]
+    [2, 3, 100, None, None]
 
 
 
@@ -727,7 +759,7 @@ Convert
 
 .. parsed-literal::
 
-    {"data": {"a": [2, -9, 44], "c": [2, 3, 100], "d": [null, null, 99]}, "index": [11, 12, 14], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "use_blist": false}}
+    {"data": {"a": [2, -9, 44, 55, 56], "c": [2, 3, 100, null, null], "d": [null, null, 99, 100, 101]}, "index": [11, 12, 14, 15, 16], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "use_blist": false}}
     
 
 .. code:: python
@@ -744,6 +776,8 @@ Convert
          11    2    2
          12   -9    3
          14   44  100   99
+         15   55       100
+         16   56       101
     
 
 Sort by Index and Column
@@ -1086,7 +1120,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 2005748110336
+    object id: 3013666160880
     columns:
     ['a', 'b', 'index_0']
     data:

@@ -109,9 +109,19 @@ the builtin sorted function
 - Change sorted argument on DataFrame to sort
 - Change sorted DataFrame property and setters to sort
 
-2.1.0 (5/10/17)
+2.1.0 (5/12/17)
 ~~~~~~~~~~~~~~~
-Another potentially backwards incompatible change.
+Another potentially backwards incompatible change by making the .index properties to be a view and no longer a copy.
 
-- Changed the Series.data and Series.index properties to return a view and not a copy
+DataFrame:
 - Changes the DataFrame.index to return a view and not a copy.
+- New get_slice() method for sorted DataFrames
+- Changed [] on sort DataFrames to use get_slice() on slices
+- New set_location() method for DataFrame
+- New append_rows() method for DataFrame
+
+Series:
+- Changed the Series.data and Series.index properties to return a view and not a copy
+- New get_slice() method for sorted Series
+- New set_location() method
+- New append_rows() method for Series

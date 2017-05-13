@@ -116,6 +116,60 @@ def test_get_locations():
     assert_series_equal(srs.get_locations([2]), rc.Series([7], index=[6]))
 
 
+def test_get_slice():
+    srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8], sort=True)
+
+    assert_series_equal(srs.get_slice(2, 8), srs)
+    assert_series_equal(srs.get_slice(1, 8), srs)
+    assert_series_equal(srs.get_slice(2, 18), srs)
+    assert_series_equal(srs.get_slice(1, 18), srs)
+
+    assert_series_equal(srs.get_slice(4, 4), rc.Series([6], [4], sort=True))
+    assert_series_equal(srs.get_slice(3, 4), rc.Series([6], [4], sort=True))
+    assert_series_equal(srs.get_slice(4, 5), rc.Series([6], [4], sort=True))
+    assert_series_equal(srs.get_slice(3, 5), rc.Series([6], [4], sort=True))
+
+    assert_series_equal(srs.get_slice(3, 6), rc.Series([6, 7], [4, 6], sort=True))
+    assert_series_equal(srs.get_slice(4, 7), rc.Series([6, 7], [4, 6], sort=True))
+    assert_series_equal(srs.get_slice(3, 7), rc.Series([6, 7], [4, 6], sort=True))
+
+    assert_series_equal(srs.get_slice(None, 7), rc.Series([5, 6, 7], [2, 4, 6], sort=True))
+    assert_series_equal(srs.get_slice(3, None), rc.Series([6, 7, 8], [4, 6, 8], sort=True))
+
+    assert_series_equal(srs.get_slice(3, 3), rc.Series([], [], sort=True))
+    assert_series_equal(srs.get_slice(0, 0), rc.Series([], [], sort=True))
+    assert_series_equal(srs.get_slice(5, 5), rc.Series([], [], sort=True))
+
+    # Only works with sort=True
+    with pytest.raises(RuntimeError):
+        rc.Series([4, 5], [6, 7], sort=False).get_slice(6, 6)
+
+
+def test_get_slice_as_list():
+    srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8], sort=True)
+
+    assert srs.get_slice(2, 8, as_list=True) == ([2, 4, 6, 8], [5, 6, 7, 8])
+    assert srs.get_slice(1, 8, as_list=True) == ([2, 4, 6, 8], [5, 6, 7, 8])
+    assert srs.get_slice(2, 18, as_list=True) == ([2, 4, 6, 8], [5, 6, 7, 8])
+    assert srs.get_slice(1, 18, as_list=True) == ([2, 4, 6, 8], [5, 6, 7, 8])
+
+    assert srs.get_slice(4, 4, as_list=True) == ([4], [6])
+    assert srs.get_slice(3, 4, as_list=True) == ([4], [6])
+    assert srs.get_slice(4, 5, as_list=True) == ([4], [6])
+    assert srs.get_slice(3, 5, as_list=True) == ([4], [6])
+
+    assert srs.get_slice(3, 6, as_list=True) == ([4, 6], [6, 7])
+    assert srs.get_slice(4, 7, as_list=True) == ([4, 6], [6, 7])
+    assert srs.get_slice(3, 7, as_list=True) == ([4, 6], [6, 7])
+
+    assert srs.get_slice(None, 7, as_list=True) == ([2, 4, 6], [5, 6, 7])
+    assert srs.get_slice(3, None, as_list=True) == ([4, 6, 8], [6, 7, 8])
+
+    assert srs.get_slice(3, 3, as_list=True) == ([], [])
+    assert srs.get_slice(0, 0, as_list=True) == ([], [])
+    assert srs.get_slice(5, 5, as_list=True) == ([], [])
+
+
 def test_get_square_brackets():
     srs = rc.Series([10, 11, 12], index=['a', 'b', 'c'], sort=False)
 
@@ -155,13 +209,8 @@ def test_get_square_brackets_sorted():
 def test_get_slicer():
     srs = rc.Series([7, 8, 9], index=[1, 2, 3], sort=False)
 
-    # srs[1:2] -- get slice from index 1 to 2
     assert_series_equal(srs[2:3], rc.Series([8, 9], index=[2, 3], sort=False))
-
-    # srs[0:1, ['c', 'd']] -- get slice from index 0 to 1
     assert_series_equal(srs[1:2], rc.Series([7, 8], index=[1, 2], sort=False))
-
-    # srs[1:1, 'c'] -- get slice 1 to 1 and column 'c'
     assert_series_equal(srs[2:2], rc.Series([8], index=[2], sort=False))
 
     # test indexes not in the range
@@ -178,24 +227,14 @@ def test_get_slicer():
 def test_get_slicer_sorted():
     srs = rc.Series([7, 8, 9], index=[1, 2, 3], sort=True)
 
-    # srs[1:2] -- get slice from index 1 to 2
     assert_series_equal(srs[2:3], rc.Series([8, 9], index=[2, 3], sort=True))
-
-    # srs[0:1, ['c', 'd']] -- get slice from index 0 to 1
     assert_series_equal(srs[1:2], rc.Series([7, 8], index=[1, 2], sort=True))
-
-    # srs[1:1, 'c'] -- get slice 1 to 1 and column 'c'
+    assert_series_equal(srs[0.5:2.5], rc.Series([7, 8], index=[1, 2], sort=True))
     assert_series_equal(srs[2:2], rc.Series([8], index=[2], sort=True))
 
-    # test indexes not in the range
-    with pytest.raises(IndexError):
-        _ = srs[4:5]
-
-    with pytest.raises(IndexError):
-        _ = srs[1:8]
-
-    with pytest.raises(IndexError):
-        _ = srs[2:1]
+    assert_series_equal(srs[4:5], rc.Series([], index=[], sort=True))
+    assert_series_equal(srs[2:1], rc.Series([], index=[], sort=True))
+    assert_series_equal(srs[1:8], srs)
 
 
 def test_head():

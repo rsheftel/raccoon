@@ -26,7 +26,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1864204254288
+    object id: 1891392163736
     data:
     []
     index:
@@ -45,7 +45,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1864204357704
+    object id: 1891392163568
     data:
     [None, None, None]
     index:
@@ -64,7 +64,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1864204358320
+    object id: 1891392217440
     data:
     [4, 5, 6]
     index:
@@ -344,6 +344,40 @@ Set Values
 
 .. code:: python
 
+    # set a location
+    srs.set_location(1, 22)
+    print(srs)
+
+
+.. parsed-literal::
+
+      index    new_data
+    -------  ----------
+         10           1
+         11          22
+         12           3
+         13          33
+    
+
+.. code:: python
+
+    # set multiple locations
+    srs.set_locations([0, 2], [11, 27])
+    print(srs)
+
+
+.. parsed-literal::
+
+      index    new_data
+    -------  ----------
+         10          11
+         11          22
+         12          27
+         13          33
+    
+
+.. code:: python
+
     # append a row, DANGEROUS as there is not validation checking, but can be used for speed
     srs.append_row(14, 99)
     print(srs)
@@ -353,11 +387,31 @@ Set Values
 
       index    new_data
     -------  ----------
-         10           1
-         11           2
-         12           3
+         10          11
+         11          22
+         12          27
          13          33
          14          99
+    
+
+.. code:: python
+
+    # append multiple rows, again no sort check
+    srs.append_rows([15, 16], [100, 110])
+    print(srs)
+
+
+.. parsed-literal::
+
+      index    new_data
+    -------  ----------
+         10          11
+         11          22
+         12          27
+         13          33
+         14          99
+         15         100
+         16         110
     
 
 Get Values
@@ -373,7 +427,7 @@ Get Values
 
 .. parsed-literal::
 
-    1
+    11
 
 
 
@@ -387,8 +441,8 @@ Get Values
 
       index    new_data
     -------  ----------
-         11           2
-         12           3
+         11          22
+         12          27
          13          33
     
 
@@ -402,8 +456,8 @@ Get Values
 
       index    new_data
     -------  ----------
-         11           2
-         12           3
+         11          22
+         12          27
          13          33
     
 
@@ -417,7 +471,7 @@ Get Values
 
 .. parsed-literal::
 
-    [2, 3, 33]
+    [22, 27, 33]
 
 
 
@@ -434,7 +488,7 @@ from 0...len(index)
 
 .. parsed-literal::
 
-    {'index': 12, 'new_data': 3}
+    {'index': 12, 'new_data': 27}
     
 
 .. code:: python
@@ -446,7 +500,7 @@ from 0...len(index)
 
 .. parsed-literal::
 
-    {'index': 14, 'new_data': 99}
+    {'index': 16, 'new_data': 110}
 
 
 
@@ -459,8 +513,8 @@ from 0...len(index)
 
       index    new_data
     -------  ----------
-         10           1
-         12           3
+         10          11
+         12          27
     
 
 .. code:: python
@@ -472,7 +526,7 @@ from 0...len(index)
 
 .. parsed-literal::
 
-    [1, 3]
+    [11, 27]
 
 
 
@@ -486,11 +540,13 @@ from 0...len(index)
 
       index    new_data
     -------  ----------
-         10           1
-         11           2
-         12           3
-         13           9
-         14          10
+         10          11
+         11          22
+         12          27
+         13          33
+         14          99
+         15           9
+         16          10
     
 
 Head and Tail
@@ -505,8 +561,8 @@ Head and Tail
 
       index    new_data
     -------  ----------
-         10           1
-         11           2
+         10          11
+         11          22
     
 
 .. code:: python
@@ -518,8 +574,8 @@ Head and Tail
 
       index    new_data
     -------  ----------
-         13           9
-         14          10
+         15           9
+         16          10
     
 
 Delete rows
@@ -535,9 +591,11 @@ Delete rows
 
       index    new_data
     -------  ----------
-         11           2
-         12           3
-         14          10
+         11          22
+         12          27
+         14          99
+         15           9
+         16          10
     
 
 Convert
@@ -553,7 +611,7 @@ Convert
 
 .. parsed-literal::
 
-    {'index': [11, 12, 14], 'new_data': [2, 3, 10]}
+    {'index': [11, 12, 14, 15, 16], 'new_data': [22, 27, 99, 9, 10]}
 
 
 
@@ -567,7 +625,7 @@ Convert
 
 .. parsed-literal::
 
-    {'new_data': [2, 3, 10]}
+    {'new_data': [22, 27, 99, 9, 10]}
 
 
 
@@ -581,7 +639,8 @@ Convert
 
 .. parsed-literal::
 
-    OrderedDict([('index', [11, 12, 14]), ('new_data', [2, 3, 10])])
+    OrderedDict([('index', [11, 12, 14, 15, 16]),
+                 ('new_data', [22, 27, 99, 9, 10])])
 
 
 
@@ -784,7 +843,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1864204461616
+    object id: 1891392288752
     data:
     [1, 2, 3]
     index:

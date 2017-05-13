@@ -224,6 +224,16 @@ def test_set_single_value():
     assert srs.data == [99, 5, 99]
 
 
+def test_set_location():
+    srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8])
+
+    srs.set_location(0, -1)
+    assert_series_equal(srs, rc.Series([-1, 6, 7, 8], index=[2, 4, 6, 8]))
+
+    srs.set_location(3, -10)
+    assert_series_equal(srs, rc.Series([-1, 6, 7, -10], index=[2, 4, 6, 8]))
+
+
 def test_set_locations():
     srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8])
 
@@ -291,14 +301,33 @@ def test_set_square_brackets():
 
 
 def test_append_row():
-    # sort = False
     actual = rc.Series([7, 9], index=[10, 12], sort=False)
 
-    # append row
     actual.append_row(9, 99)
     expected = rc.Series([7, 9, 99], index=[10, 12, 9])
     assert_series_equal(actual, expected)
 
     actual.append_row(16, 100)
-    expected = rc.Series([7, 9, 99, 100],index=[10, 12, 9, 16])
+    expected = rc.Series([7, 9, 99, 100], index=[10, 12, 9, 16])
     assert_series_equal(actual, expected)
+
+    with pytest.raises(IndexError):
+        actual.append_row(10, 100)
+
+
+def test_append_rows():
+    actual = rc.Series([7, 9], index=[10, 12], sort=False)
+
+    actual.append_rows([9, 11], [99, 100])
+    expected = rc.Series([7, 9, 99, 100], index=[10, 12, 9, 11])
+    assert_series_equal(actual, expected)
+
+    actual.append_rows([16, 17], [110, 120])
+    expected = rc.Series([7, 9, 99, 100, 110, 120], index=[10, 12, 9, 11, 16, 17])
+    assert_series_equal(actual, expected)
+
+    with pytest.raises(IndexError):
+        actual.append_rows([1, 10], [100, 110])
+
+    with pytest.raises(ValueError):
+        actual.append_rows([1, 10], [100, 110, 120])

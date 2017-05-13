@@ -313,7 +313,7 @@ def test_get_slice():
     assert_frame_equal(df.get_slice(3, 7, ['a']), rc.DataFrame({'a': [2, 3]}, index=[4, 6], sort=True))
 
     assert_frame_equal(df.get_slice(None, 5, ['a']), rc.DataFrame({'a': [1, 2]}, index=[2, 4], sort=True))
-    assert_frame_equal(df.get_slice(5, None, ['a']), rc.DataFrame({'a': [3, 4]}, index=[6, 8], sort=True))
+    assert_frame_equal(df.get_slice(5, None, [True, False]), rc.DataFrame({'a': [3, 4]}, index=[6, 8], sort=True))
 
     assert_frame_equal(df.get_slice(3, 3), rc.DataFrame({'a': [], 'b': []}, sort=True))
     assert_frame_equal(df.get_slice(0, 0), rc.DataFrame({'a': [], 'b': []}, sort=True))

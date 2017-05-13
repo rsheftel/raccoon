@@ -445,7 +445,8 @@ class DataFrame(object):
         if as_dict:
             return index, data
         else:
-            return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort)
+            return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
+                             use_blist=self._blist)
 
     def _insert_row(self, i, index):
         """

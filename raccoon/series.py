@@ -5,7 +5,7 @@ from __future__ import print_function
 import six
 
 import sys
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from itertools import compress
@@ -163,6 +163,33 @@ class SeriesBase(six.with_metaclass(ABCMeta)):
 
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, as_list)
+
+    def get_slice(self, start_index=None, stop_index=None, as_list=False):
+        """
+        For sorted Series will return either a Series or list of all of the rows where the index is greater than
+        or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
+        start or stop index is None then will include from the first or last element, similar to standard python
+        slide of [:5] or [:5]. Both end points are considered inclusive.
+
+        :param start_index: lowest index value to include, or None to start from the first row
+        :param stop_index: highest index value to include, or None to end at the last row
+        :param as_list: if True then return a list of the indexes and values
+        :return: Series or tuple of (index list, values list)
+        """
+        if not self._sort:
+            raise RuntimeError('Can only use get_slice on sorted Series')
+
+        start_location = bisect_left(self._index, start_index) if start_index is not None else None
+        stop_location = bisect_right(self._index, stop_index) if stop_index is not None else None
+
+        index = self._index[start_location:stop_location]
+        data = self._data[start_location:stop_location]
+
+        if as_list:
+            return index, data
+        else:
+            return Series(data=data, index=index, data_name=self._data_name, index_name=self._index_name,
+                          sort=self._sort)
 
     def _slice_index(self, slicer):
         try:
@@ -523,6 +550,19 @@ class Series(SeriesBase):
             for x, i in enumerate(indexes):
                 self._data[i] = values[x]
 
+    def set_location(self, location, value):
+        """
+        For a location set the value
+        
+        :param location: location 
+        :param value: value
+        :return: nothing
+        """
+        if abs(location) > (self.__len__() - 1):
+            raise IndexError('location not in Series')
+
+        self._data[location] = value
+
     def set_locations(self, locations, values):
         """
         For a list of locations set the values.
@@ -564,22 +604,50 @@ class Series(SeriesBase):
         :return: Series of the subset slice
         """
         if isinstance(index, slice):  # just a slice of index
-            return self.get(indexes=self._slice_index(index))
+            if self._sort:  # faster version for sort=True
+                return self.get_slice(index.start, index.stop, as_list=False)
+            else:
+                return self.get(indexes=self._slice_index(index))
         else:  # just a single cell or list of cells
             return self.get(index)
 
     def append_row(self, index, value):
         """
-        Appends a row of value to the end of the data. Be very careful with this function as it will not test for 
-        duplicate indexes and for sorted Series it will not enforce sort order. Use this only for speed when needed, 
-        be careful.
+        Appends a row of value to the end of the data. Be very careful with this function as for sorted Series it will 
+        not enforce sort order. Use this only for speed when needed, be careful.
 
         :param index: index
         :param value: value
         :return: nothing
         """
+        if index in self._index:
+            raise IndexError('index already in Series')
+
         self._index.append(index)
         self._data.append(value)
+
+    def append_rows(self, indexes, values):
+        """
+        Appends values to the end of the data. Be very careful with this function as for sort DataFrames it will not 
+        enforce sort order. Use this only for speed when needed, be careful.
+
+        :param indexes: list of indexes to append
+        :param values: list of values to append
+        :return: nothing
+        """
+
+        # check that the values data is less than or equal to the length of the indexes
+        if len(values) != len(indexes):
+            raise ValueError('length of values is not equal to length of indexes')
+
+        # check the indexes are not duplicates
+        combined_index = self._index + indexes
+        if len(set(combined_index)) != len(combined_index):
+            raise IndexError('duplicate indexes in Series')
+
+        # append index value
+        self._index.extend(indexes)
+        self._data.extend(values)
 
     def delete(self, indexes):
         """
