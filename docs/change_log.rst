@@ -114,6 +114,7 @@ the builtin sorted function
 Another potentially backwards incompatible change by making the .index properties to be a view and no longer a copy.
 
 DataFrame
+
 - Changes the DataFrame.index to return a view and not a copy.
 - New get_slice() method for sorted DataFrames
 - Changed [] on sort DataFrames to use get_slice() on slices
@@ -121,6 +122,7 @@ DataFrame
 - New append_rows() method for DataFrame
 
 Series
+
 - Changed the Series.data and Series.index properties to return a view and not a copy
 - New get_slice() method for sorted Series
 - New set_location() method
