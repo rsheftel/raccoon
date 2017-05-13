@@ -289,6 +289,68 @@ def test_get_locations():
     assert_frame_equal(df.get_locations([2]), rc.DataFrame({'a': [3], 'b': [7]}, index=[6]))
 
 
+def test_get_slice():
+    # fails for non-sort DataFrame
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+    with pytest.raises(RuntimeError):
+        df.get_slice(2, 4)
+
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8], sort=True)
+
+    assert_frame_equal(df.get_slice(2, 8), df)
+    assert_frame_equal(df.get_slice(1, 8), df)
+    assert_frame_equal(df.get_slice(2, 10), df)
+    assert_frame_equal(df.get_slice(1, 10), df)
+
+    assert_frame_equal(df.get_slice(4, 4, ['b']), rc.DataFrame({'b': [6]}, index=[4], sort=True))
+    assert_frame_equal(df.get_slice(3, 4, ['b']), rc.DataFrame({'b': [6]}, index=[4], sort=True))
+    assert_frame_equal(df.get_slice(4, 5, ['b']), rc.DataFrame({'b': [6]}, index=[4], sort=True))
+    assert_frame_equal(df.get_slice(3, 5, ['b']), rc.DataFrame({'b': [6]}, index=[4], sort=True))
+
+    assert_frame_equal(df.get_slice(4, 6, ['a']), rc.DataFrame({'a': [2, 3]}, index=[4, 6], sort=True))
+    assert_frame_equal(df.get_slice(3, 6, ['a']), rc.DataFrame({'a': [2, 3]}, index=[4, 6], sort=True))
+    assert_frame_equal(df.get_slice(4, 7, ['a']), rc.DataFrame({'a': [2, 3]}, index=[4, 6], sort=True))
+    assert_frame_equal(df.get_slice(3, 7, ['a']), rc.DataFrame({'a': [2, 3]}, index=[4, 6], sort=True))
+
+    assert_frame_equal(df.get_slice(None, 5, ['a']), rc.DataFrame({'a': [1, 2]}, index=[2, 4], sort=True))
+    assert_frame_equal(df.get_slice(5, None, ['a']), rc.DataFrame({'a': [3, 4]}, index=[6, 8], sort=True))
+
+    assert_frame_equal(df.get_slice(3, 3), rc.DataFrame({'a': [], 'b': []}, sort=True))
+    assert_frame_equal(df.get_slice(0, 0), rc.DataFrame({'a': [], 'b': []}, sort=True))
+    assert_frame_equal(df.get_slice(10, 10), rc.DataFrame({'a': [], 'b': []}, sort=True))
+
+
+def test_get_slice_as_dict():
+    # fails for non-sort DataFrame
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+    with pytest.raises(RuntimeError):
+        df.get_slice(2, 4)
+
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8], sort=True)
+
+    assert df.get_slice(2, 8, as_dict=True) == ([2, 4, 6, 8], {'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]})
+    assert df.get_slice(1, 8, as_dict=True) == ([2, 4, 6, 8], {'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]})
+    assert df.get_slice(2, 10, as_dict=True) == ([2, 4, 6, 8], {'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]})
+    assert df.get_slice(1, 10, as_dict=True) == ([2, 4, 6, 8], {'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]})
+
+    assert df.get_slice(4, 4, ['b'], as_dict=True) == ([4], {'b': [6]})
+    assert df.get_slice(3, 4, ['b'], as_dict=True) == ([4], {'b': [6]})
+    assert df.get_slice(4, 5, ['b'], as_dict=True) == ([4], {'b': [6]})
+    assert df.get_slice(3, 5, ['b'], as_dict=True) == ([4], {'b': [6]})
+
+    assert df.get_slice(4, 6, ['a'], as_dict=True) == ([4, 6], {'a': [2, 3]})
+    assert df.get_slice(3, 6, ['a'], as_dict=True) == ([4, 6], {'a': [2, 3]})
+    assert df.get_slice(4, 7, ['a'], as_dict=True) == ([4, 6], {'a': [2, 3]})
+    assert df.get_slice(3, 7, ['a'], as_dict=True) == ([4, 6], {'a': [2, 3]})
+
+    assert df.get_slice(None, 5, ['a'], as_dict=True) == ([2, 4], {'a': [1, 2]})
+    assert df.get_slice(5, None, ['a'], as_dict=True) == ([6, 8], {'a': [3, 4]})
+
+    assert df.get_slice(3, 3, as_dict=True) == ([], {'a': [], 'b': []})
+    assert df.get_slice(0, 0, as_dict=True) == ([], {'a': [], 'b': []})
+    assert df.get_slice(10, 10, as_dict=True) == ([], {'a': [], 'b': []})
+
+
 def test_get_square_brackets():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9], 'd': [10, 11, 12]}, columns=['a', 'b', 'c', 'd'],
                       sort=False)
@@ -415,14 +477,10 @@ def test_get_slicer_sorted():
     assert_frame_equal(df[1:1, 'c'], rc.DataFrame({'c': [8]}, index=[1], sort=True))
 
     # test indexes not in the range
-    with pytest.raises(IndexError):
-        x = df[4:5, 'c']
-
-    with pytest.raises(IndexError):
-        x = df[0:8, 'c']
-
-    with pytest.raises(IndexError):
-        x = df[2:1, 'c']
+    assert_frame_equal(df[4:5], rc.DataFrame(columns=['a', 'b', 'c', 'd'], sort=True))
+    assert_frame_equal(df[2:1], rc.DataFrame(columns=['a', 'b', 'c', 'd'], sort=True))
+    assert_frame_equal(df[0:8], df)
+    assert_frame_equal(df[1.5:3.5], df.get_slice(1.5, 3.5))
 
 
 def test_head():

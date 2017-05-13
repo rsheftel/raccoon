@@ -4,7 +4,7 @@ DataFrame class
 from __future__ import print_function
 
 import sys
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
 from blist import blist
@@ -386,14 +386,14 @@ class DataFrame(object):
         data = dict()
         for column in columns:
             c = self._columns.index(column)
-            data[column] = [self._data[c][location]]
+            data[column] = self._data[c][location]
         index_value = self._index[location]
         if as_dict:
-            data = {k: data[k][0] for k in data}  # this makes the dict items single values from lists
             if index:
                 data[self._index_name] = index_value
             return data
         else:
+            data = {k: [data[k]] for k in data}  # this makes the dict items lists
             return DataFrame(data=data, index=[index_value], columns=columns, index_name=self._index_name,
                              sort=self._sort)
 
@@ -409,6 +409,43 @@ class DataFrame(object):
 
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, columns, **kwargs)
+
+    def get_slice(self, start_index=None, stop_index=None, columns=None, as_dict=False):
+        """
+        For sorted DataFrames will return either a DataFrame or dict of all of the rows where the index is greater than
+        or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
+        start or stop index is None then will include from the first or last element, similar to standard python
+        slide of [:5] or [:5]. Both end points are considered inclusive.
+         
+        :param start_index: lowest index value to include, or None to start from the first row
+        :param stop_index: highest index value to include, or None to end at the last row
+        :param columns: list of column names to include, or None for all columns
+        :param as_dict: if True then return a tuple of (list of index, dict of column names: list data values)
+        :return: DataFrame or tuple
+        """
+        if not self._sort:
+            raise RuntimeError('Can only use get_slice on sorted DataFrames')
+
+        if columns is None:
+            columns = self._columns
+        elif all([isinstance(i, bool) for i in columns]):
+            if len(columns) != len(self._columns):
+                raise ValueError('boolean column list must be same size of existing columns')
+            columns = list(compress(self._columns, columns))
+
+        start_location = bisect_left(self._index, start_index) if start_index is not None else None
+        stop_location = bisect_right(self._index, stop_index) if stop_index is not None else None
+
+        index = self._index[start_location:stop_location]
+        data = dict()
+        for column in columns:
+            c = self._columns.index(column)
+            data[column] = self._data[c][start_location:stop_location]
+
+        if as_dict:
+            return index, data
+        else:
+            return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort)
 
     def _insert_row(self, i, index):
         """
@@ -609,6 +646,30 @@ class DataFrame(object):
             else:
                 self._data[c] = blist(values) if self._blist else values
 
+    def set_location(self, location, values, missing_to_none=False):
+        """
+        Sets the column values, as given by the keys of the values dict, for the row at location to the values of the
+        values dict. If missing_to_none is False then columns not in the values dict will be left unchanged, if it is
+        True then they are set to None. This method does not add new columns and raises an error.
+        
+        :param location: location
+        :param values: dict of column names as keys and the value as the value to set the row for that column to 
+        :param missing_to_none: if True set any column missing in the values to None, otherwise leave unchanged
+        :return: nothing
+        """
+        if abs(location) > (self.__len__() - 1):
+            raise IndexError('location out of bounds')
+
+        if missing_to_none:
+            # populate the dict with None in any column missing
+            for column in self._columns:
+                if column not in values:
+                    values[column] = None
+
+        for column in values:
+            i = self._columns.index(column)
+            self._data[i][location] = values[column]
+
     def set_locations(self, locations, column, values):
         """
         For a list of locations and a column set the values.
@@ -625,14 +686,17 @@ class DataFrame(object):
     def append_row(self, index, values, new_cols=True):
         """
         Appends a row of values to the end of the data. If there are new columns in the values and new_cols is True
-        they will be added. Be very careful with this function as it will not test for duplicate indexes and for sort
-        DataFrames it will not enforce sort order. Use this only for speed when needed, be careful.
+        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order. 
+        Use this only for speed when needed, be careful.
 
         :param index: value of the index
         :param values: dictionary of values
         :param new_cols: if True add new columns in values, if False ignore
         :return: nothing
         """
+
+        if index in self._index:
+            raise IndexError('index already in DataFrame')
 
         if new_cols:
             for col in values:
@@ -645,6 +709,41 @@ class DataFrame(object):
         # add data values, if not in values then use None
         for c, col in enumerate(self._columns):
             self._data[c].append(values.get(col, None))
+
+    def append_rows(self, indexes, values, new_cols=True):
+        """
+        Appends rows of values to the end of the data. If there are new columns in the values and new_cols is True
+        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order. 
+        Use this only for speed when needed, be careful.
+
+        :param indexes: list of indexes
+        :param values: dictionary of values where the key is the column name and the value is a list
+        :param new_cols: if True add new columns in values, if False ignore
+        :return: nothing
+        """
+
+        # check that the values data is less than or equal to the length of the indexes
+        for column in values:
+            if len(values[column]) > len(indexes):
+                raise ValueError('length of %s column in values is longer than indexes' % column)
+
+        # check the indexes are not duplicates
+        combined_index = self._index + indexes
+        if len(set(combined_index)) != len(combined_index):
+            raise IndexError('duplicate indexes in DataFrames')
+
+        if new_cols:
+            for col in values:
+                if col not in self._columns:
+                    self._add_column(col)
+
+        # append index value
+        self._index.extend(indexes)
+
+        # add data values, if not in values then use None
+        for c, col in enumerate(self._columns):
+            self._data[c].extend(values.get(col, [None] * len(indexes)))
+        self._pad_data()
 
     def _slice_index(self, slicer):
         try:
@@ -674,17 +773,26 @@ class DataFrame(object):
         df[['a','b',c']] -- get columns
         df[5, 'b']  -- get cell at index=5, column='b'
         df[[4, 5], 'c'] -- get indexes=[4, 5], column='b'
-        df[[4, 5,], ['a', 'b']]  -- get indexes=[4, 5], columns=['a', 'b']
-        can also use a boolean list for anything
+        df[[4, 5], ['a', 'b']]  -- get indexes=[4, 5], columns=['a', 'b']
+        Can also use a boolean list for anything. If the DataFrame is sort=True then the indexes slice values do not
+        need to be in the index, will use greater than or equal to / less than equal to. For sort=False the provided
+        slide values must be in the index.
 
         :param index: any of the parameters above
         :return: DataFrame of the subset slice
         """
         if isinstance(index, tuple):  # index and column
-            indexes = self._slice_index(index[0]) if isinstance(index[0], slice) else index[0]
-            return self.get(indexes=indexes, columns=index[1])
+            if isinstance(index[0], slice) and self._sort:  # faster for sorted DF
+                columns = index[1] if isinstance(index[1], list) else [index[1]]
+                return self.get_slice(index[0].start, index[0].stop, columns)
+            else:
+                indexes = self._slice_index(index[0]) if isinstance(index[0], slice) else index[0]
+                return self.get(indexes=indexes, columns=index[1])
         if isinstance(index, slice):  # just a slice of index
-            return self.get(indexes=self._slice_index(index))
+            if self._sort:  # faster for sorted DF
+                return self.get_slice(index.start, index.stop)
+            else:
+                return self.get(indexes=self._slice_index(index))
         else:  # just the columns
             return self.get(columns=index)
 

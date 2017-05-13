@@ -329,6 +329,23 @@ def test_set_single_value():
     assert df.data == [[99, 2, 99], [4, 5, 6], [88, 88, 88], [{1, 2, 3}, {1, 2, 3}, {1, 2, 3}]]
 
 
+def test_set_location():
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
+
+    df.set_location(2, {'a': -3})
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, -3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8]))
+
+    df.set_location(3, {'a': -10, 'b': -88})
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, -3, -10], 'b': [5, 6, 7, -88]}, index=[2, 4, 6, 8]))
+
+    df.set_location(0, {'b': -55}, missing_to_none=True)
+    assert_frame_equal(df, rc.DataFrame({'a': [None, 2, -3, -10], 'b': [-55, 6, 7, -88]}, index=[2, 4, 6, 8]))
+
+    # location out of bounds
+    with pytest.raises(IndexError):
+        df.set_location(99, {'a': 10})
+
+
 def test_set_locations():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])
 
@@ -404,6 +421,34 @@ def test_append_row():
     expected = rc.DataFrame({'a': [1, 3, 10, 14], 'b': [4, 6, None, 15], 'c': [7, 9, 13, None],
                              'd': [None, None, None, 100]}, index=[10, 12, 14, 16], columns=['a', 'b', 'c', 'd'])
     assert_frame_equal(actual, expected)
+
+    # try to append existing row
+    with pytest.raises(IndexError):
+        actual.append_row(10, {'a': 9})
+
+
+def test_append_rows():
+    actual = rc.DataFrame({'a': [1, 3], 'b': [4, 6], 'c': [7, 9]}, index=[10, 12], columns=['a', 'b', 'c'])
+
+    # append rows with new columns, ignore new columns
+    actual.append_rows([14, 15], {'a': [10, 11], 'c': [13, 14], 'd': [99, 100]}, new_cols=False)
+    expected = rc.DataFrame({'a': [1, 3, 10, 11], 'b': [4, 6, None, None], 'c': [7, 9, 13, 14]},
+                            index=[10, 12, 14, 15], columns=['a', 'b', 'c'])
+    assert_frame_equal(actual, expected)
+
+    # append row with new columns, add new columns
+    actual.append_rows([16, 17], {'a': [14, 15], 'b': [15, 16], 'd': [100, 101]})
+    expected = rc.DataFrame({'a': [1, 3, 10, 11, 14, 15], 'b': [4, 6, None, None, 15, 16],
+                             'c': [7, 9, 13, 14, None, None], 'd': [None, None, None, None, 100, 101]},
+                            index=[10, 12, 14, 15, 16, 17], columns=['a', 'b', 'c', 'd'])
+    assert_frame_equal(actual, expected)
+
+    # try to append existing row
+    with pytest.raises(IndexError):
+        actual.append_rows([10, 11], {'a': [8, 9]})
+
+    with pytest.raises(ValueError):
+        actual.append_rows([16, 17], {'a': [14, 15, 999]})
 
 
 def test_bar():
