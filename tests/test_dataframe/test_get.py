@@ -295,7 +295,7 @@ def test_get_slice():
     with pytest.raises(RuntimeError):
         df.get_slice(2, 4)
 
-    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8], sort=True)
+    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, columns=['a', 'b'], index=[2, 4, 6, 8], sort=True)
 
     assert_frame_equal(df.get_slice(2, 8), df)
     assert_frame_equal(df.get_slice(1, 8), df)
