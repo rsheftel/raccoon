@@ -233,6 +233,9 @@ def test_set_location():
     srs.set_location(3, -10)
     assert_series_equal(srs, rc.Series([-1, 6, 7, -10], index=[2, 4, 6, 8]))
 
+    with pytest.raises(IndexError):
+        srs.set_location(5, 9)
+
 
 def test_set_locations():
     srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8])
@@ -242,6 +245,9 @@ def test_set_locations():
 
     srs.set_locations([1, 3], -10)
     assert_series_equal(srs, rc.Series([-1, -10, -3, -10], index=[2, 4, 6, 8]))
+
+    with pytest.raises(IndexError):
+        srs.set_locations([1, 10], [9, 99])
 
 
 def test_set_from_blank_srs():

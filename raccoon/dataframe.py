@@ -658,9 +658,6 @@ class DataFrame(object):
         :param missing_to_none: if True set any column missing in the values to None, otherwise leave unchanged
         :return: nothing
         """
-        if abs(location) > (self.__len__() - 1):
-            raise IndexError('location out of bounds')
-
         if missing_to_none:
             # populate the dict with None in any column missing
             for column in self._columns:
@@ -680,7 +677,6 @@ class DataFrame(object):
         :param values: list of values or a single value
         :return: nothing
         """
-
         indexes = [self._index[x] for x in locations]
         self.set(indexes, column, values)
 

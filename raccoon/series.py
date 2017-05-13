@@ -558,9 +558,6 @@ class Series(SeriesBase):
         :param value: value
         :return: nothing
         """
-        if abs(location) > (self.__len__() - 1):
-            raise IndexError('location not in Series')
-
         self._data[location] = value
 
     def set_locations(self, locations, values):
