@@ -127,3 +127,7 @@ Series
 - New get_slice() method for sorted Series
 - New set_location() method
 - New append_rows() method for Series
+
+2.1.1 (5/15/17)
+~~~~~~~~~~~~~~~
+- Added columns=None default to get_column() on DataFrame

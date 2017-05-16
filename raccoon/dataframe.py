@@ -304,7 +304,7 @@ class DataFrame(object):
         return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name,
                                               sort=self._sort)
 
-    def get_columns(self, index, columns, as_dict=False):
+    def get_columns(self, index, columns=None, as_dict=False):
         """
         For a single index and list of column names return a DataFrame of the values in that index as either a dict
         or a DataFrame

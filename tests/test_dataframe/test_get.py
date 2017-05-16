@@ -115,6 +115,13 @@ def test_get_columns():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
                       columns=['a', 'b', 'c'], index_name='start_10', sort=False)
 
+    # no columns given
+    expected = rc.DataFrame({'a': [4], 'b': [7], 'c': [None]}, index=[99], columns=['a', 'b', 'c'],
+                            index_name='start_10', sort=False)
+    actual = df.get_columns(99)
+    assert_frame_equal(actual, expected)
+
+    # specific columns
     expected = rc.DataFrame({'a': [4], 'c': [None]}, index=[99], columns=['a', 'c'], index_name='start_10',
                             sort=False)
     actual = df.get(99, ['a', 'c'])
