@@ -131,3 +131,4 @@ Series
 2.1.1 (5/15/17)
 ~~~~~~~~~~~~~~~
 - Added columns=None default to get_column() on DataFrame
+- Fix bug in get_slice for empty DataFrames

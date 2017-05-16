@@ -445,6 +445,7 @@ class DataFrame(object):
         if as_dict:
             return index, data
         else:
+            data = data if data else None # if the dict is empty, convert to None
             return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
                              use_blist=self._blist)
 
