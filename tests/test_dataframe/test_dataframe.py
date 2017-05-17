@@ -192,6 +192,13 @@ def test_append():
                                          'y': [None, None, None, 14, 15, 16]},
                                         columns=['a', 'b', 'y'], index=[0, 1, 2, 3, 4, 5]))
 
+    # append empty DataFrame
+    df2 = rc.DataFrame(columns=['a', 'b', 'y'])
+    df.append(df2)
+    assert_frame_equal(df, rc.DataFrame({'a': [1, 2, 3, None, None, None], 'b': [4, 5, 6, 11, 12, 13],
+                                         'y': [None, None, None, 14, 15, 16]},
+                                        columns=['a', 'b', 'y'], index=[0, 1, 2, 3, 4, 5]))
+
 
 def test_rename_columns():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])

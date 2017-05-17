@@ -1013,6 +1013,8 @@ class DataFrame(object):
         :param data_frame: DataFrame to append
         :return: nothing
         """
+        if len(data_frame) == 0:  # empty DataFrame, do nothing
+            return
         data_frame_index = data_frame.index
         combined_index = self._index + data_frame_index
         if len(set(combined_index)) != len(combined_index):

@@ -132,3 +132,4 @@ Series
 ~~~~~~~~~~~~~~~
 - Added columns=None default to get_column() on DataFrame
 - Fix bug in get_slice for empty DataFrames
+- Fix bug in DataFrame append for empty DataFrames
