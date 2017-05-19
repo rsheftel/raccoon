@@ -69,6 +69,19 @@ def test_delete_row_sorted():
     assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=False))
 
 
+def test_delete_all_rows():
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+
+    link_col = df.get_entire_column('b', as_list=True)
+    link_index = df.index
+
+    df.delete_all_rows()
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=False))
+
+    assert link_col == []
+    assert link_index == []
+
+
 def test_delete_columns():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, columns=['a', 'b', 'c'])
 
