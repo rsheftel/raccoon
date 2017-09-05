@@ -54,9 +54,9 @@ copyright = '2016, Ryan Sheftel'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1.2'
+version = '2.1.3'
 # The full version, including alpha/beta/rc tags.
-release = '2.1.2'
+release = '2.1.3'
 
 # generate docstring for __init__
 autoclass_content = 'both'

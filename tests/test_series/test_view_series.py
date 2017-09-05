@@ -139,6 +139,23 @@ def test_from_dataframe():
     assert_series_equal(actual, expected)
 
 
+def test_from_series():
+    srs = rc.Series(data=[4, 5, 6], index=['a', 'b', 9], data_name='b')
+    actual = rc.ViewSeries.from_series(srs)
+    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
+    assert_series_equal(actual, expected)
+
+    srs = rc.Series(data=[1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, index_name='date')
+    actual = rc.ViewSeries.from_series(srs, -1)
+    expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
+    assert_series_equal(actual, expected)
+
+    srs = rc.Series(data=[4, 5, 6], data_name='b', index=['a', 'b', 9], use_blist=True)
+    actual = rc.ViewSeries.from_series(srs)
+    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
+    assert_series_equal(actual, expected)
+
+
 def test_from_df_view():
     # sort = False
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], sort=False)
@@ -222,6 +239,81 @@ def test_from_df_view_breaks():
     df.sort_columns('b')
     assert srs.index is not df.index
     assert srs.data is not df.get_entire_column('a', True)
+
+
+def test_from_series_view():
+    # sort = False
+    ins = rc.Series(data=[4, 5, 6], data_name='b', index=['a', 'b', 9], sort=False)
+    srs = rc.ViewSeries.from_series(ins)
+    assert srs.sort is False
+    assert srs.index is srs.index
+    assert srs.data is ins.data
+
+    # change cell
+    ins['a'] = 22
+    assert srs.data == [22, 5, 6]
+    assert srs.index == ['a', 'b', 9]
+
+    # add a row
+    ins[11] = -88
+    assert srs.data == [22, 5, 6, -88]
+    assert srs.index == ['a', 'b', 9, 11]
+
+    # append row
+    ins.append_row(12, 77)
+    assert srs.data == [22, 5, 6, -88, 77]
+    assert srs.index == ['a', 'b', 9, 11, 12]
+
+    # sort = True
+    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_series(ins)
+    assert srs.sort is True
+    assert srs.index is srs.index
+    assert srs.data is ins.data
+
+    # change cell
+    ins[1] = 22
+    assert srs.data == [1, 22, 3]
+    assert srs.index == [0, 1, 5]
+
+    # add a row end
+    ins[6] = 4
+    assert srs.data == [1, 22, 3, 4]
+    assert srs.index == [0, 1, 5, 6]
+
+    # add value in middle
+    ins[2] = 12
+    assert srs.data == [1, 22, 12, 3, 4]
+    assert srs.index == [0, 1, 2, 5, 6]
+
+    # append row
+    ins.append_row(7, 55)
+    assert srs.data == [1, 22, 12, 3, 4, 55]
+    assert srs.index == [0, 1, 2, 5, 6, 7]
+
+
+def test_from_series_view_breaks():
+    # These actions will break the view link between the Series and the ViewSeries
+
+    # changing index
+    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_series(ins)
+    assert srs.index is ins.index
+    assert srs.data is ins.data
+
+    ins.index = [1, 2, 3]
+    assert srs.index is not ins.index
+    assert srs.data is ins.data
+
+    # sorting index
+    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_series(ins)
+    assert srs.index is ins.index
+    assert srs.data is ins.data
+
+    ins.sort_index()
+    assert srs.index is not ins.index
+    assert srs.data is not ins.data
 
 
 def test_value():

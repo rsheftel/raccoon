@@ -137,3 +137,7 @@ Series
 2.1.2 (5/20/17)
 ~~~~~~~~~~~~~~~
 - Added delete_all_rows() to DataFrame
+
+2.1.3 (9/5/17)
+~~~~~~~~~~~~~~~
+- Added from_series() to ViewSeries to create a ViewSeries from a Series

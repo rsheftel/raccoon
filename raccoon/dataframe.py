@@ -144,7 +144,7 @@ class DataFrame(object):
         """
         if not max_len:
             max_len = max([len(x) for x in self._data])
-        for i, col in enumerate(self._data):
+        for _, col in enumerate(self._data):
             col.extend([None] * (max_len - len(col)))
 
     def __len__(self):
@@ -445,7 +445,7 @@ class DataFrame(object):
         if as_dict:
             return index, data
         else:
-            data = data if data else None # if the dict is empty, convert to None
+            data = data if data else None  # if the dict is empty, convert to None
             return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
                              use_blist=self._blist)
 
@@ -484,7 +484,7 @@ class DataFrame(object):
         :return: nothing
         """
         self._index.append(index)
-        for c, col in enumerate(self._columns):
+        for c, _ in enumerate(self._columns):
             self._data[c].append(None)
 
     def _add_missing_rows(self, indexes):
@@ -915,7 +915,7 @@ class DataFrame(object):
             indexes = [sorted_index(self._index, x) for x in indexes] if self._sort \
                 else [self._index.index(x) for x in indexes]
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
-        for c, column in enumerate(self._columns):
+        for c, _ in enumerate(self._columns):
             for i in indexes:
                 del self._data[c][i]
         # now remove from index
