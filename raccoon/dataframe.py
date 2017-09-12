@@ -28,6 +28,9 @@ class DataFrame(object):
     be designated as sort, in which case the rows will be sort by index on construction, and then any addition of a
     new row will insert it into the DataFrame so that the index remains sort.
     """
+    # Define slots to make object faster
+    __slots__ = ['_data', '_index', '_index_name', '_columns', '_sort', '_blist']
+
     def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=False, sort=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
@@ -858,8 +861,9 @@ class DataFrame(object):
                 input_dict['data'][key] = list(input_dict['data'][key])
 
         meta_data = dict()
-        for key, value in vars(self).items():
+        for key in self.__slots__:
             if key not in ['_data', '_index']:
+                value = self.__getattribute__(key)
                 meta_data[key.lstrip('_')] = value if not isinstance(value, blist) else list(value)
         meta_data['use_blist'] = meta_data.pop('blist')
         input_dict['meta_data'] = meta_data

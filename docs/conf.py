@@ -15,6 +15,7 @@
 
 import sys
 import os
+import pkg_resources
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -54,9 +55,9 @@ copyright = '2016, Ryan Sheftel'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1.3'
+version = pkg_resources.get_distribution('pandas_market_calendars').version
 # The full version, including alpha/beta/rc tags.
-release = '2.1.3'
+release = version
 
 # generate docstring for __init__
 autoclass_content = 'both'

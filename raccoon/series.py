@@ -21,6 +21,9 @@ class SeriesBase(six.with_metaclass(ABCMeta)):
     Base Series abstract base class that concrete implementations inherit from. Note that the .data and .index property
     methods in Series are views to the underlying data and not copies.
     """
+    # Define slots to make object faster
+    __slots__ = ['_data', '_data_name', '_index', '_index_name', '_sort']
+
     def __init__(self):
         """
         No specific parameters, those are defined in the child classed

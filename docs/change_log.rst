@@ -141,3 +141,7 @@ Series
 2.1.3 (9/5/17)
 ~~~~~~~~~~~~~~~
 - Added from_series() to ViewSeries to create a ViewSeries from a Series
+
+2.1.4 (9/12/17)
+~~~~~~~~~~~~~~~
+- Made dataframe and all Series __slots__ classes. This should reduce memory footpring and increase speed ~5%
