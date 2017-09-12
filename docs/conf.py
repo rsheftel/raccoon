@@ -55,7 +55,7 @@ copyright = '2016, Ryan Sheftel'
 # built documents.
 #
 # The short X.Y version.
-version = pkg_resources.get_distribution('pandas_market_calendars').version
+version = pkg_resources.get_distribution('raccoon').version
 # The full version, including alpha/beta/rc tags.
 release = version
 
