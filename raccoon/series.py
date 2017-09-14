@@ -332,7 +332,7 @@ class Series(SeriesBase):
     The Series can be designated as sort, in which case the rows will be sort by index on construction, 
     and then any addition of a new row will insert it into the Series so that the index remains sort.
     """
-    def __init__(self, data=None, index=None, data_name='value', index_name='index', use_blist=False, sort=None):
+    def __init__(self, data=None, index=None, data_name='value', index_name='index', use_blist=False, sort=None, *args, **kwargs):
         """
         :param data: (optional) list of values.
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
@@ -341,7 +341,7 @@ class Series(SeriesBase):
         :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
         :param sort: if True then Series will keep the index sort. If True all index values must be of same type
         """
-        super(SeriesBase, self).__init__()
+        super(SeriesBase, self).__init__(*args, **kwargs)
 
         # standard variable setup
         self._index = None
