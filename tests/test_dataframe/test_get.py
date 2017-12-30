@@ -281,6 +281,9 @@ def test_get_location():
     assert df.get_location(-2, ['b'], as_dict=True) == {'index': 6, 'b': 7}
     assert df.get_location(-2, ['b'], as_dict=True, index=False) == {'b': 7}
 
+    # single value for column and not list returns just the value
+    assert df.get_location(1, 'b') == 6
+
 
 def test_get_locations():
     df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [5, 6, 7, 8]}, index=[2, 4, 6, 8])

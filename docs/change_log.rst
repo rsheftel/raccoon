@@ -144,4 +144,8 @@ Series
 
 2.1.4 (9/12/17)
 ~~~~~~~~~~~~~~~
-- Made dataframe and all Series __slots__ classes. This should reduce memory footpring and increase speed ~5%
+- Made dataframe and all Series __slots__ classes. This should reduce memory footprint and increase speed ~5%
+
+2.1.5 (12/30/17)
+~~~~~~~~~~~~~~~~
+- get_location() method of DataFrame will now return single value if single column argument passed and not list

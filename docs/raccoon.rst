@@ -4,32 +4,32 @@ raccoon package
 Submodules
 ----------
 
-raccoon.dataframe module
-------------------------
+raccoon\.dataframe module
+-------------------------
 
 .. automodule:: raccoon.dataframe
     :members:
     :undoc-members:
     :show-inheritance:
 
-raccoon.series module
----------------------
+raccoon\.series module
+----------------------
 
 .. automodule:: raccoon.series
     :members:
     :undoc-members:
     :show-inheritance:
 
-raccoon.sort_utils module
--------------------------
+raccoon\.sort\_utils module
+---------------------------
 
 .. automodule:: raccoon.sort_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-raccoon.utils module
---------------------
+raccoon\.utils module
+---------------------
 
 .. automodule:: raccoon.utils
     :members:
