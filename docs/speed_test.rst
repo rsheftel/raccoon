@@ -5,32 +5,32 @@ Raccoon vs. Pandas speed test
 Setup pythonpath, import libraries and initialized DataFrame to store
 results
 
-.. code:: ipython3
+.. code:: python
 
     # Use this statement to import the current development version
     import sys; sys.path.insert(0, '../')
 
-.. code:: ipython3
+.. code:: python
 
     from copy import deepcopy
 
-.. code:: ipython3
+.. code:: python
 
     import raccoon as rc
     import pandas as pd
 
-.. code:: ipython3
+.. code:: python
 
     results = rc.DataFrame(columns=['raccoon', 'pandas', 'ratio'], sort=False)
 
-.. code:: ipython3
+.. code:: python
 
     def add_results(index):
         results[index, 'raccoon'] = res_rc.best
         results[index, 'pandas'] = res_pd.best
         results[index, 'ratio'] = res_rc.best / res_pd.best
 
-.. code:: ipython3
+.. code:: python
 
     results['version', 'raccoon'] = rc.__version__
     results['version', 'pandas'] = pd.__version__
@@ -47,7 +47,7 @@ results
 Initialize 10,000 empty DataFrames
 ----------------------------------
 
-.. code:: ipython3
+.. code:: python
 
     def init_rc():
         for x in range(10000):
@@ -57,7 +57,7 @@ Initialize 10,000 empty DataFrames
         for x in range(10000):
             df = pd.DataFrame()
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o init_rc()
 
@@ -67,7 +67,7 @@ Initialize 10,000 empty DataFrames
     92.4 ms ± 6.36 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o init_pd()
 
@@ -77,11 +77,11 @@ Initialize 10,000 empty DataFrames
     2.74 s ± 234 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('initialize empty')
 
-.. code:: ipython3
+.. code:: python
 
     results.show()
 
@@ -97,13 +97,13 @@ Initialize 10,000 empty DataFrames
 Initialize 100 row X 100 col DataFrame()
 ----------------------------------------
 
-.. code:: ipython3
+.. code:: python
 
     data = dict()
     for x in range(100):
         data['a' + str(x)] = list(range(100))
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o df=rc.DataFrame(data=data, sort=False)
 
@@ -113,7 +113,7 @@ Initialize 100 row X 100 col DataFrame()
     87.8 µs ± 8.43 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o df=pd.DataFrame(data=data)
 
@@ -123,11 +123,11 @@ Initialize 100 row X 100 col DataFrame()
     8.11 ms ± 779 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('initialize with matrix')
 
-.. code:: ipython3
+.. code:: python
 
     results.show()
 
@@ -144,7 +144,7 @@ Initialize 100 row X 100 col DataFrame()
 Add 10,000 items in 1 column to empty DataFrame
 -----------------------------------------------
 
-.. code:: ipython3
+.. code:: python
 
     def one_col_add_rc():
         df = rc.DataFrame()
@@ -156,7 +156,7 @@ Add 10,000 items in 1 column to empty DataFrame
         for x in range(10000):
             df.at[x, 'a'] = x
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o one_col_add_rc()
 
@@ -166,7 +166,7 @@ Add 10,000 items in 1 column to empty DataFrame
     43.5 ms ± 402 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o one_col_add_pd()
 
@@ -176,11 +176,11 @@ Add 10,000 items in 1 column to empty DataFrame
     16.2 s ± 1.53 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('add rows one column')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -198,7 +198,7 @@ Add 10,000 items in 1 column to empty DataFrame
 Add 100 rows of 100 columns to empty DataFrame
 ----------------------------------------------
 
-.. code:: ipython3
+.. code:: python
 
     new_row = {('a' + str(x)): x for x in range(100)}
     columns = ['a' + str(x) for x in range(100)]
@@ -213,7 +213,7 @@ Add 100 rows of 100 columns to empty DataFrame
         for x in range(100):
             df.loc[x] = new_row
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o matrix_add_rc()
 
@@ -223,7 +223,7 @@ Add 100 rows of 100 columns to empty DataFrame
     9.32 ms ± 808 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o matrix_add_pd()
 
@@ -233,11 +233,11 @@ Add 100 rows of 100 columns to empty DataFrame
     184 ms ± 3.55 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('add matrix')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -256,7 +256,7 @@ Add 100 rows of 100 columns to empty DataFrame
 Append 10x10 DataFrame 1000 times
 ---------------------------------
 
-.. code:: ipython3
+.. code:: python
 
     def append_rc():
         grid = {'a' + str(x): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] for x in range(10)}
@@ -276,7 +276,7 @@ Append 10x10 DataFrame 1000 times
             new_df = pd.DataFrame(data=new_grid, columns=list(new_grid.keys()), index=index)
             df = df.append(new_df)
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o append_rc()
 
@@ -286,7 +286,7 @@ Append 10x10 DataFrame 1000 times
     62.2 ms ± 7.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o append_pd()
 
@@ -296,11 +296,11 @@ Append 10x10 DataFrame 1000 times
     164 ms ± 5.16 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('append')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -320,7 +320,7 @@ Append 10x10 DataFrame 1000 times
 Get
 ---
 
-.. code:: ipython3
+.. code:: python
 
     # First create a 1000 row X 100 col matrix for the test. Index is [0...999]
     
@@ -330,7 +330,7 @@ Get
     df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()))
     df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
 
-.. code:: ipython3
+.. code:: python
 
     # get cell
     
@@ -344,7 +344,7 @@ Get
             for r in df_pd.index:
                 x = df_pd.at[r, c]
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o rc_get_cell()
 
@@ -354,7 +354,7 @@ Get
     528 ms ± 64.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o pd_get_cell()
 
@@ -364,11 +364,11 @@ Get
     783 ms ± 74.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('get cell')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -386,7 +386,7 @@ Get
     get cell                0.4936867081052583     0.7425185427150893    0.664881
     
 
-.. code:: ipython3
+.. code:: python
 
     # get column all index
     
@@ -398,7 +398,7 @@ Get
         for c in df_pd.columns:
             x = df_pd[c]
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o get_column_all_rc()
 
@@ -408,7 +408,7 @@ Get
     36.6 ms ± 5.38 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o get_column_all_pd()
 
@@ -418,11 +418,11 @@ Get
     313 µs ± 2.39 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('get column all index')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -441,7 +441,7 @@ Get
     get column all index    0.032696135984224384   0.00030877898993577447  105.888
     
 
-.. code:: ipython3
+.. code:: python
 
     # get subset of the index of the column
     
@@ -457,7 +457,7 @@ Get
                 rows = list(range(r*10, r*10 + 9))
                 x = df_pd.loc[rows, c]
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o get_column_subset_rc()
 
@@ -467,7 +467,7 @@ Get
     465 ms ± 51.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o get_column_subset_pd()
 
@@ -477,11 +477,11 @@ Get
     6 s ± 425 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('get column subset index')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -501,7 +501,7 @@ Get
     get column subset index  0.42664153398601457    5.714989510943553         0.0746531
     
 
-.. code:: ipython3
+.. code:: python
 
     # get index all columns
     
@@ -513,7 +513,7 @@ Get
         for i in df_pd.index:
             x = df_pd.loc[i]
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o get_index_all_rc()
 
@@ -523,7 +523,7 @@ Get
     815 ms ± 73.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o get_index_all_pd()
 
@@ -533,11 +533,11 @@ Get
     118 ms ± 10.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('get index all columns')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -561,7 +561,7 @@ Get
 Set
 ---
 
-.. code:: ipython3
+.. code:: python
 
     # First create a 1000 row X 100 col matrix for the test. Index is [0...999]
     
@@ -571,7 +571,7 @@ Set
     df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()))
     df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
 
-.. code:: ipython3
+.. code:: python
 
     # set cell
     
@@ -585,7 +585,7 @@ Set
             for r in df_pd.index:
                 df_pd.at[r, c] = 99
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o rc_set_cell()
 
@@ -595,7 +595,7 @@ Set
     436 ms ± 59.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o pd_set_cell()
 
@@ -605,11 +605,11 @@ Set
     1 s ± 78.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('set cell')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -631,7 +631,7 @@ Set
     set cell                 0.3987260515496587     0.9623946910782024        0.414306
     
 
-.. code:: ipython3
+.. code:: python
 
     # set column all index
     
@@ -643,7 +643,7 @@ Set
         for c in df_pd.columns:
             x = df_pd[c] = 99
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o set_column_all_rc()
 
@@ -653,7 +653,7 @@ Set
     4.19 ms ± 748 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o set_column_all_pd()
 
@@ -663,11 +663,11 @@ Set
     12.7 ms ± 1.02 ms per loop (mean ± std. dev. of 7 runs, 100 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('set column all index')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -690,7 +690,7 @@ Set
     set column all index     0.00376809479375936    0.011686656340490344      0.322427
     
 
-.. code:: ipython3
+.. code:: python
 
     # set subset of the index of the column
     
@@ -706,7 +706,7 @@ Set
                 rows = list(range(r*10, r*10 + 10))
                 x = df_pd.loc[rows, c] = list(range(10))
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o set_column_subset_rc()
 
@@ -716,7 +716,7 @@ Set
     269 ms ± 3.72 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o set_column_subset_pd()
 
@@ -726,11 +726,11 @@ Set
     22.7 s ± 244 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('set column subset index')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -754,11 +754,11 @@ Set
     set column subset index  0.26396186901109786    22.454482046778423        0.0117554
     
 
-.. code:: ipython3
+.. code:: python
 
     row = {x:x for x in grid.keys()}
 
-.. code:: ipython3
+.. code:: python
 
     # set index all columns
     
@@ -770,7 +770,7 @@ Set
         for i in df_pd.index:
             x = df_pd.loc[i] = row
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o set_index_all_rc()
 
@@ -780,7 +780,7 @@ Set
     56.3 ms ± 8.04 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o set_index_all_pd()
 
@@ -790,11 +790,11 @@ Set
     500 ms ± 80.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('set index all columns')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -822,7 +822,7 @@ Set
 Sort
 ----
 
-.. code:: ipython3
+.. code:: python
 
     # make a dataframe 1000x100 with index in reverse order
     
@@ -831,7 +831,7 @@ Sort
     df_rc = rc.DataFrame(data=grid, index=rev)
     df_pd = pd.DataFrame(grid, index=rev)
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o df_rc.sort_index() 
 
@@ -841,7 +841,7 @@ Sort
     12.4 ms ± 807 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o df_pd.sort_index()
 
@@ -851,11 +851,11 @@ Sort
     539 µs ± 62.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('sort index')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -884,7 +884,7 @@ Sort
 Iterators
 ---------
 
-.. code:: ipython3
+.. code:: python
 
     # First create a 1000 row X 100 col matrix for the test. Index is [0...999]
     
@@ -894,7 +894,7 @@ Iterators
     df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()))
     df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
 
-.. code:: ipython3
+.. code:: python
 
     # iterate over the rows
     
@@ -906,7 +906,7 @@ Iterators
         for row in df_pd.itertuples():
             x = row
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o iter_rc() 
 
@@ -916,7 +916,7 @@ Iterators
     24.1 ms ± 532 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o iter_pd()
 
@@ -926,11 +926,11 @@ Iterators
     20.3 ms ± 599 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('iterate rows')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -960,7 +960,7 @@ Iterators
 Insert in the middle
 --------------------
 
-.. code:: ipython3
+.. code:: python
 
     # First create a 500 row X 100 col matrix for the test. Index is [1, 3, 5, 7,...500] every other
     
@@ -970,11 +970,11 @@ Insert in the middle
     df_rc = rc.DataFrame(data=grid, columns=sorted(grid.keys()), sort=True)
     df_pd = pd.DataFrame(data=grid, columns=sorted(grid.keys()))
 
-.. code:: ipython3
+.. code:: python
 
     row = {x:x for x in grid.keys()}
 
-.. code:: ipython3
+.. code:: python
 
     # set index all columns
     
@@ -986,7 +986,7 @@ Insert in the middle
         for i in range(0, 999, 2):
             x = df_pd.loc[i] = row
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o insert_rows_rc() 
 
@@ -996,7 +996,7 @@ Insert in the middle
     26.4 ms ± 381 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o insert_rows_pd()
 
@@ -1006,11 +1006,11 @@ Insert in the middle
     239 ms ± 2.81 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('insert rows')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
@@ -1044,7 +1044,7 @@ Time Series Append
 Simulate the recording of a stock on 1 minute intervals and appending to
 the DataFrame
 
-.. code:: ipython3
+.. code:: python
 
     data_row = {'open': 100, 'high': 101, 'low': 99, 'close': 100.5, 'volume': 999}
     
@@ -1060,7 +1060,7 @@ the DataFrame
         for date in dates:
             ts.loc[date] = data_row
 
-.. code:: ipython3
+.. code:: python
 
     res_rc = %timeit -o time_series_rc() 
 
@@ -1070,7 +1070,7 @@ the DataFrame
     114 ms ± 9.01 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     
 
-.. code:: ipython3
+.. code:: python
 
     res_pd = %timeit -o time_series_pd()
 
@@ -1080,11 +1080,11 @@ the DataFrame
     27.2 s ± 4 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
     
 
-.. code:: ipython3
+.. code:: python
 
     add_results('time series')
 
-.. code:: ipython3
+.. code:: python
 
     print(results)
 
