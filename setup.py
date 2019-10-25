@@ -1,41 +1,50 @@
-"""A setuptools based setup module.
+"""
+A setuptools based setup module.
 See:
 https://packaging.python.org/en/latest/distributing.html
-https://github.com/rsheftel/raccoon
 """
 
-# Always prefer setuptools over distutils
 from setuptools import setup, find_packages
-# To use a consistent encoding
-from codecs import open
 from os import path
-import sys
 
-here = path.abspath(path.dirname(__file__))
+# version
+VERSION = '2.1.5'
+
+# requirements
+REQUIRED_PYTHON = '>=3.3.0'
+REQUIRED_PACKAGES = ['blist', 'tabulate', 'six']
+
+# Package meta-data
+NAME = 'raccoon'
+DESCRIPTION = 'Python DataFrame with fast insert and appends'
+SOURCE_URL = 'https://github.com/rsheftel/raccoon'
+DOCS_URL = 'https://raccoon.readthedocs.io/en/latest/'
+AUTHOR = 'Ryan Sheftel'
+EMAIL = 'rsheftel@alumni.upenn.edu'
+LICENSE = 'MIT'
+
+# ----- items below do not generally change ------- #
 
 # Get the long description from the README file
+here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
-pytest_runner = ['pytest-runner'] if needs_pytest else []
-
 setup(
-    name='raccoon',
-    version='2.1.5',
-
-    description='Python DataFrame with fast insert and appends',
+    # meta data
+    name=NAME,
+    version=VERSION,
+    description=DESCRIPTION,
     long_description=long_description,
-
-    # The project's main homepage.
-    url='https://github.com/rsheftel/raccoon',
-
-    # Author details
-    author='Ryan Sheftel',
-    author_email='rsheftel@alumni.upenn.edu',
-
-    # Choose your license
-    license='MIT',
+    long_description_content_type='text/x-rst',
+    url=SOURCE_URL,
+    author=AUTHOR,
+    author_email=EMAIL,
+    license=LICENSE,
+    project_urls={
+        'Documentation': DOCS_URL,
+        'Source': SOURCE_URL,
+    },
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -53,31 +62,20 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
     # What does your project relate to?
     keywords='dataframe data structure',
 
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
+    # requirements
     packages=find_packages(exclude=['docs', 'examples', 'tests']),
-
-    # Alternatively, if you want to distribute just a my_module.py, uncomment
-    # this:
-    #   py_modules=["my_module"],
-
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['blist', 'tabulate', 'six'],
-    setup_requires=pytest_runner,
-    tests_require=[
-        'pytest',
-    ]
+    python_requires=REQUIRED_PYTHON,
+    install_requires=REQUIRED_PACKAGES,
+    tests_require=['pytest'],
 )

@@ -11,10 +11,6 @@ Python DataFrame with fast insert and appends
 .. image:: https://coveralls.io/repos/github/rsheftel/raccoon/badge.svg?branch=master
     :target: https://coveralls.io/github/rsheftel/raccoon?branch=master
     
-.. image:: https://landscape.io/github/rsheftel/raccoon/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/rsheftel/raccoon/master
-   :alt: Code Health    
-
 .. image:: https://readthedocs.org/projects/raccoon/badge/?version=latest
    :target: http://raccoon.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
@@ -47,6 +43,11 @@ The raccoon DataFrame is not intended for math operations like pandas and only l
 Why Raccoon?
 ------------
 According to wikipedia some scientists believe the panda is related to the raccoon
+
+Contributing
+------------
+Contribution in the form of pull requests are welcome. Use pytest to run the test suite. Be sure any new additions
+come with accompanying tests.
 
 Future
 ------
