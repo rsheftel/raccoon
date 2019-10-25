@@ -111,25 +111,25 @@ def test_to_list():
 def test_json():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[4, 5, 6], columns=['b', 'a', 'c'])
 
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sort=False)
 
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
     # empty DataFrame
     df = rc.DataFrame({'a': [], 'b': [], 'c': []})
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame()
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
 
@@ -137,8 +137,8 @@ def test_json_objects():
     # test with a compound object returning a representation
     df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
 
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
 
     # the DataFrames are not equal because the blist() was converted to a representation
     with pytest.raises(AssertionError):
@@ -146,6 +146,7 @@ def test_json_objects():
 
     assert actual[1, 'b'] != blist([5, 6])
     assert actual[1, 'b'] == 'blist([5, 6])'
+
 
 def test_json_multi_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
@@ -213,7 +214,7 @@ def test_rename_columns():
         df.rename_columns({'a2': 'a', 'bad': 'nogo'})
 
 
-def test_show():
+def test_print():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
                       index=['row1', 'row2', 'row3'], use_blist=True)
 
@@ -229,8 +230,8 @@ def test_show():
     actual = df.__str__()
     assert actual == expected
 
-    # show() method will pass along any argument for the tabulate.tabulate function
-    df.show()
+    # print() method will pass along any argument for the tabulate.tabulate function
+    df.print()
 
 
 def test_input_data_mutability():

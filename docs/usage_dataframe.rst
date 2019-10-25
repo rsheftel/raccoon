@@ -83,7 +83,7 @@ Print
 
 .. code:: python
 
-    df.show()
+    df.print()
 
 
 .. parsed-literal::
@@ -174,7 +174,7 @@ Setters and Getters
 
     #indexes can be any non-repeating unique values
     df.index = ['apple', 'pear', 7.7]
-    df.show()
+    df.print()
 
 
 .. parsed-literal::
@@ -283,7 +283,7 @@ Set Values
 
     # set a value outside current range creates a new row and/or column. Can also use [] for setting
     df[13, 'c'] = 9
-    df.show()
+    df.print()
 
 
 .. parsed-literal::
@@ -438,7 +438,7 @@ Get Values
 .. code:: python
 
     # get an entire column
-    df['c'].show()
+    df['c'].print()
 
 
 .. parsed-literal::
@@ -457,7 +457,7 @@ Get Values
 .. code:: python
 
     # get list of columns
-    df[['a', 'c']].show()
+    df[['a', 'c']].print()
 
 
 .. parsed-literal::
@@ -476,7 +476,7 @@ Get Values
 .. code:: python
 
     # get subset of the index
-    df[[11, 12, 13], 'b'].show()
+    df[[11, 12, 13], 'b'].print()
 
 
 .. parsed-literal::
@@ -491,7 +491,7 @@ Get Values
 .. code:: python
 
     # get using slices
-    df[11:13, 'b'].show()
+    df[11:13, 'b'].print()
 
 
 .. parsed-literal::
@@ -506,7 +506,7 @@ Get Values
 .. code:: python
 
     # get a matrix
-    df[10:11, ['a', 'c']].show()
+    df[10:11, ['a', 'c']].print()
 
 
 .. parsed-literal::
@@ -590,7 +590,7 @@ from 0...len(index)
 
 .. code:: python
 
-    df.get_location(-1).show()
+    df.get_location(-1).print()
 
 
 .. parsed-literal::
@@ -602,7 +602,7 @@ from 0...len(index)
 
 .. code:: python
 
-    df.get_locations(locations=[0, 2]).show()
+    df.get_locations(locations=[0, 2]).print()
 
 
 .. parsed-literal::
@@ -616,7 +616,7 @@ from 0...len(index)
 .. code:: python
 
     df.set_locations(locations=[0, 2], column='a', values=-9)
-    df.show()
+    df.print()
 
 
 .. parsed-literal::
@@ -637,7 +637,7 @@ Head and Tail
 
 .. code:: python
 
-    df.head(2).show()
+    df.head(2).print()
 
 
 .. parsed-literal::
@@ -650,7 +650,7 @@ Head and Tail
 
 .. code:: python
 
-    df.tail(2).show()
+    df.tail(2).print()
 
 
 .. parsed-literal::
@@ -875,7 +875,7 @@ Append
 .. code:: python
 
     df1 = rc.DataFrame({'a': [1, 2], 'b': [5, 6]}, index=[1, 2])
-    df1.show()
+    df1.print()
 
 
 .. parsed-literal::
@@ -1285,7 +1285,7 @@ start
 
 .. code:: python
 
-    df.show()
+    df.print()
 
 
 .. parsed-literal::

@@ -83,7 +83,7 @@ Initialize 10,000 empty DataFrames
 
 .. code:: python
 
-    results.show()
+    results.print()
 
 
 .. parsed-literal::
@@ -129,7 +129,7 @@ Initialize 100 row X 100 col DataFrame()
 
 .. code:: python
 
-    results.show()
+    results.print()
 
 
 .. parsed-literal::

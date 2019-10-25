@@ -1,22 +1,17 @@
 """
 Series class
 """
-from __future__ import print_function
-import six
-
 import sys
 from bisect import bisect_left, bisect_right
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 from itertools import compress
 from tabulate import tabulate
 from blist import blist
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
-PYTHON3 = (sys.version_info >= (3, 0))
 
-
-class SeriesBase(six.with_metaclass(ABCMeta)):
+class SeriesBase(ABC):
     """
     Base Series abstract base class that concrete implementations inherit from. Note that the .data and .index property
     methods in Series are views to the underlying data and not copies.
@@ -47,7 +42,7 @@ class SeriesBase(six.with_metaclass(ABCMeta)):
         kwargs['headers'] = 'keys' if 'headers' not in kwargs.keys() else kwargs['headers']
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def show(self, index=True, **kwargs):
+    def print(self, index=True, **kwargs):
         """
         Print the contents of the Series. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.

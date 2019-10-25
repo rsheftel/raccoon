@@ -2,9 +2,6 @@ import pytest
 import raccoon as rc
 from blist import blist
 
-import sys
-PYTHON3 = (sys.version_info >= (3, 0))
-
 
 def test_default_empty_init():
     actual = rc.DataFrame()
@@ -143,9 +140,8 @@ def test_sorted_init():
     assert df.data == [[1, 2, 3], [4, 5, 6]]
 
     # mixed type index will bork on sort=True
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, index=[1, 'b', 3], sort=True)
+    with pytest.raises(TypeError):
+        rc.DataFrame({'a': [2, 1, 3], 'b': [5, 4, 6]}, index=[1, 'b', 3], sort=True)
 
 
 def test_jagged_data():

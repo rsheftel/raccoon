@@ -8,11 +8,11 @@ from setuptools import setup, find_packages
 from os import path
 
 # version
-VERSION = '2.1.5'
+VERSION = '3.0.0'
 
 # requirements
-REQUIRED_PYTHON = '>=3.3.0'
-REQUIRED_PACKAGES = ['blist', 'tabulate', 'six']
+REQUIRED_PYTHON = '>=3.4.0'
+REQUIRED_PACKAGES = ['blist', 'tabulate']
 
 # Package meta-data
 NAME = 'raccoon'
@@ -62,7 +62,6 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

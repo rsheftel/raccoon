@@ -101,8 +101,8 @@ def test_show():
     actual = srs.__str__()
     assert actual == expected
 
-    # show() method will pass along any argument for the tabulate.tabulate function
-    srs.show()
+    # print() method will pass along any argument for the tabulate.tabulate function
+    srs.print()
 
 
 def test_input_data_mutability():

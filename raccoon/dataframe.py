@@ -1,17 +1,13 @@
 """
 DataFrame class
 """
-from __future__ import print_function
 
-import sys
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
 from blist import blist
 from tabulate import tabulate
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
-
-PYTHON3 = (sys.version_info >= (3, 0))
 
 try:
     import simplejson as json
@@ -112,7 +108,7 @@ class DataFrame(object):
         kwargs['headers'] = 'keys' if 'headers' not in kwargs.keys() else kwargs['headers']
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def show(self, index=True, **kwargs):
+    def print(self, index=True, **kwargs):
         """
         Print the contents of the DataFrame. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.
@@ -155,17 +151,11 @@ class DataFrame(object):
 
     @property
     def data(self):
-        if PYTHON3:
-            return self._data.copy()
-        else:
-            return self._data[:]
+        return self._data.copy()
 
     @property
     def columns(self):
-        if PYTHON3:
-            return self._columns.copy()
-        else:
-            return self._columns[:]
+        return self._columns.copy()
 
     @columns.setter
     def columns(self, columns_list):
@@ -848,7 +838,7 @@ class DataFrame(object):
         result.update(data_dict)
         return result
 
-    def to_json(self):
+    def to_json(self) -> str:
         """
         Returns a JSON of the entire DataFrame that can be reconstructed back with raccoon.from_json(input). Any object
         that cannot be serialized will be replaced with the representation of the object using repr(). In that instance
@@ -1041,10 +1031,7 @@ class DataFrame(object):
             raise ValueError('duplicate indexes in DataFrames')
 
         for c, column in enumerate(data_frame.columns):
-            if PYTHON3:
-                self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c].copy())
-            else:
-                self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c][:])
+            self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c].copy())
 
     def equality(self, column, indexes=None, value=None):
         """
@@ -1187,7 +1174,7 @@ class DataFrame(object):
 
     # DataFrame creation functions
     @classmethod
-    def from_json(cls, json_string):
+    def from_json(cls, json_string: str):
         """
         Creates and return a DataFrame from a JSON of the type created by to_json
 

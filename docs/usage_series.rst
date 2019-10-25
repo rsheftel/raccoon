@@ -77,7 +77,7 @@ Print
 
 .. code:: python
 
-    srs.show()
+    srs.print()
 
 
 .. parsed-literal::
@@ -153,7 +153,7 @@ Setters and Getters
 
     #indexes can be any non-repeating unique values
     srs.index = ['apple', 'pear', 7.7]
-    srs.show()
+    srs.print()
 
 
 .. parsed-literal::
@@ -262,7 +262,7 @@ Set Values
 
     # set a value outside current range creates a new row. Can also use [] for setting
     srs[13] = 9
-    srs.show()
+    srs.print()
 
 
 .. parsed-literal::
@@ -434,7 +434,7 @@ Get Values
 .. code:: python
 
     # get subset of the index
-    srs[[11, 12, 13]].show()
+    srs[[11, 12, 13]].print()
 
 
 .. parsed-literal::
@@ -449,7 +449,7 @@ Get Values
 .. code:: python
 
     # get using slices
-    srs[11:13].show()
+    srs[11:13].print()
 
 
 .. parsed-literal::
@@ -506,7 +506,7 @@ from 0...len(index)
 
 .. code:: python
 
-    srs.get_locations(locations=[0, 2]).show()
+    srs.get_locations(locations=[0, 2]).print()
 
 
 .. parsed-literal::
@@ -554,7 +554,7 @@ Head and Tail
 
 .. code:: python
 
-    srs.head(2).show()
+    srs.head(2).print()
 
 
 .. parsed-literal::
@@ -567,7 +567,7 @@ Head and Tail
 
 .. code:: python
 
-    srs.tail(2).show()
+    srs.tail(2).print()
 
 
 .. parsed-literal::
@@ -897,7 +897,7 @@ start
 
 .. code:: python
 
-    srs.show()
+    srs.print()
 
 
 .. parsed-literal::

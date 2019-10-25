@@ -3,9 +3,6 @@ import raccoon as rc
 from raccoon.utils import assert_frame_equal
 from blist import blist
 
-import sys
-PYTHON3 = (sys.version_info >= (3, 0))
-
 
 def test_sort_index():
     # test on list
@@ -27,9 +24,8 @@ def test_sort_index():
 
     # fails on mixed type columns
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[10, 'a', 9])
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            df.sort_index()
+    with pytest.raises(TypeError):
+        df.sort_index()
 
 
 def test_sort_multi_index():
@@ -43,9 +39,8 @@ def test_sort_multi_index():
 
     # fails on mixed type columns
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[(10, 'c'), 'a', (10, 'b')])
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            df.sort_index()
+    with pytest.raises(TypeError):
+        df.sort_index()
 
 
 def test_sort_column():

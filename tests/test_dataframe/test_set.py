@@ -2,9 +2,6 @@ import pytest
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
 
-import sys
-PYTHON3 = (sys.version_info >= (3, 0))
-
 
 def test_set_cell():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[10, 11, 12], columns=['a', 'b', 'c'],
@@ -76,9 +73,8 @@ def test_set_cell_sorted():
     assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
     # fails for mixed index type
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            actual.set('Z', 'e', 60)
+    with pytest.raises(TypeError):
+        actual.set('Z', 'e', 60)
 
 
 def test_set_row():
