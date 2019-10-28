@@ -5,15 +5,11 @@ DataFrame class
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
+import json
 
 from tabulate import tabulate
 
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
-
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 
 class DataFrame(object):
@@ -21,14 +17,15 @@ class DataFrame(object):
     DataFrame class. The raccoon DataFrame implements a simplified version of the pandas DataFrame with the key
     objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
-    Raccoon uses BList as the underlying data structure which is quick to expand and grow the size. The DataFrame can
-    be designated as sort, in which case the rows will be sort by index on construction, and then any addition of a
-    new row will insert it into the DataFrame so that the index remains sort.
+    Raccoon uses native lists, or any other provided drop-in replacement for lists, as the underlying data structure
+    which is quick to expand and grow the size. The DataFrame can be designated as sort, in which case the rows will be
+    sort by index on construction, and then any addition of a new row will insert it into the DataFrame so that the
+    index remains sort.
     """
     # Define slots to make object faster
     __slots__ = ['_data', '_index', '_index_name', '_columns', '_sort', '_dropin']
 
-    def __init__(self, data=None, columns=None, index=None, index_name='index', sort=None, dropin_func=None):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', sort=None, dropin=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.
@@ -36,25 +33,26 @@ class DataFrame(object):
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param index_name: (optional) name for the index. Default is "index"
         :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type
+        :param dropin: if supplied the drop-in replacement for list that will be used
         """
         # standard variable setup
         self._index = None
         self._index_name = index_name
         self._columns = None
-        self._dropin = dropin_func
+        self._dropin = dropin
 
         # quality checks
         if (index is not None) and not (self._check_list(index) or isinstance(index, list)):
-            raise TypeError('index must be a list. if dropin_func provided, must be of that type')
+            raise TypeError('index must be a list. if dropin provided, must be of that type')
         if (columns is not None) and not (self._check_list(columns) or isinstance(columns, list)):
-            raise TypeError('columns must be a list. if dropin_func provided, must be of that type')
+            raise TypeError('columns must be a list. if dropin provided, must be of that type')
 
         # define from dictionary
         if data is None:
-            self._data = dropin_func() if dropin_func else list()
+            self._data = dropin() if dropin else list()
             if columns:
                 # expand to the number of columns
-                self._data = dropin_func([dropin_func() for _ in range(len(columns))]) if dropin_func \
+                self._data = dropin([dropin() for _ in range(len(columns))]) if dropin \
                     else [[] for _ in range(len(columns))]
                 self.columns = columns
             else:
@@ -69,8 +67,8 @@ class DataFrame(object):
                 self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
-            self._data = dropin_func([dropin_func(x) if ((type(x) == dropin_func) or (type(x) == list))
-                                      else dropin_func([x]) for x in data.values()]) if dropin_func \
+            self._data = dropin([dropin(x) if ((type(x) == dropin) or (type(x) == list))
+                                 else dropin([x]) for x in data.values()]) if dropin \
                 else [x if type(x) == list else [x] for x in data.values()]
             # setup columns from directory keys
             self.columns = data.keys()
@@ -134,7 +132,8 @@ class DataFrame(object):
             raise ValueError(
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
-        self._data = self._dropin([self._data[x] for x in new_sort]) if self._dropin else [self._data[x] for x in new_sort]
+        self._data = self._dropin([self._data[x] for x in new_sort]) if self._dropin \
+            else [self._data[x] for x in new_sort]
         self._columns = self._dropin([self._columns[x] for x in new_sort]) if self._dropin \
             else [self._columns[x] for x in new_sort]
 
@@ -448,7 +447,7 @@ class DataFrame(object):
         else:
             data = data if data else None  # if the dict is empty, convert to None
             return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
-                             dropin_func=self._dropin)
+                             dropin=self._dropin)
 
     def _insert_row(self, i, index):
         """
@@ -848,7 +847,7 @@ class DataFrame(object):
         that cannot be serialized will be replaced with the representation of the object using repr(). In that instance
         the DataFrame will have a string representation in place of the object and will not reconstruct exactly.
 
-        If there is a dropin_func supplied then the output will have a string representation of the droping func class
+        If there is a dropin supplied then the output will have a string representation of the droping func class
         in the meta data as the dropin function cannot be stored with the JSON.
 
         :return: json string
@@ -866,7 +865,6 @@ class DataFrame(object):
             if key not in ['_data', '_index']:
                 value = self.__getattribute__(key)
                 meta_data[key.lstrip('_')] = value if not type(value) == self._dropin else list(value)
-        meta_data['dropin_func'] = meta_data.pop('dropin')
         input_dict['meta_data'] = meta_data
         return json.dumps(input_dict, default=repr)
 
@@ -967,7 +965,8 @@ class DataFrame(object):
         self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
+            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin \
+                else [self._data[c][i] for i in sort]
 
     def sort_columns(self, column, key=None, reverse=False):
         """
@@ -987,7 +986,8 @@ class DataFrame(object):
         self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
+            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin \
+                else [self._data[c][i] for i in sort]
 
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
@@ -1185,7 +1185,7 @@ class DataFrame(object):
         """
         Creates and return a DataFrame from a JSON of the type created by to_json.
 
-        If a dropin_func is in the meta data from the JSON, then the same dropin class must be provided here to
+        If a dropin is in the meta data from the JSON, then the same dropin class must be provided here to
         allow construction as the dropin function cannot be stored with the JSON. If required use a pickle
         object for that.
 
@@ -1201,14 +1201,14 @@ class DataFrame(object):
         if isinstance(input_dict['meta_data']['index_name'], list):
             input_dict['meta_data']['index_name'] = tuple(input_dict['meta_data']['index_name'])
         data = input_dict['data'] if input_dict['data'] else None
-        # confirm the dropin_func and replace with the actual class
-        if input_dict['meta_data']['dropin_func']:
+        # confirm the dropin and replace with the actual class
+        if input_dict['meta_data']['dropin']:
             if not dropin_func:
-                raise AttributeError('the JSON has a dropin_func : %s : but the dropin_func parameter was not supplied'
-                                     % input_dict['meta_data']['dropin_func'])
-            elif input_dict['meta_data']['dropin_func'] == dropin_func.__str__(dropin_func):
-                input_dict['meta_data']['dropin_func'] = dropin_func
+                raise AttributeError('the JSON has a dropin : %s : but the dropin parameter was not supplied'
+                                     % input_dict['meta_data']['dropin'])
+            elif input_dict['meta_data']['dropin'] == dropin_func.__str__(dropin_func):
+                input_dict['meta_data']['dropin'] = dropin_func
             else:
-                raise AttributeError('the supplied dropin_func parameter: %s : does not match the value in '
-                                      'the JSON: %s' % (dropin_func, input_dict['meta_data']['dropin_func']))
+                raise AttributeError('the supplied dropin parameter: %s : does not match the value in '
+                                     'the JSON: %s' % (dropin_func, input_dict['meta_data']['dropin']))
         return cls(data=data, index=input_dict['index'], **input_dict['meta_data'])
