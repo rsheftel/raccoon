@@ -12,7 +12,7 @@ VERSION = '3.0.0'
 
 # requirements
 REQUIRED_PYTHON = '>=3.4.0'
-REQUIRED_PACKAGES = ['blist', 'tabulate']
+REQUIRED_PACKAGES = ['tabulate']
 
 # Package meta-data
 NAME = 'raccoon'
@@ -76,5 +76,5 @@ setup(
     packages=find_packages(exclude=['docs', 'examples', 'tests']),
     python_requires=REQUIRED_PYTHON,
     install_requires=REQUIRED_PACKAGES,
-    tests_require=['pytest'],
+    tests_require=['pytest', 'blist'],
 )

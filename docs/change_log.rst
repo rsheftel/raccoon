@@ -156,17 +156,19 @@ Series
 
 - Python 2.7 support is dropped. This and all future releases are Python3 only
 - .show() method has been renamed .print() to be consistent with Python standards
-- Major change to the API for using drop-in replacements like blist and removing blist as an installation requirement
-+ the refactoring was driven by two needs. The first was to consistently accommodate other drop-in list replacements
-+ the second was that blist was no longer maintained and having it as a dependency for the entire raccoon package
+- Major change to the API for using drop-in replacements like blist and removing blist as an installation requirement.
+The refactoring was driven by two needs. The first was to consistently accommodate other drop-in list replacements.
+The second was that blist was no longer maintained and having it as a dependency for the entire raccoon package
 created difficulties with installation. Now the sole package dependency is tabulate and that is a pure python package.
 
 *What were the issues with blist?*
+
 - blist does not have a published wheel on PyPi which makes it a difficult requirement for most people to install
 - the conda blist package does not support Python 3.7 on Windows
 - Because of the following error it will cease working in 3.8 if not resolved and there seems to be no active development:
 + Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated, and in 3.8 it will stop working
 
 *Can I still use blist?*
+
 Yes the new refactoring allows any list drop-in replacement, including blist, to be used but just no longer makes blist
 an installation requirement.

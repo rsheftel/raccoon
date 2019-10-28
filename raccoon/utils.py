@@ -24,7 +24,7 @@ def assert_frame_equal(left, right, data_function=None, data_args=None):
     assert left.columns == right.columns
     assert left.index_name == right.index_name
     assert left.sort == right.sort
-    assert left.blist == right.blist
+    assert left.dropin_func == right.dropin_func
 
 
 def assert_series_equal(left, right, data_function=None, data_args=None):

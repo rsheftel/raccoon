@@ -36,15 +36,13 @@ def test_delete_row():
 
 
 def test_delete_row_sorted():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'],
-                      sort=True, use_blist=False)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'], sort=True)
 
     df.delete_rows(['a', 'c'])
-    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b'],
-                                        sort=True, use_blist=False))
+    assert_frame_equal(df, rc.DataFrame({'a': [2], 'b': [5]}, columns=['b', 'a'], index=['b'], sort=True))
 
     df.delete_rows('b')
-    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=True, use_blist=False))
+    assert_frame_equal(df, rc.DataFrame(columns=['b', 'a'], sort=True))
 
     # insert back in data
     df[1, 'a'] = 9

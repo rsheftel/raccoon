@@ -1,6 +1,5 @@
 import pytest
 import raccoon as rc
-from blist import blist
 
 
 def test_default_empty_init():
@@ -41,16 +40,6 @@ def test_default_empty_init():
     assert isinstance(actual.columns, list)
     assert isinstance(actual.data, list)
     assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
-
-    actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'], use_blist=True)
-    assert actual.data == [[None, None, None], [None, None, None]]
-    assert actual.columns == ['a', 'b']
-    assert actual.index == [1, 2, 3]
-    assert actual.sort is False
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.columns, blist)
-    assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
 
     actual = rc.DataFrame(index=[1, 2, 3], columns=['a', 'b'], sort=True)
     assert actual.sort is True

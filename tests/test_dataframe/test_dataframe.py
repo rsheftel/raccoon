@@ -3,43 +3,6 @@ import raccoon as rc
 from collections import OrderedDict
 from copy import deepcopy
 from raccoon.utils import assert_frame_equal
-from blist import blist
-
-
-def test_use_blist():
-    def check_blist():
-        assert isinstance(df.index, blist)
-        assert isinstance(df.columns, blist)
-        assert isinstance(df.data, blist)
-        assert all([isinstance(df.data[x], blist) for x in range(len(df.columns))])
-
-    df = rc.DataFrame(use_blist=True)
-    assert isinstance(df, rc.DataFrame)
-    assert df.data == []
-    assert df.columns == []
-    assert df.index == []
-    assert df.sort is True
-    check_blist()
-
-    # add a new row and col
-    df.set_cell(1, 'a', 1)
-    check_blist()
-
-    # add a new row
-    df.set_cell(2, 'a', 2)
-    check_blist()
-
-    # add a new col
-    df.set_cell(1, 'b', 3)
-    check_blist()
-
-    # add a complete new row
-    df.set_row(3, {'a': 4, 'b': 5})
-    check_blist()
-
-    # add a complete new col
-    df.set_column([2, 3], 'c', [6, 7])
-    check_blist()
 
 
 def test_default_list():
@@ -115,12 +78,6 @@ def test_json():
     actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, use_blist=True, sort=False)
-
-    string = df.to_json()
-    actual = rc.DataFrame.from_json(string)
-    assert_frame_equal(df, actual)
-
     # empty DataFrame
     df = rc.DataFrame({'a': [], 'b': [], 'c': []})
     string = df.to_json()
@@ -133,33 +90,18 @@ def test_json():
     assert_frame_equal(df, actual)
 
 
-def test_json_objects():
-    # test with a compound object returning a representation
-    df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
-
-    string = df.to_json()
-    actual = rc.DataFrame.from_json(string)
-
-    # the DataFrames are not equal because the blist() was converted to a representation
-    with pytest.raises(AssertionError):
-        assert_frame_equal(df, actual)
-
-    assert actual[1, 'b'] != blist([5, 6])
-    assert actual[1, 'b'] == 'blist([5, 6])'
-
-
 def test_json_multi_index():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)])
 
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}, index=[('a', 4), ('b', 5), ('c', 6)],
                       index_name=('first', 'second'))
 
-    str = df.to_json()
-    actual = rc.DataFrame.from_json(str)
+    string = df.to_json()
+    actual = rc.DataFrame.from_json(string)
     assert_frame_equal(df, actual)
 
 
@@ -216,15 +158,15 @@ def test_rename_columns():
 
 def test_print():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [1.0, 2.55, 3.1], 'c': ['first', 'second', None]}, columns=['b', 'c', 'a'],
-                      index=['row1', 'row2', 'row3'], use_blist=True)
+                      index=['row1', 'row2', 'row3'])
 
     # __repr__ produces a simple representation
-    expected = "object id: %s\ncolumns:\nblist(['b', 'c', 'a'])\ndata:\nblist([blist([1.0, 2.55, 3.1]), blist([" \
-               "'first', 'second', None]), blist([1, 2, 3])])\nindex:\nblist(['row1', 'row2', 'row3'])\n" % id(df)
+    expected = "object id: %s\ncolumns:\n['b', 'c', 'a']\ndata:\n[[1.0, 2.55, 3.1], [" \
+               "'first', 'second', None], [1, 2, 3]]\nindex:\n['row1', 'row2', 'row3']\n" % id(df)
     actual = df.__repr__()
     assert actual == expected
 
-    # __str__ produces the standard table
+    # __string__ produces the standard table
     expected = 'index       b  c         a\n-------  ----  ------  ---\nrow1     1     first     1\n' \
                'row2     2.55  second    2\nrow3     3.1             3'
     actual = df.__str__()
@@ -380,8 +322,8 @@ def test_select_index():
     with pytest.raises(ValueError):
         df.select_index('a', 'BAD')
 
-    # simple index, not sort, blist
-    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=True)
+    # simple index, not sort
+    df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=['a', 'b', 'c', 'd', 'e', 'f'])
 
     actual = df.select_index('c', 'value')
     assert actual == ['c']

@@ -1,13 +1,14 @@
 """
 Series class
 """
-import sys
 from bisect import bisect_left, bisect_right
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from itertools import compress
+
 from tabulate import tabulate
 from blist import blist
+
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 
@@ -551,7 +552,7 @@ class Series(SeriesBase):
     def set_location(self, location, value):
         """
         For a location set the value
-        
+
         :param location: location 
         :param value: value
         :return: nothing

@@ -5,8 +5,9 @@ DataFrame class
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-from blist import blist
+
 from tabulate import tabulate
+
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 try:
@@ -25,36 +26,35 @@ class DataFrame(object):
     new row will insert it into the DataFrame so that the index remains sort.
     """
     # Define slots to make object faster
-    __slots__ = ['_data', '_index', '_index_name', '_columns', '_sort', '_blist']
+    __slots__ = ['_data', '_index', '_index_name', '_columns', '_sort', '_dropin']
 
-    def __init__(self, data=None, columns=None, index=None, index_name='index', use_blist=False, sort=None):
+    def __init__(self, data=None, columns=None, index=None, index_name='index', sort=None, dropin_func=None):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.
         :param columns: (optional) list of column names that will define the order
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param index_name: (optional) name for the index. Default is "index"
-        :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
         :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type
         """
-        # quality checks
-        if (index is not None) and (not isinstance(index, (list, blist))):
-            raise TypeError('index must be a list.')
-        if (columns is not None) and (not isinstance(columns, (list, blist))):
-            raise TypeError('columns must be a list.')
-
         # standard variable setup
         self._index = None
         self._index_name = index_name
         self._columns = None
-        self._blist = use_blist
+        self._dropin = dropin_func
+
+        # quality checks
+        if (index is not None) and not (self._check_list(index) or isinstance(index, list)):
+            raise TypeError('index must be a list. if dropin_func provided, must be of that type')
+        if (columns is not None) and not (self._check_list(columns) or isinstance(columns, list)):
+            raise TypeError('columns must be a list. if dropin_func provided, must be of that type')
 
         # define from dictionary
         if data is None:
-            self._data = blist() if self._blist else list()
+            self._data = dropin_func() if dropin_func else list()
             if columns:
                 # expand to the number of columns
-                self._data = blist([blist() for _ in range(len(columns))]) if self._blist \
+                self._data = dropin_func([dropin_func() for _ in range(len(columns))]) if dropin_func \
                     else [[] for _ in range(len(columns))]
                 self.columns = columns
             else:
@@ -69,8 +69,9 @@ class DataFrame(object):
                 self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
-            self._data = blist([blist(x) if isinstance(x, (list, blist)) else blist([x]) for x in data.values()]) if \
-                self._blist else [x if isinstance(x, (list, blist)) else [x] for x in data.values()]
+            self._data = dropin_func([dropin_func(x) if ((type(x) == dropin_func) or (type(x) == list))
+                                      else dropin_func([x]) for x in data.values()]) if dropin_func \
+                else [x if type(x) == list else [x] for x in data.values()]
             # setup columns from directory keys
             self.columns = data.keys()
             # pad the data
@@ -104,6 +105,9 @@ class DataFrame(object):
     def __str__(self):
         return self._make_table()
 
+    def _check_list(self, x):
+        return type(x) == (self._dropin if self._dropin else list)
+
     def _make_table(self, index=True, **kwargs):
         kwargs['headers'] = 'keys' if 'headers' not in kwargs.keys() else kwargs['headers']
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
@@ -130,8 +134,8 @@ class DataFrame(object):
             raise ValueError(
                 'columns_list must be all in current columns, and all current columns must be in columns_list')
         new_sort = [self._columns.index(x) for x in columns_list]
-        self._data = blist([self._data[x] for x in new_sort]) if self._blist else [self._data[x] for x in new_sort]
-        self._columns = blist([self._columns[x] for x in new_sort]) if self._blist \
+        self._data = self._dropin([self._data[x] for x in new_sort]) if self._dropin else [self._data[x] for x in new_sort]
+        self._columns = self._dropin([self._columns[x] for x in new_sort]) if self._dropin \
             else [self._columns[x] for x in new_sort]
 
     def _pad_data(self, max_len=None):
@@ -160,7 +164,7 @@ class DataFrame(object):
     @columns.setter
     def columns(self, columns_list):
         self._validate_columns(columns_list)
-        self._columns = blist(columns_list) if self._blist else list(columns_list)
+        self._columns = self._dropin(columns_list) if self._dropin else list(columns_list)
 
     @property
     def index(self):
@@ -175,7 +179,7 @@ class DataFrame(object):
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
-        self._index = blist(index_list) if self._blist else list(index_list)
+        self._index = self._dropin(index_list) if self._dropin else list(index_list)
 
     @property
     def index_name(self):
@@ -186,8 +190,8 @@ class DataFrame(object):
         self._index_name = name
 
     @property
-    def blist(self):
-        return self._blist
+    def dropin_func(self):
+        return self._dropin
 
     @property
     def sort(self):
@@ -241,7 +245,7 @@ class DataFrame(object):
             if the get is for a single row
         :return: either DataFrame, list, dict or single value. The return is a shallow copy
         """
-        if (indexes is None) and (columns is not None) and (not isinstance(columns, (list, blist))):
+        if (indexes is None) and (columns is not None) and (not self._check_list(columns)):
             return self.get_entire_column(columns, as_list)
 
         if indexes is None:
@@ -249,11 +253,11 @@ class DataFrame(object):
         if columns is None:
             columns = [True] * len(self._columns)
 
-        if isinstance(indexes, (list, blist)) and isinstance(columns, (list, blist)):
+        if self._check_list(indexes) and self._check_list(columns):
             return self.get_matrix(indexes, columns)
-        elif isinstance(indexes, (list, blist)) and (not isinstance(columns, (list, blist))):
+        elif self._check_list(indexes) and (not self._check_list(columns)):
             return self.get_rows(indexes, columns, as_list)
-        elif (not isinstance(indexes, (list, blist))) and isinstance(columns, (list, blist)):
+        elif (not self._check_list(indexes)) and self._check_list(columns):
             return self.get_columns(indexes, columns, as_dict)
         else:
             return self.get_cell(indexes, columns)
@@ -364,7 +368,7 @@ class DataFrame(object):
         (2) single column name and return the value of that cell. This is optimized for speed because it does not need
         to lookup the index location with a search. Also can accept relative indexing from the end of the DataFrame
         in standard python notation [-3, -2, -1]
-        
+
         :param location: index location in standard python form of positive or negative number
         :param columns: list of columns, single column name, or None to include all columns
         :param as_dict: if True then return a dictionary
@@ -413,7 +417,7 @@ class DataFrame(object):
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
         start or stop index is None then will include from the first or last element, similar to standard python
         slide of [:5] or [:5]. Both end points are considered inclusive.
-         
+
         :param start_index: lowest index value to include, or None to start from the first row
         :param stop_index: highest index value to include, or None to end at the last row
         :param columns: list of column names to include, or None for all columns
@@ -444,7 +448,7 @@ class DataFrame(object):
         else:
             data = data if data else None  # if the dict is empty, convert to None
             return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
-                             use_blist=self._blist)
+                             dropin_func=self._dropin)
 
     def _insert_row(self, i, index):
         """
@@ -504,8 +508,8 @@ class DataFrame(object):
         :return: nothing
         """
         self._columns.append(column)
-        if self._blist:
-            self._data.append(blist([None] * len(self._index)))
+        if self._dropin:
+            self._data.append(self._dropin([None] * len(self._index)))
         else:
             self._data.append([None] * len(self._index))
 
@@ -524,7 +528,7 @@ class DataFrame(object):
         :return: nothing
         """
         if (indexes is not None) and (columns is not None):
-            if isinstance(indexes, (list, blist)):
+            if self._check_list(indexes):
                 self.set_column(indexes, columns, values)
             else:
                 self.set_cell(indexes, columns, values)
@@ -607,7 +611,7 @@ class DataFrame(object):
             self._add_column(column)
         if index:  # index was provided
             if all([isinstance(i, bool) for i in index]):  # boolean list
-                if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+                if not self._check_list(values):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
                     raise ValueError('boolean index list must be same size of existing index')
@@ -617,7 +621,7 @@ class DataFrame(object):
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
             else:  # list of index
-                if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+                if not self._check_list(values):  # single value provided, not a list, so turn values into list
                     values = [values for _ in index]
                 if len(values) != len(index):
                     raise ValueError('length of values and index must be the same.')
@@ -638,19 +642,19 @@ class DataFrame(object):
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
         else:  # no index, only values
-            if not isinstance(values, (list, blist)):  # values not a list, turn into one of length same as index
+            if not self._check_list(values):  # values not a list, turn into one of length same as index
                 values = [values for _ in self._index]
             if len(values) != len(self._index):
                 raise ValueError('values list must be at same length as current index length.')
             else:
-                self._data[c] = blist(values) if self._blist else values
+                self._data[c] = self._dropin(values) if self._dropin else values
 
     def set_location(self, location, values, missing_to_none=False):
         """
         Sets the column values, as given by the keys of the values dict, for the row at location to the values of the
         values dict. If missing_to_none is False then columns not in the values dict will be left unchanged, if it is
         True then they are set to None. This method does not add new columns and raises an error.
-        
+
         :param location: location
         :param values: dict of column names as keys and the value as the value to set the row for that column to 
         :param missing_to_none: if True set any column missing in the values to None, otherwise leave unchanged
@@ -844,12 +848,15 @@ class DataFrame(object):
         that cannot be serialized will be replaced with the representation of the object using repr(). In that instance
         the DataFrame will have a string representation in place of the object and will not reconstruct exactly.
 
+        If there is a dropin_func supplied then the output will have a string representation of the droping func class
+        in the meta data as the dropin function cannot be stored with the JSON.
+
         :return: json string
         """
         input_dict = {'data': self.to_dict(index=False), 'index': list(self._index)}
 
-        # if blist, turn into lists
-        if self.blist:
+        # if self._dropin, turn into lists
+        if self._dropin:
             input_dict['index'] = list(input_dict['index'])
             for key in input_dict['data']:
                 input_dict['data'][key] = list(input_dict['data'][key])
@@ -858,8 +865,8 @@ class DataFrame(object):
         for key in self.__slots__:
             if key not in ['_data', '_index']:
                 value = self.__getattribute__(key)
-                meta_data[key.lstrip('_')] = value if not isinstance(value, blist) else list(value)
-        meta_data['use_blist'] = meta_data.pop('blist')
+                meta_data[key.lstrip('_')] = value if not type(value) == self._dropin else list(value)
+        meta_data['dropin_func'] = meta_data.pop('dropin')
         input_dict['meta_data'] = meta_data
         return json.dumps(input_dict, default=repr)
 
@@ -904,7 +911,7 @@ class DataFrame(object):
         :param indexes: either a list of values or list of booleans for the rows to delete
         :return: nothing
         """
-        indexes = [indexes] if not isinstance(indexes, (list, blist)) else indexes
+        indexes = [indexes] if not self._check_list(indexes) else indexes
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
@@ -925,7 +932,7 @@ class DataFrame(object):
         Deletes the contents of all rows in the DataFrame. This function is faster than delete_rows() to remove all
         information, and at the same time it keeps the container lists for the columns and index so if there is another
         object that references this DataFrame, like a ViewSeries, the reference remains in tact.
-        
+
         :return: nothing
         """
         del self._index[:]
@@ -939,7 +946,7 @@ class DataFrame(object):
         :param columns: list of columns to delete
         :return: nothing
         """
-        columns = [columns] if not isinstance(columns, (list, blist)) else columns
+        columns = [columns] if not self._check_list(columns) else columns
         if not all([x in self._columns for x in columns]):
             raise ValueError('all columns must be in current columns')
         for column in columns:
@@ -957,10 +964,10 @@ class DataFrame(object):
         """
         sort = sorted_list_indexes(self._index)
         # sort index
-        self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
+        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
+            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
 
     def sort_columns(self, column, key=None, reverse=False):
         """
@@ -973,14 +980,14 @@ class DataFrame(object):
         :param reverse: if True then the list elements are sort as if each comparison were reversed.
         :return: nothing
         """
-        if isinstance(column, (list, blist)):
+        if self._check_list(column):
             raise TypeError('Can only sort by a single column  ')
         sort = sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
         # sort index
-        self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
+        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = blist([self._data[c][i] for i in sort]) if self._blist else [self._data[c][i] for i in sort]
+            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
 
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
@@ -1167,18 +1174,23 @@ class DataFrame(object):
                 for i in range(len(self.index_name)):
                     self.set_column(column=self.index_name[i], values=index_data[i])
             else:
-                col_name = self.index_name if self.index_name is not 'index' else 'index_0'
+                col_name = self.index_name if self.index_name != 'index' else 'index_0'
                 self.set_column(column=col_name, values=self._index)
         self.index = list(range(self.__len__()))
         self.index_name = 'index'
 
     # DataFrame creation functions
     @classmethod
-    def from_json(cls, json_string: str):
+    def from_json(cls, json_string: str, dropin_func=None):
         """
-        Creates and return a DataFrame from a JSON of the type created by to_json
+        Creates and return a DataFrame from a JSON of the type created by to_json.
+
+        If a dropin_func is in the meta data from the JSON, then the same dropin class must be provided here to
+        allow construction as the dropin function cannot be stored with the JSON. If required use a pickle
+        object for that.
 
         :param json_string: JSON
+        :param dropin_func: drop-in replacement for list that was used in the JSON
         :return: DataFrame
         """
         input_dict = json.loads(json_string)
@@ -1189,4 +1201,14 @@ class DataFrame(object):
         if isinstance(input_dict['meta_data']['index_name'], list):
             input_dict['meta_data']['index_name'] = tuple(input_dict['meta_data']['index_name'])
         data = input_dict['data'] if input_dict['data'] else None
+        # confirm the dropin_func and replace with the actual class
+        if input_dict['meta_data']['dropin_func']:
+            if not dropin_func:
+                raise AttributeError('the JSON has a dropin_func : %s : but the dropin_func parameter was not supplied'
+                                     % input_dict['meta_data']['dropin_func'])
+            elif input_dict['meta_data']['dropin_func'] == dropin_func.__str__(dropin_func):
+                input_dict['meta_data']['dropin_func'] = dropin_func
+            else:
+                raise AttributeError('the supplied dropin_func parameter: %s : does not match the value in '
+                                      'the JSON: %s' % (dropin_func, input_dict['meta_data']['dropin_func']))
         return cls(data=data, index=input_dict['index'], **input_dict['meta_data'])

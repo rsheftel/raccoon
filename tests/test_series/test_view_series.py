@@ -1,7 +1,7 @@
 import pytest
 import raccoon as rc
 from raccoon.utils import assert_series_equal
-
+from blist import blist
 
 def test_default_empty_init():
     actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
@@ -133,7 +133,7 @@ def test_from_dataframe():
     expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
     assert_series_equal(actual, expected)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], use_blist=True)
+    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], dropin_func=blist)
     actual = rc.ViewSeries.from_dataframe(df, 'b')
     expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
     assert_series_equal(actual, expected)
