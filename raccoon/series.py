@@ -7,7 +7,6 @@ from collections import OrderedDict
 from itertools import compress
 
 from tabulate import tabulate
-from blist import blist
 
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
@@ -18,7 +17,7 @@ class SeriesBase(ABC):
     methods in Series are views to the underlying data and not copies.
     """
     # Define slots to make object faster
-    __slots__ = ['_data', '_data_name', '_index', '_index_name', '_sort']
+    __slots__ = ['_data', '_data_name', '_index', '_index_name', '_sort', '_dropin']
 
     def __init__(self):
         """
@@ -29,6 +28,7 @@ class SeriesBase(ABC):
         self._data = None
         self._data_name = None
         self._sort = None
+        self._dropin = None
 
     def __len__(self):
         return len(self._index)
@@ -90,6 +90,9 @@ class SeriesBase(ABC):
     def sort(self):
         return
 
+    def _check_list(self, x):
+        return type(x) == (self._dropin if self._dropin else list)
+
     def get(self, indexes, as_list=False):
         """
         Given indexes will return a sub-set of the Series. This method will direct to the specific methods
@@ -100,7 +103,7 @@ class SeriesBase(ABC):
         :param as_list: if True then return the values as a list, if False return a Series.
         :return: either Series, list, or single value. The return is a shallow copy
         """
-        if isinstance(indexes, (list, blist)):
+        if self._check_list(indexes):
             return self.get_rows(indexes, as_list)
         else:
             return self.get_cell(indexes)
@@ -211,8 +214,8 @@ class SeriesBase(ABC):
         return pre_list
 
     def _validate_index(self, indexes):
-        if not(isinstance(indexes, (list, blist)) or indexes is None):
-            raise TypeError('indexes must be list, blist or None')
+        if not(self._check_list(indexes) or type(indexes) == list or indexes is None):
+            raise TypeError('indexes must be list, %s or None' % self._dropin)
         if len(indexes) != len(set(indexes)):
             raise ValueError('index contains duplicates')
         if self._data:
@@ -323,19 +326,21 @@ class SeriesBase(ABC):
 class Series(SeriesBase):
     """
     Series class. The raccoon Series implements a simplified version of the pandas Series with the key
-    objective difference that the raccoon Series is meant for use cases where the size of the Series is
+    objective difference that the raccoon Series is meant for use cases where the size of the Series rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
-    The Series can be designated as sort, in which case the rows will be sort by index on construction, 
-    and then any addition of a new row will insert it into the Series so that the index remains sort.
+    Raccoon uses native lists, or any other provided drop-in replacement for lists, as the underlying data structure
+    which is quick to expand and grow the size. The Series can be designated as sort, in which case the rows will be
+    sort by index on construction, and then any addition of a new row will insert it into the Series so that the
+    index remains sort.
     """
-    def __init__(self, data=None, index=None, data_name='value', index_name='index', use_blist=False, sort=None):
+    def __init__(self, data=None, index=None, data_name='value', index_name='index', sort=None, dropin=None):
         """
         :param data: (optional) list of values.
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param data_name: (optional) name of the data column, or will default to 'value'
         :param index_name: (optional) name for the index. Default is "index"
-        :param use_blist: if True then use blist() as the underlying data structure, if False use standard list()
         :param sort: if True then Series will keep the index sort. If True all index values must be of same type
+        :param dropin: if supplied the drop-in replacement for list that will be used
         """
         super(SeriesBase, self).__init__()
 
@@ -344,19 +349,19 @@ class Series(SeriesBase):
         self._index_name = index_name
         self._data = None
         self._data_name = data_name
-        self._blist = use_blist
+        self._dropin = dropin
 
         # setup data list
         if data is None:
-            self._data = blist() if self._blist else list()
+            self._data = dropin() if dropin else list()
             if index:
                 # pad out to the number of rows
                 self._pad_data(len(index))
                 self.index = index
             else:
                 self.index = list()
-        elif isinstance(data, (list, blist)):
-            self._data = blist([x for x in data]) if self._blist else [x for x in data]
+        elif self._check_list(data) or type(data) == list:
+            self._data = dropin([x for x in data]) if dropin else [x for x in data]
             # setup index
             if index:
                 self.index = index
@@ -395,11 +400,11 @@ class Series(SeriesBase):
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
-        self._index = blist(index_list) if self._blist else list(index_list)
+        self._index = self._dropin(index_list) if self._dropin else list(index_list)
 
     @property
-    def blist(self):
-        return self._blist
+    def dropin(self):
+        return self._dropin
 
     @property
     def sort(self):
@@ -419,9 +424,9 @@ class Series(SeriesBase):
         """
         sort = sorted_list_indexes(self._index)
         # sort index
-        self._index = blist([self._index[x] for x in sort]) if self._blist else [self._index[x] for x in sort]
+        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # sort data
-        self._data = blist([self._data[x] for x in sort]) if self._blist else [self._data[x] for x in sort]
+        self._data = self._dropin([self._data[x] for x in sort]) if self._dropin else [self._data[x] for x in sort]
 
     def set(self, indexes, values=None):
         """
@@ -433,7 +438,7 @@ class Series(SeriesBase):
         :param values: value or list of values to set. If a list then must be the same length as the indexes parameter.
         :return: nothing
         """
-        if isinstance(indexes, (list, blist)):
+        if self._check_list(indexes):
             self.set_rows(indexes, values)
         else:
             self.set_cell(indexes, values)
@@ -518,7 +523,7 @@ class Series(SeriesBase):
         :return: nothing
         """
         if all([isinstance(i, bool) for i in index]):  # boolean list
-            if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+            if not self._check_list(values):  # single value provided, not a list, so turn values into list
                 values = [values for x in index if x]
             if len(index) != len(self._index):
                 raise ValueError('boolean index list must be same size of existing index')
@@ -528,7 +533,7 @@ class Series(SeriesBase):
             for x, i in enumerate(indexes):
                 self._data[i] = values[x]
         else:  # list of index
-            if not isinstance(values, (list, blist)):  # single value provided, not a list, so turn values into list
+            if not self._check_list(values):  # single value provided, not a list, so turn values into list
                 values = [values for _ in index]
             if len(values) != len(index):
                 raise ValueError('length of values and index must be the same.')
@@ -652,7 +657,7 @@ class Series(SeriesBase):
         :param indexes: either a list of values or list of booleans for the rows to delete
         :return: nothing
         """
-        indexes = [indexes] if not isinstance(indexes, (list, blist)) else indexes
+        indexes = [indexes] if not self._check_list(indexes) else indexes
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError('boolean indexes list must be same size of existing indexes')
@@ -681,7 +686,8 @@ class ViewSeries(SeriesBase):
     """
     ViewSeries class. The raccoon ViewSeries implements a view only version of the Series object with the key
     objective difference that the raccoon ViewSeries is meant for view only use cases where the underlying index and
-    data are modified elsewhere or static. Use this for a view into a single column of a DataFrame.
+    data are modified elsewhere or static. Use this for a view into a single column of a DataFrame. There is no type
+    checking of the data, so it is assumed the data type is list-style.
     """
     def __init__(self, data=None, index=None, data_name='value', index_name='index', sort=False, offset=0):
         """
@@ -694,13 +700,14 @@ class ViewSeries(SeriesBase):
         """
         super(SeriesBase, self).__init__()
 
+        # dropin is not a parameter, set it to the value of data
+        self._dropin = data.__class__
+
         # check inputs
         if index is None:
             raise ValueError('Index cannot be None.')
         if data is None:
             raise ValueError('Data cannot be None.')
-        if not isinstance(data, (list, blist)):
-            raise TypeError('Not valid data type.')
 
         # standard variable setup
         self._data = data  # direct view, no copy

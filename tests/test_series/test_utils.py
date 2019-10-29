@@ -19,10 +19,6 @@ def test_assert_series_equal():
     with pytest.raises(AssertionError):
         assert_series_equal(srs1, srs2)
 
-    srs2 = rc.Series([1, 2, 3], index=[1, 2, 3], use_blist=True)
-    with pytest.raises(AssertionError):
-        assert_series_equal(srs1, srs2)
-
     srs2 = rc.Series([1, 2, 3], index=[1, 2, 3], sort=True)
     with pytest.raises(AssertionError):
         assert_series_equal(srs1, srs2)

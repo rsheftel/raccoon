@@ -3,7 +3,6 @@ import raccoon as rc
 from collections import OrderedDict
 from copy import deepcopy
 from raccoon.utils import assert_series_equal
-from blist import blist
 
 
 def test_names():
@@ -15,35 +14,6 @@ def test_names():
     srs.data_name = 'data'
     assert srs.index_name == 'new_index'
     assert srs.data_name == 'data'
-
-
-def test_use_blist():
-    def check_blist():
-        assert isinstance(srs.index, blist)
-        assert isinstance(srs.data, blist)
-
-    srs = rc.Series(use_blist=True)
-    assert isinstance(srs, rc.Series)
-    assert srs.data == []
-    assert srs.index == []
-    assert srs.sort is True
-    check_blist()
-
-    # add a new row and col
-    srs.set_cell(1, 1)
-    check_blist()
-
-    # add a new row
-    srs.set_cell(2, 2)
-    check_blist()
-
-    # add a new col
-    srs.set_cell(1, 3)
-    check_blist()
-
-    # add a complete new row
-    srs.set_rows([3], [5])
-    check_blist()
 
 
 def test_default_list():
@@ -88,11 +58,11 @@ def test_to_dict():
     assert act_order == expected
 
 
-def test_show():
-    srs = rc.Series([1.0, 2.55, 3.1], data_name='boo', index=['row1', 'row2', 'row3'], use_blist=True)
+def test_print():
+    srs = rc.Series([1.0, 2.55, 3.1], data_name='boo', index=['row1', 'row2', 'row3'])
 
     # __repr__ produces a simple representation
-    expected = "object id: %s\ndata:\nblist([1.0, 2.55, 3.1])\nindex:\nblist(['row1', 'row2', 'row3'])\n" % id(srs)
+    expected = "object id: %s\ndata:\n[1.0, 2.55, 3.1]\nindex:\n['row1', 'row2', 'row3']\n" % id(srs)
     actual = srs.__repr__()
     assert actual == expected
 
@@ -212,8 +182,8 @@ def test_select_index():
     with pytest.raises(ValueError):
         srs.select_index('a', 'BAD')
 
-    # simple index, not sort, blist
-    srs = rc.Series([1, 2, 3, 4, 5, 6], index=['a', 'b', 'c', 'd', 'e', 'f'], use_blist=True)
+    # simple index, not sort
+    srs = rc.Series([1, 2, 3, 4, 5, 6], index=['a', 'b', 'c', 'd', 'e', 'f'])
 
     actual = srs.select_index('c', 'value')
     assert actual == ['c']

@@ -1,6 +1,5 @@
 import pytest
 import raccoon as rc
-from blist import blist
 
 
 def test_index():
@@ -27,25 +26,6 @@ def test_index():
 
     actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'], index_name='letters')
     assert actual.index_name == 'letters'
-
-
-def test_index_blist():
-    actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'], use_blist=True)
-    result = actual.index
-    assert result == ['a', 'b', 'c']
-    assert isinstance(result, blist)
-
-    # test that a view is returned
-    result.append('bad')
-    assert actual.index == ['a', 'b', 'c', 'bad']
-
-    actual.index = [9, 10, 11]
-    assert actual.index == [9, 10, 11]
-    assert isinstance(result, blist)
-
-    # index too long
-    with pytest.raises(ValueError):
-        actual.index = [1, 3, 4, 5, 6]
 
 
 def test_index_view():
@@ -98,12 +78,6 @@ def test_data():
 
     with pytest.raises(AttributeError):
         actual.data = [4, 5]
-
-
-def test_data_blist():
-    actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'], use_blist=True)
-    assert actual.data == [4, 5, 6]
-    assert isinstance(actual.data, blist)
 
 
 def test_data_view():

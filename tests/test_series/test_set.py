@@ -2,9 +2,6 @@ import pytest
 import raccoon as rc
 from raccoon.utils import assert_series_equal
 
-import sys
-PYTHON3 = (sys.version_info >= (3, 0))
-
 
 def test_set_cell():
     actual = rc.Series([4, 5, 6], index=[10, 11, 12], sort=False)
@@ -56,9 +53,8 @@ def test_set_cell_sort():
     assert actual.data == [999, 13, -1, 55, 9, 15]
 
     # fails for mixed index type
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            actual.set('Z', 60)
+    with pytest.raises(TypeError):
+        actual.set('Z', 60)
 
 
 def test_set_rows():

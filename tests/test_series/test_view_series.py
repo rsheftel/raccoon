@@ -1,7 +1,7 @@
 import pytest
 import raccoon as rc
 from raccoon.utils import assert_series_equal
-from blist import blist
+
 
 def test_default_empty_init():
     actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
@@ -88,16 +88,16 @@ def test_bad_initialization():
     with pytest.raises(TypeError):
         rc.ViewSeries({'a': [1]}, index=1)
 
-    # bad data type
-    with pytest.raises(TypeError):
-        rc.ViewSeries(data=(1, 2, 3), index=[4, 5, 6])
-
-    with pytest.raises(TypeError):
-        rc.ViewSeries(data={'data': [1, 2, 3]}, index=[4, 5, 6])
-
     # index not a list
     with pytest.raises(TypeError):
         rc.ViewSeries(data=[2], index='b')
+
+    with pytest.raises(ValueError):
+        rc.ViewSeries(data={'data': [1, 2, 3]}, index=[4, 5, 6])
+
+
+def test_mixed_type_init():
+    rc.ViewSeries(data=(1, 2, 3), index=[4, 5, 6])
 
 
 def test_not_implemented():
@@ -107,7 +107,7 @@ def test_not_implemented():
     ser = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
 
     with pytest.raises(AttributeError):
-        ser.blist
+        ser.dropin
 
     with pytest.raises(AttributeError):
         ser.sort = True
@@ -133,11 +133,6 @@ def test_from_dataframe():
     expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
     assert_series_equal(actual, expected)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], dropin_func=blist)
-    actual = rc.ViewSeries.from_dataframe(df, 'b')
-    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
-    assert_series_equal(actual, expected)
-
 
 def test_from_series():
     srs = rc.Series(data=[4, 5, 6], index=['a', 'b', 9], data_name='b')
@@ -148,11 +143,6 @@ def test_from_series():
     srs = rc.Series(data=[1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, index_name='date')
     actual = rc.ViewSeries.from_series(srs, -1)
     expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
-    assert_series_equal(actual, expected)
-
-    srs = rc.Series(data=[4, 5, 6], data_name='b', index=['a', 'b', 9], use_blist=True)
-    actual = rc.ViewSeries.from_series(srs)
-    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
     assert_series_equal(actual, expected)
 
 

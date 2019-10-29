@@ -38,13 +38,13 @@ def test_delete():
 
 
 def test_delete_sort():
-    srs = rc.Series([4, 5, 6], index=['a', 'b', 'c'], sort=True, use_blist=False)
+    srs = rc.Series([4, 5, 6], index=['a', 'b', 'c'], sort=True)
 
     srs.delete(['a', 'c'])
-    assert_series_equal(srs, rc.Series([5], index=['b'], sort=True, use_blist=False))
+    assert_series_equal(srs, rc.Series([5], index=['b'], sort=True))
 
     srs.delete('b')
-    assert_series_equal(srs, rc.Series(sort=True, use_blist=False))
+    assert_series_equal(srs, rc.Series(sort=True))
 
     # insert back in data
     srs[2] = 9

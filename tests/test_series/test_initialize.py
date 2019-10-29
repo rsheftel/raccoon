@@ -1,10 +1,5 @@
-import sys
 import pytest
 import raccoon as rc
-from blist import blist
-from raccoon.utils import assert_series_equal
-
-PYTHON3 = (sys.version_info >= (3, 0))
 
 
 def test_default_empty_init():
@@ -37,15 +32,6 @@ def test_default_empty_init():
     assert actual.sort is False
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
-
-    actual = rc.Series(index=[1, 2, 3], data_name='points', use_blist=True)
-    assert actual.data == [None, None, None]
-    assert actual.data_name == 'points'
-    assert actual.index == [1, 2, 3]
-    assert actual.index_name == 'index'
-    assert actual.sort is False
-    assert isinstance(actual.index, blist)
-    assert isinstance(actual.data, blist)
 
     actual = rc.Series(index=[1, 2, 3], index_name='dates', data_name='points', sort=True)
     assert actual.data == [None, None, None]
@@ -129,9 +115,8 @@ def test_sorted_init():
     assert df.data == [4, 5, 6]
 
     # mixed type index will bork on sort=True
-    if PYTHON3:
-        with pytest.raises(TypeError):
-            rc.Series([5, 4, 6], index=[1, 'b', 3], sort=True)
+    with pytest.raises(TypeError):
+        rc.Series([5, 4, 6], index=[1, 'b', 3], sort=True)
 
 
 def test_bad_initialization():

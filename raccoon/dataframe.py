@@ -189,7 +189,7 @@ class DataFrame(object):
         self._index_name = name
 
     @property
-    def dropin_func(self):
+    def dropin(self):
         return self._dropin
 
     @property
