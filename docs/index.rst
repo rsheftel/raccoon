@@ -71,6 +71,7 @@ Contents
    raccoon.rst
    usage_dataframe.rst
    usage_series.rst
+   usage_dropin.rst
    convert_pandas.rst
    speed_test.rst
 
