@@ -1,9 +1,13 @@
-
 Convert to and from Pandas DataFrames
 =====================================
 
 There are no built in methods for the conversions but these functions
 below should work in most basic instances.
+
+.. code:: python
+
+    # remove comment to use latest development version
+    import sys; sys.path.insert(0, '../')
 
 .. code:: python
 

@@ -1,4 +1,3 @@
-
 Example Usage for DataFrame
 ===========================
 
@@ -26,7 +25,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1265613381480
+    object id: 2305959579080
     columns:
     []
     data:
@@ -47,7 +46,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1265613381568
+    object id: 2305959578792
     columns:
     ['a', 'b', 'c']
     data:
@@ -68,7 +67,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1265613380600
+    object id: 2305959818248
     columns:
     ['a', 'b']
     data:
@@ -549,7 +548,7 @@ Set and Get by Location
 -----------------------
 
 Locations are the index of the index, in other words the index locations
-from 0...len(index)
+from 0…len(index)
 
 .. code:: python
 
@@ -711,10 +710,10 @@ Convert
 
 .. parsed-literal::
 
-    {'a': [2, -9, 44, 55, 56],
+    {'index': [11, 12, 14, 15, 16],
+     'a': [2, -9, 44, 55, 56],
      'c': [2, 3, 100, None, None],
-     'd': [None, None, 99, 100, 101],
-     'index': [11, 12, 14, 15, 16]}
+     'd': [None, None, 99, 100, 101]}
 
 
 
@@ -774,7 +773,7 @@ Convert
 
 .. parsed-literal::
 
-    {"data": {"a": [2, -9, 44, 55, 56], "c": [2, 3, 100, null, null], "d": [null, null, 99, 100, 101]}, "index": [11, 12, 14, 15, 16], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "use_blist": false}}
+    {"data": {"a": [2, -9, 44, 55, 56], "c": [2, 3, 100, null, null], "d": [null, null, 99, 100, 101]}, "index": [11, 12, 14, 15, 16], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "dropin": null}}
     
 
 .. code:: python
@@ -1034,8 +1033,8 @@ the indexes are all the same length or any other integrity checking.
     ('b', 3, 3)    6
     
 
-The select\_index method works with tuples by allowing the \* to act as
-a wild card for matching.
+The select_index method works with tuples by allowing the \* to act as a
+wild card for matching.
 
 .. code:: python
 
@@ -1135,7 +1134,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1265615259432
+    object id: 2305960012584
     columns:
     ['a', 'b', 'index_0']
     data:
@@ -1329,97 +1328,3 @@ start
          15  5    8
          16       9
     
-
-List or BList
--------------
-
-The underlying data structure can be either blist (default) or list
-
-.. code:: python
-
-    # Construct with blist=True, the default
-    df_blist = rc.DataFrame({'a': [1, 2, 3]}, index=[5, 6, 7], use_blist=True)
-
-.. code:: python
-
-    # see that the data structures are all blists
-    df_blist.data
-
-
-
-
-.. parsed-literal::
-
-    blist([blist([1, 2, 3])])
-
-
-
-.. code:: python
-
-    df_blist.index
-
-
-
-
-.. parsed-literal::
-
-    blist([5, 6, 7])
-
-
-
-.. code:: python
-
-    df_blist.columns
-
-
-
-
-.. parsed-literal::
-
-    blist(['a'])
-
-
-
-.. code:: python
-
-    # now construct as blist = False and they are all lists
-    df_list = rc.DataFrame({'a': [1, 2, 3]}, index=[5, 6, 7], use_blist=False)
-
-.. code:: python
-
-    df_list.data
-
-
-
-
-.. parsed-literal::
-
-    [[1, 2, 3]]
-
-
-
-.. code:: python
-
-    df_list.index
-
-
-
-
-.. parsed-literal::
-
-    [5, 6, 7]
-
-
-
-.. code:: python
-
-    df_list.columns
-
-
-
-
-.. parsed-literal::
-
-    ['a']
-
-

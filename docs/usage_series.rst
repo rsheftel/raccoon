@@ -1,4 +1,3 @@
-
 Example Usage for Series
 ========================
 
@@ -26,7 +25,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1891392163736
+    object id: 1924106416536
     data:
     []
     index:
@@ -45,7 +44,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1891392163568
+    object id: 1924104590056
     data:
     [None, None, None]
     index:
@@ -64,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1891392217440
+    object id: 1924106418216
     data:
     [4, 5, 6]
     index:
@@ -479,7 +478,7 @@ Set and Get by Location
 -----------------------
 
 Locations are the index of the index, in other words the index locations
-from 0...len(index)
+from 0…len(index)
 
 .. code:: python
 
@@ -742,8 +741,8 @@ the indexes are all the same length or any other integrity checking.
     ('b', 3, 3)        6
     
 
-The select\_index method works with tuples by allowing the \* to act as
-a wild card for matching.
+The select_index method works with tuples by allowing the \* to act as a
+wild card for matching.
 
 .. code:: python
 
@@ -843,7 +842,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1891392288752
+    object id: 1924106640744
     data:
     [1, 2, 3]
     index:
@@ -941,71 +940,3 @@ start
          15      5
          16      9
     
-
-List or BList
--------------
-
-The underlying data structure can be either blist (default) or list
-
-.. code:: python
-
-    # Construct with blist=True, the default
-    srs_blist = rc.Series([1, 2, 3], index=[5, 6, 7], use_blist=True)
-
-.. code:: python
-
-    # see that the data structures are all blists
-    srs_blist.data
-
-
-
-
-.. parsed-literal::
-
-    blist([1, 2, 3])
-
-
-
-.. code:: python
-
-    srs_blist.index
-
-
-
-
-.. parsed-literal::
-
-    blist([5, 6, 7])
-
-
-
-.. code:: python
-
-    # now construct as blist = False and they are all lists
-    srs_list = rc.Series([1, 2, 3], index=[5, 6, 7], use_blist=False)
-
-.. code:: python
-
-    srs_list.data
-
-
-
-
-.. parsed-literal::
-
-    [1, 2, 3]
-
-
-
-.. code:: python
-
-    srs_list.index
-
-
-
-
-.. parsed-literal::
-
-    [5, 6, 7]
-
-
