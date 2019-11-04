@@ -222,10 +222,10 @@ class SeriesBase(ABC):
         """
         if not (self._check_list(indexes) or type(indexes) == list or indexes is None):
             raise TypeError('indexes must be list, %s or None' % self._dropin)
-        if len(indexes) != len(set(indexes)):
+        if len(indexes) != len(set(indexes)):  # noqa
             raise ValueError('index contains duplicates')
         if self._data:
-            if len(indexes) != len(self._data):
+            if len(indexes) != len(self._data):  # noqa
                 raise ValueError('index length does not match data length')
 
     def validate_integrity(self):

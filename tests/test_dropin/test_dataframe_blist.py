@@ -95,7 +95,7 @@ def test_json():
 
 def test_json_objects():
     # test with a compound object returning a representation
-    df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})
+    df = rc.DataFrame({'a': [1, 2], 'b': [4, blist([5, 6])]})  # noqa
 
     string = df.to_json()
     actual = rc.DataFrame.from_json(string)
@@ -104,7 +104,7 @@ def test_json_objects():
     with pytest.raises(AssertionError):
         assert_frame_equal(df, actual)
 
-    assert actual[1, 'b'] != blist([5, 6])
+    assert actual[1, 'b'] != blist([5, 6])  # noqa
     assert actual[1, 'b'] == 'blist([5, 6])'
 
 

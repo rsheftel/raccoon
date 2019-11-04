@@ -102,6 +102,7 @@ def test_mixed_type_init():
     rc.ViewSeries(data=(1, 2, 3), index=[4, 5, 6])
 
 
+# flake8: noqa
 def test_not_implemented():
     """
     These are all the tests that are implemented in the Series class that are not in ViewSeries
