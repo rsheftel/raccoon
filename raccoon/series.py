@@ -1,8 +1,8 @@
 """
 Series class
 """
-from bisect import bisect_left, bisect_right
 from abc import ABC, abstractmethod
+from bisect import bisect_left, bisect_right
 from collections import OrderedDict
 from itertools import compress
 
@@ -214,7 +214,13 @@ class SeriesBase(ABC):
         return pre_list
 
     def _validate_index(self, indexes):
-        if not(self._check_list(indexes) or type(indexes) == list or indexes is None):
+        """
+        Raises an error if the indexes are not valid
+
+        :param list indexes: list of indexes
+        :return: nothing
+        """
+        if not (self._check_list(indexes) or type(indexes) == list or indexes is None):
             raise TypeError('indexes must be list, %s or None' % self._dropin)
         if len(indexes) != len(set(indexes)):
             raise ValueError('index contains duplicates')
@@ -333,6 +339,7 @@ class Series(SeriesBase):
     sort by index on construction, and then any addition of a new row will insert it into the Series so that the
     index remains sort.
     """
+
     def __init__(self, data=None, index=None, data_name='value', index_name='index', sort=None, dropin=None):
         """
         :param data: (optional) list of values.
@@ -430,8 +437,8 @@ class Series(SeriesBase):
 
     def set(self, indexes, values=None):
         """
-        Given indexes will set a sub-set of the Series to the values provided. This method will direct to the below 
-        methods based on what types are passed in for the indexes. If the indexes contains values not in the Series 
+        Given indexes will set a sub-set of the Series to the values provided. This method will direct to the below
+        methods based on what types are passed in for the indexes. If the indexes contains values not in the Series
         then new rows or columns will be added.
 
         :param indexes: indexes value, list of indexes values, or a list of booleans.
@@ -558,7 +565,7 @@ class Series(SeriesBase):
         """
         For a location set the value
 
-        :param location: location 
+        :param location: location
         :param value: value
         :return: nothing
         """
@@ -614,7 +621,7 @@ class Series(SeriesBase):
 
     def append_row(self, index, value):
         """
-        Appends a row of value to the end of the data. Be very careful with this function as for sorted Series it will 
+        Appends a row of value to the end of the data. Be very careful with this function as for sorted Series it will
         not enforce sort order. Use this only for speed when needed, be careful.
 
         :param index: index
@@ -629,7 +636,7 @@ class Series(SeriesBase):
 
     def append_rows(self, indexes, values):
         """
-        Appends values to the end of the data. Be very careful with this function as for sort DataFrames it will not 
+        Appends values to the end of the data. Be very careful with this function as for sort DataFrames it will not
         enforce sort order. Use this only for speed when needed, be careful.
 
         :param indexes: list of indexes to append
@@ -689,6 +696,7 @@ class ViewSeries(SeriesBase):
     data are modified elsewhere or static. Use this for a view into a single column of a DataFrame. There is no type
     checking of the data, so it is assumed the data type is list-style.
     """
+
     def __init__(self, data=None, index=None, data_name='value', index_name='index', sort=False, offset=0):
         """
         :param data: (optional) list of values.
@@ -724,7 +732,7 @@ class ViewSeries(SeriesBase):
     @property
     def index(self):
         return self._index
-    
+
     @index.setter
     def index(self, index_list):
         self._validate_index(index_list)
@@ -741,7 +749,7 @@ class ViewSeries(SeriesBase):
     def value(self, indexes, int_as_index=False):
         """
         Wrapper function for get. It will return a list, no index. If the indexes are integers it will be assumed
-        that they are locations unless int_as_index = True. If the indexes are locations then they will be rotated to 
+        that they are locations unless int_as_index = True. If the indexes are locations then they will be rotated to
         the left by offset number of locations.
 
         :param indexes: integer location, single index, list of indexes or list of boolean

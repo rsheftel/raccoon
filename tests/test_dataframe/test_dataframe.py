@@ -1,7 +1,9 @@
-import pytest
-import raccoon as rc
 from collections import OrderedDict
 from copy import deepcopy
+
+import pytest
+
+import raccoon as rc
 from raccoon.utils import assert_frame_equal
 
 
@@ -294,7 +296,7 @@ def test_math():
     assert res == [6, 16]
 
     res = df.divide('b', 'c', [0, 2])
-    assert res == [5/6, 7/10]
+    assert res == [5 / 6, 7 / 10]
 
     with pytest.raises(ValueError):
         df.multiply('a', 'c', [True, True])

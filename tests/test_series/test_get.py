@@ -1,6 +1,7 @@
+import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_series_equal
-import pytest
 
 
 def test_get_cell():

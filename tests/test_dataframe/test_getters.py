@@ -1,4 +1,5 @@
 import pytest
+
 import raccoon as rc
 
 
@@ -71,4 +72,5 @@ def test_data():
     assert actual.data != new
 
     with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
         actual.data = [4, 5]

@@ -1,8 +1,10 @@
 import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_series_equal
 
 try:
+    # noinspection PyUnresolvedReferences
     from blist import blist
 except ImportError:
     pytest.skip("blist is not installed, skipping tests.", allow_module_level=True)

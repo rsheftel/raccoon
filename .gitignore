@@ -90,6 +90,3 @@ ENV/
 
 # Pycharm files
 .idea/
-
-# IPython Notebook files
-.ipynb_checkpoints

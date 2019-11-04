@@ -1,4 +1,5 @@
 import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_series_equal
 
@@ -61,6 +62,7 @@ def test_sorted_init():
     # cannot change sort status
     df = rc.ViewSeries([5, 4, 6], index=[12, 11, 13], sort=False)
     with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
         df.sort = True
 
 
@@ -110,6 +112,7 @@ def test_not_implemented():
         ser.dropin
 
     with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
         ser.sort = True
 
     with pytest.raises(AttributeError):

@@ -1,4 +1,5 @@
 import pytest
+
 import raccoon as rc
 
 
@@ -30,7 +31,7 @@ def test_index():
 
 def test_index_view():
     data = [4, 5, 6]
-    index =['a', 'b', 'c']
+    index = ['a', 'b', 'c']
 
     actual = rc.ViewSeries(data, index)
     result = actual.index
@@ -60,7 +61,7 @@ def test_index_view():
 
 def test_data():
     data = [4, 5, 6]
-    index =['a', 'b', 'c']
+    index = ['a', 'b', 'c']
     actual = rc.Series(data, index)
 
     assert isinstance(actual.data, list)
@@ -77,12 +78,13 @@ def test_data():
     assert actual.data == [99, 5, 6, 88]
 
     with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
         actual.data = [4, 5]
 
 
 def test_data_view():
     data = [4, 5, 6]
-    index =['a', 'b', 'c']
+    index = ['a', 'b', 'c']
     actual = rc.ViewSeries(data, index)
 
     assert isinstance(actual.data, list)
@@ -102,4 +104,5 @@ def test_data_view():
     assert actual.index == ['a', 'b', 'c']
 
     with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
         actual.data = [4, 5]

@@ -1,5 +1,6 @@
-import raccoon as rc
 from collections import namedtuple
+
+import raccoon as rc
 
 
 def test_iterrows():
@@ -56,4 +57,3 @@ def test_itertuples():
         actual.append(x)
 
     assert actual == expected
-

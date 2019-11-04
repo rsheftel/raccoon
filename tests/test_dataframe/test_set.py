@@ -1,4 +1,5 @@
 import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
 
@@ -108,7 +109,6 @@ def test_set_row():
     actual.set(indexes=8, values={'b': -3, 'c': -4})
     assert actual.data == [[None, -1, 11, 22, 33, 4, None], [-3, -2, 44, 5, 66, 7, 8], [-4, -3, 77, 88, 99, 10, 11]]
     assert actual.index == [8, 9, 10, 11, 12, 13, 14]
-
 
     # bad column names
     with pytest.raises(ValueError):

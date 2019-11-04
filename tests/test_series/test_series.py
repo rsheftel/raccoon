@@ -1,7 +1,9 @@
-import pytest
-import raccoon as rc
 from collections import OrderedDict
 from copy import deepcopy
+
+import pytest
+
+import raccoon as rc
 from raccoon.utils import assert_series_equal
 
 

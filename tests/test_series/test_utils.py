@@ -2,9 +2,10 @@
 unit tests for utils module
 """
 
+import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_series_equal
-import pytest
 
 
 def test_assert_series_equal():
@@ -48,7 +49,7 @@ def test_data_function():
     # Example function for testing
     def assert_approx_equal(left_data, right_data, precision=0.00001):
         for i in range(len(left_data)):
-            assert abs(left_data[i]- right_data[i]) <= precision
+            assert abs(left_data[i] - right_data[i]) <= precision
 
     srs1 = rc.Series([1.0, 3.0], index=[1, 3])
     srs2 = rc.Series([1.0, 3.001], index=[1, 3])

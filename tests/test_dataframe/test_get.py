@@ -1,6 +1,7 @@
+import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
-import pytest
 
 
 def test_get_cell():
@@ -470,13 +471,13 @@ def test_get_slicer():
 
     # test indexes not in the range
     with pytest.raises(IndexError):
-        x = df[4:5, 'c']
+        _ = df[4:5, 'c']
 
     with pytest.raises(IndexError):
-        x = df[0:8, 'c']
+        _ = df[0:8, 'c']
 
     with pytest.raises(IndexError):
-        x = df[2:1, 'c']
+        _ = df[2:1, 'c']
 
 
 def test_get_slicer_sorted():

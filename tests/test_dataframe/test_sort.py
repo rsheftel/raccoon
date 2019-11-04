@@ -1,4 +1,5 @@
 import pytest
+
 import raccoon as rc
 from raccoon.utils import assert_frame_equal
 
@@ -60,7 +61,9 @@ def test_sort_column_w_key():
                                         index=[11, 10, 9, 8]))
 
     # a key function that turns evens into a odds into a negative number
-    def even_to_neg(i): return i * -1 if i % 2 == 0 else i
+    def even_to_neg(i):
+        return i * -1 if i % 2 == 0 else i
+
     df.sort_columns('a', key=even_to_neg)
     assert_frame_equal(df, rc.DataFrame({'a': [4, 2, 1, 3], 'b': ['d', 'b', 'a', 'c']}, columns=['a', 'b'],
                                         index=[11, 9, 8, 10]))

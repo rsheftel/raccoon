@@ -2,10 +2,10 @@
 DataFrame class
 """
 
+import json
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-import json
 
 from tabulate import tabulate
 
@@ -171,7 +171,7 @@ class DataFrame(object):
         Return a view of the index as a list. Because this is a view any change to the return list from this method
         will corrupt the DataFrame.
 
-        :return: list 
+        :return: list
         """
         return self._index
 
@@ -335,6 +335,8 @@ class DataFrame(object):
         :param columns: list of column names
         :return: DataFrame
         """
+        bool_indexes = []
+        locations = []
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             is_bool_indexes = True
             if len(indexes) != len(self._index):
@@ -655,7 +657,7 @@ class DataFrame(object):
         True then they are set to None. This method does not add new columns and raises an error.
 
         :param location: location
-        :param values: dict of column names as keys and the value as the value to set the row for that column to 
+        :param values: dict of column names as keys and the value as the value to set the row for that column to
         :param missing_to_none: if True set any column missing in the values to None, otherwise leave unchanged
         :return: nothing
         """
@@ -684,7 +686,7 @@ class DataFrame(object):
     def append_row(self, index, values, new_cols=True):
         """
         Appends a row of values to the end of the data. If there are new columns in the values and new_cols is True
-        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order. 
+        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order.
         Use this only for speed when needed, be careful.
 
         :param index: value of the index
@@ -711,7 +713,7 @@ class DataFrame(object):
     def append_rows(self, indexes, values, new_cols=True):
         """
         Appends rows of values to the end of the data. If there are new columns in the values and new_cols is True
-        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order. 
+        they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order.
         Use this only for speed when needed, be careful.
 
         :param indexes: list of indexes
