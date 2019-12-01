@@ -141,7 +141,7 @@ class SeriesBase(ABC):
             data = [self._data[i] for i in locations]
             index = [self._index[i] for i in locations]
         return data if as_list else Series(data=data, index=index, data_name=self._data_name,
-                                           index_name=self._index_name, sort=self._sort)
+                                           index_name=self._index_name, sort=self._sort, dropin=self._dropin)
 
     def get_location(self, location):
         """
@@ -191,7 +191,7 @@ class SeriesBase(ABC):
             return index, data
         else:
             return Series(data=data, index=index, data_name=self._data_name, index_name=self._index_name,
-                          sort=self._sort)
+                          sort=self._sort, dropin=self._dropin)
 
     def _slice_index(self, slicer):
         try:
