@@ -4,15 +4,12 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
   
-arch:
-  - amd64
-  - ppc64le
-
 install:
   - "pip install blist"
   - "pip install tabulate"
-  - "pip install python-coveralls"
+  - "pip install coveralls"
   - "pip install coverage"
   - "python setup.py install"
 
