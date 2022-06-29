@@ -5,8 +5,8 @@ Python DataFrame with fast insert and appends
 .. image:: https://badge.fury.io/py/raccoon.svg
     :target: https://badge.fury.io/py/raccoon
 
-.. image:: https://travis-ci.org/rsheftel/raccoon.svg?branch=master
-    :target: https://travis-ci.org/rsheftel/raccoon
+.. image:: https://app.travis-ci.com/rsheftel/raccoon.svg?branch=master
+    :target: https://app.travis-ci.com/rsheftel/raccoon
 
 .. image:: https://coveralls.io/repos/github/rsheftel/raccoon/badge.svg?branch=master
     :target: https://coveralls.io/github/rsheftel/raccoon?branch=master
