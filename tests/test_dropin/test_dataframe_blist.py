@@ -15,7 +15,7 @@ def test_use_blist():
         assert isinstance(df.index, blist)
         assert isinstance(df.columns, blist)
         assert isinstance(df.data, blist)
-        assert all([isinstance(df.data[x], blist) for x in range(len(df.columns))])
+        assert all(isinstance(df.data[x], blist) for x in range(len(df.columns)))
 
     df = rc.DataFrame(dropin=blist)
     assert isinstance(df, rc.DataFrame)
@@ -162,7 +162,7 @@ def test_data_blist():
     actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'],
                           dropin=blist)
     assert actual.data == [[4, 5, 6], [1, 2, 3]]
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all(isinstance(actual.data[x], blist) for x in range(len(actual.columns)))
 
 
 def test_default_empty_init():
@@ -174,7 +174,7 @@ def test_default_empty_init():
     assert isinstance(actual.index, blist)
     assert isinstance(actual.columns, blist)
     assert isinstance(actual.data, blist)
-    assert all([isinstance(actual.data[x], blist) for x in range(len(actual.columns))])
+    assert all(isinstance(actual.data[x], blist) for x in range(len(actual.columns)))
 
 
 def test_sort_index():
