@@ -173,3 +173,7 @@ created difficulties with installation. Now the sole package dependency is tabul
 
 Yes the new refactoring allows any list drop-in replacement, including blist, to be used but just no longer makes blist
 an installation requirement.
+
+3.1.0 (08/20/23)
+~~~~~~~~~~~~~~~~
+- Moved from setup.py to pyproject.toml
