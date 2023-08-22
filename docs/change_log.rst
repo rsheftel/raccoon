@@ -177,3 +177,9 @@ an installation requirement.
 3.1.0 (08/20/23)
 ~~~~~~~~~~~~~~~~
 - Moved from setup.py to pyproject.toml
+
+3.1.1 (08/21/23)
+~~~~~~~~~~~~~~~~
+- Small fixes to pyproject.toml
+- Remove travis-CI configs as it is no longer used
+- Merge coveragerc file into pyproject.toml
