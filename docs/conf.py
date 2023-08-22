@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-
-from raccoon import __version__
 
 # -- Project information -----------------------------------------------------
 project = 'Raccoon'
 copyright = '2016, Ryan Sheftel'
-version = __version__
-release = version
 
 # -- General configuration ------------------------------------------------
 
