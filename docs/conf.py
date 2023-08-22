@@ -4,15 +4,15 @@
 
 # import sys
 # import os
-import importlib
+# import importlib
 
 # -- Project information -----------------------------------------------------
 project = 'Raccoon'
 copyright = '2016, Ryan Sheftel'
 # The short X.Y version.
-version = importlib.metadata.version('raccoon')
+#version = importlib.metadata.version('raccoon')
 # The full version, including alpha/beta/rc tags.
-release = version
+#release = version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
