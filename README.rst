@@ -5,12 +5,6 @@ Python DataFrame with fast insert and appends
 .. image:: https://badge.fury.io/py/raccoon.svg
     :target: https://badge.fury.io/py/raccoon
 
-.. image:: https://app.travis-ci.com/rsheftel/raccoon.svg?branch=master
-    :target: https://app.travis-ci.com/rsheftel/raccoon
-
-.. image:: https://coveralls.io/repos/github/rsheftel/raccoon/badge.svg?branch=master
-    :target: https://coveralls.io/github/rsheftel/raccoon?branch=master
-    
 .. image:: https://readthedocs.org/projects/raccoon/badge/?version=latest
    :target: http://raccoon.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
