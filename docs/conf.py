@@ -2,22 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 
-# import sys
-# import os
-# import importlib
+from raccoon import __version__
 
 # -- Project information -----------------------------------------------------
 project = 'Raccoon'
 copyright = '2016, Ryan Sheftel'
-# The short X.Y version.
-#version = importlib.metadata.version('raccoon')
-# The full version, including alpha/beta/rc tags.
-#release = version
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('../raccoon'))
+version = __version__
+release = version
 
 # -- General configuration ------------------------------------------------
 
