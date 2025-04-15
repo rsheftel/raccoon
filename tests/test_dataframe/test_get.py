@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import pytest
 
 import raccoon as rc
@@ -154,10 +156,6 @@ def test_get_columns():
     actual = df.get(11, ["c", "b"])
     assert_frame_equal(actual, expected)
 
-    # as_dict
-    assert df.get(11, ["b", "c"], as_dict=True) == {"start_10": 11, "b": 5, "c": 8}
-    assert df.get_columns(11, ["b", "c"], as_dict=True) == {"start_10": 11, "b": 5, "c": 8}
-
     # test boolean list not same length as columns
     with pytest.raises(ValueError):
         df.get(99, [True, False])
@@ -165,6 +163,37 @@ def test_get_columns():
     # test index out of bounds
     with pytest.raises(ValueError):
         df.get(88, ["a", "c"])
+
+
+def test_get_columns_as_dict_or_tuple():
+    df = rc.DataFrame(
+        {"a": [1, 2, 3, 4], "b": [4, 5, 6, 7], "c": [7, 8, 9, None]},
+        index=[10, 11, 12, 99],
+        columns=["a", "b", "c"],
+        index_name="start_10",
+        sort=False,
+    )
+
+    # as_dict
+    assert df.get(11, ["b", "c"], as_dict=True) == {"start_10": 11, "b": 5, "c": 8}
+    assert df.get_columns(11, ["b", "c"], as_dict=True) == {"start_10": 11, "b": 5, "c": 8}
+
+    # as dict no index
+    assert df.get_columns(11, ["b", "c"], as_dict=True, include_index=False) == {"b": 5, "c": 8}
+
+    # as_namedtuple
+    expected = namedtuple("raccoon", ["b", "c", "start_10"])(**{"b": 5, "c": 8, "start_10": 11})
+    assert df.get_columns(11, ["b", "c"], as_namedtuple=True) == expected
+
+    expected = namedtuple("newname", ["b", "c"])(**{"b": 5, "c": 8})
+    assert df.get_columns(11, ["b", "c"], as_namedtuple=True, name="newname", include_index=False) == expected
+
+    expected = namedtuple("newname", ["a", "b", "c"])(**{"a": 4, "b": 7, "c": None})
+    assert df.get_columns(99, None, as_namedtuple=True, name="newname", include_index=False) == expected
+
+    # cannot be both as_dict and as_namedtuple
+    with pytest.raises(AssertionError):
+        df.get_columns(11, ["b", "c"], as_dict=True, as_namedtuple=True)
 
 
 def test_get_columns_sorted():
@@ -292,13 +321,17 @@ def test_get_matrix_sorted():
         df.get_matrix(["x", "y"], ["a", "b", "BAD"])
 
 
-def test_get_location():
+def test_get_location_as_dict_namedtuple():
     df = rc.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[2, 4, 6, 8])
 
     # forward indexing, all columns
     assert_frame_equal(df.get_location(2), rc.DataFrame({"a": [3], "b": [7]}, index=[6]))
     assert df.get_location(2, as_dict=True) == {"index": 6, "a": 3, "b": 7}
     assert df.get_location(2, as_dict=True, index=False) == {"a": 3, "b": 7}
+    expected = namedtuple("newname", ["a", "b", "index"])(**{"a": 3, "b": 7, "index": 6})
+    assert df.get_location(2, as_namedtuple=True, name="newname") == expected
+    expected = namedtuple("raccoon", ["a", "b"])(**{"a": 3, "b": 7})
+    assert df.get_location(2, as_namedtuple=True, index=False) == expected
 
     # reverse indexing, all columns
     assert_frame_equal(df.get_location(-1), rc.DataFrame({"a": [4], "b": [8]}, index=[8]))

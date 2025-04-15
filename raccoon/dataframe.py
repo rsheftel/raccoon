@@ -337,18 +337,33 @@ class DataFrame(object):
             else DataFrame(data={column: data}, index=index, index_name=self._index_name, sort=self._sort)
         )
 
-    def get_columns(self, index: Any, columns: list[Any] = None, as_dict: bool = False) -> Self | dict:
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> Self | dict | namedtuple:
         """
         For a single index and list of column names return a DataFrame of the values in that index as either a dict
-        or a DataFrame
+        namedtuple or a DataFrame.
 
         :param index: single index value
         :param columns: list of column names
         :param as_dict: if True then return the result as a dictionary
+        :param as_namedtuple: if True then return the result as a named tuple
+        :param name: if as_namedtuple is True, this will be the name of the tuple
+        :param include_index: if True then include the index value in the result
         :return: DataFrame or dictionary
         """
+        assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         i = sorted_index(self._index, index) if self._sort else self._index.index(index)
-        return self.get_location(i, columns, as_dict)
+        if as_namedtuple:
+            dict_row = self.get_location(location=i, columns=columns, as_dict=True, index=include_index)
+            return namedtuple(name, dict_row.keys())(**dict_row)
+        return self.get_location(location=i, columns=columns, as_dict=as_dict, index=include_index)
 
     def get_entire_column(self, column: Any, as_list: bool = False) -> Self | list:
         """
@@ -409,8 +424,14 @@ class DataFrame(object):
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name, sort=self._sort)
 
     def get_location(
-        self, location: int, columns: Any | list | None = None, as_dict: bool = False, index: bool = True
-    ) -> Self | dict | Any:
+        self,
+        location: int,
+        columns: Any | list | None = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> Self | dict | namedtuple | Any:
         """
         For an index location and either (1) list of columns return a DataFrame or dictionary of the values or
         (2) single column name and return the value of that cell. This is optimized for speed because it does not need
@@ -420,9 +441,12 @@ class DataFrame(object):
         :param location: index location in standard python form of positive or negative number
         :param columns: list of columns, single column name, or None to include all columns
         :param as_dict: if True then return a dictionary
+        :param as_namedtuple: if True then return the result as a named tuple
+        :param name: if as_namedtuple is True, this will be the name of the tuple
         :param index: if True then include the index in the dictionary if as_dict=True
-        :return: DataFrame or dictionary if columns is a list or value if columns is a single column name
+        :return: DataFrame, dictionary or namedtuple if columns is a list or value if columns is a single column name
         """
+        assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         if columns is None:
             columns = self._columns
         elif not isinstance(columns, list):  # single value for columns
@@ -441,6 +465,10 @@ class DataFrame(object):
             if index:
                 data[self._index_name] = index_value
             return data
+        elif as_namedtuple:
+            if index:
+                data[self._index_name] = index_value
+            return namedtuple(name, data.keys())(**data)
         else:
             data = {k: [data[k]] for k in data}  # this makes the dict items lists
             return DataFrame(
