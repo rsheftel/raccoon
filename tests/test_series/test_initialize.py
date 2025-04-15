@@ -7,7 +7,7 @@ def test_default_empty_init():
     actual = rc.Series()
     assert isinstance(actual, rc.Series)
     assert actual.data == []
-    assert actual.data_name == 'value'
+    assert actual.data_name == "value"
     assert actual.index == []
     assert actual.sort is True
     assert isinstance(actual.index, list)
@@ -18,27 +18,27 @@ def test_default_empty_init():
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
-    actual = rc.Series(data_name='points')
+    actual = rc.Series(data_name="points")
     assert actual.data == []
-    assert actual.data_name == 'points'
+    assert actual.data_name == "points"
     assert actual.index == []
     assert actual.sort is True
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
-    actual = rc.Series(index=[1, 2, 3], data_name='points')
+    actual = rc.Series(index=[1, 2, 3], data_name="points")
     assert actual.data == [None, None, None]
-    assert actual.data_name == 'points'
+    assert actual.data_name == "points"
     assert actual.index == [1, 2, 3]
     assert actual.sort is False
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
 
-    actual = rc.Series(index=[1, 2, 3], index_name='dates', data_name='points', sort=True)
+    actual = rc.Series(index=[1, 2, 3], index_name="dates", data_name="points", sort=True)
     assert actual.data == [None, None, None]
-    assert actual.data_name == 'points'
+    assert actual.data_name == "points"
     assert actual.index == [1, 2, 3]
-    assert actual.index_name == 'dates'
+    assert actual.index_name == "dates"
     assert actual.sort is True
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
@@ -48,7 +48,7 @@ def test_default_init():
     # no index
     actual = rc.Series([4, 5, 6])
     assert actual.data == [4, 5, 6]
-    assert actual.data_name == 'value'
+    assert actual.data_name == "value"
     assert actual.index == [0, 1, 2]
     assert actual.sort is True
     assert isinstance(actual.index, list)
@@ -56,10 +56,10 @@ def test_default_init():
     assert len(actual) == 3
 
     # with index
-    actual = rc.Series(data=[4, 5, 6], index=['a', 'b', 'c'], index_name='letters')
+    actual = rc.Series(data=[4, 5, 6], index=["a", "b", "c"], index_name="letters")
     assert actual.data == [4, 5, 6]
-    assert actual.index == ['a', 'b', 'c']
-    assert actual.index_name == 'letters'
+    assert actual.index == ["a", "b", "c"]
+    assert actual.index_name == "letters"
     assert actual.sort is False
     assert isinstance(actual.index, list)
     assert isinstance(actual.data, list)
@@ -69,7 +69,7 @@ def test_default_init():
 def test_views():
     # assert that df.data is data and df.index are copies and do not alter input data
     data = [4, 5, 6]
-    index = ['a', 'b', 'c']
+    index = ["a", "b", "c"]
     actual = rc.Series(data=data, index=index)
 
     assert actual.data is not data
@@ -77,10 +77,10 @@ def test_views():
 
     # change input data, no change to series
     data.append(7)
-    index.append('e')
+    index.append("e")
 
     assert actual.data == [4, 5, 6]
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ["a", "b", "c"]
 
 
 def test_sorted_init():
@@ -117,7 +117,7 @@ def test_sorted_init():
 
     # mixed type index will bork on sort=True
     with pytest.raises(TypeError):
-        rc.Series([5, 4, 6], index=[1, 'b', 3], sort=True)
+        rc.Series([5, 4, 6], index=[1, "b", 3], sort=True)
 
 
 def test_bad_initialization():
@@ -126,19 +126,19 @@ def test_bad_initialization():
         rc.Series([1, 2, 3], index=[1])
 
     with pytest.raises(ValueError):
-        rc.Series(data=[2], index=['b', 'c', 'a'])
+        rc.Series(data=[2], index=["b", "c", "a"])
 
     # index is not a list
     with pytest.raises(TypeError):
-        rc.Series({'a': [1]}, index=1)
+        rc.Series({"a": [1]}, index=1)
 
     # bad data type
     with pytest.raises(TypeError):
         rc.Series(data=(1, 2, 3))
 
     with pytest.raises(TypeError):
-        rc.Series(data={'data': [1, 2, 3]})
+        rc.Series(data={"data": [1, 2, 3]})
 
     # index not a list
     with pytest.raises(TypeError):
-        rc.Series(data=[2], index='b')
+        rc.Series(data=[2], index="b")

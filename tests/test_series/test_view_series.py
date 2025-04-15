@@ -7,32 +7,32 @@ from raccoon.utils import assert_series_equal
 def test_default_empty_init():
     actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
     assert actual.data == [4, 5, 6]
-    assert actual.data_name == 'value'
+    assert actual.data_name == "value"
     assert actual.index == [1, 2, 3]
-    assert actual.index_name == 'index'
+    assert actual.index_name == "index"
     assert actual.sort is False
     assert actual.offset == 0
 
-    actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3], data_name='points', offset=1)
+    actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3], data_name="points", offset=1)
     assert actual.data == [4, 5, 6]
-    assert actual.data_name == 'points'
+    assert actual.data_name == "points"
     assert actual.index == [1, 2, 3]
-    assert actual.index_name == 'index'
+    assert actual.index_name == "index"
     assert actual.sort is False
     assert actual.offset == 1
 
-    actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3], index_name='dates', data_name='points', sort=True)
+    actual = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3], index_name="dates", data_name="points", sort=True)
     assert actual.data == [4, 5, 6]
-    assert actual.data_name == 'points'
+    assert actual.data_name == "points"
     assert actual.index == [1, 2, 3]
-    assert actual.index_name == 'dates'
+    assert actual.index_name == "dates"
     assert actual.sort is True
 
 
 def test_views():
     # assert that df.data is data and df.index are copies and do not alter input data
     data = [4, 5, 6]
-    index = ['a', 'b', 'c']
+    index = ["a", "b", "c"]
     actual = rc.ViewSeries(data=data, index=index)
 
     assert actual.data is data
@@ -40,10 +40,10 @@ def test_views():
 
     # change input data, no change to ViewSeries
     data.append(7)
-    index.append('e')
+    index.append("e")
 
     assert actual.data == [4, 5, 6, 7]
-    assert actual.index == ['a', 'b', 'c', 'e']
+    assert actual.index == ["a", "b", "c", "e"]
     assert actual.data is data
     assert actual.index is index
 
@@ -84,18 +84,18 @@ def test_bad_initialization():
         rc.ViewSeries([1, 2, 3], index=[1])
 
     with pytest.raises(ValueError):
-        rc.ViewSeries(data=[2], index=['b', 'c', 'a'])
+        rc.ViewSeries(data=[2], index=["b", "c", "a"])
 
     # index is not a list
     with pytest.raises(TypeError):
-        rc.ViewSeries({'a': [1]}, index=1)
+        rc.ViewSeries({"a": [1]}, index=1)
 
     # index not a list
     with pytest.raises(TypeError):
-        rc.ViewSeries(data=[2], index='b')
+        rc.ViewSeries(data=[2], index="b")
 
     with pytest.raises(ValueError):
-        rc.ViewSeries(data={'data': [1, 2, 3]}, index=[4, 5, 6])
+        rc.ViewSeries(data={"data": [1, 2, 3]}, index=[4, 5, 6])
 
 
 def test_mixed_type_init():
@@ -127,76 +127,76 @@ def test_not_implemented():
 
 
 def test_from_dataframe():
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9])
-    actual = rc.ViewSeries.from_dataframe(df, 'b')
-    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", 9])
+    actual = rc.ViewSeries.from_dataframe(df, "b")
+    expected = rc.ViewSeries([4, 5, 6], data_name="b", index=["a", "b", 9])
     assert_series_equal(actual, expected)
 
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'e'], sort=True, index_name='date')
-    actual = rc.ViewSeries.from_dataframe(df, 'a', -1)
-    expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "e"], sort=True, index_name="date")
+    actual = rc.ViewSeries.from_dataframe(df, "a", -1)
+    expected = rc.ViewSeries([1, 2, 3], data_name="a", index=["a", "b", "e"], sort=True, offset=-1, index_name="date")
     assert_series_equal(actual, expected)
 
 
 def test_from_series():
-    srs = rc.Series(data=[4, 5, 6], index=['a', 'b', 9], data_name='b')
+    srs = rc.Series(data=[4, 5, 6], index=["a", "b", 9], data_name="b")
     actual = rc.ViewSeries.from_series(srs)
-    expected = rc.ViewSeries([4, 5, 6], data_name='b', index=['a', 'b', 9])
+    expected = rc.ViewSeries([4, 5, 6], data_name="b", index=["a", "b", 9])
     assert_series_equal(actual, expected)
 
-    srs = rc.Series(data=[1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, index_name='date')
+    srs = rc.Series(data=[1, 2, 3], data_name="a", index=["a", "b", "e"], sort=True, index_name="date")
     actual = rc.ViewSeries.from_series(srs, -1)
-    expected = rc.ViewSeries([1, 2, 3], data_name='a', index=['a', 'b', 'e'], sort=True, offset=-1, index_name='date')
+    expected = rc.ViewSeries([1, 2, 3], data_name="a", index=["a", "b", "e"], sort=True, offset=-1, index_name="date")
     assert_series_equal(actual, expected)
 
 
 def test_from_df_view():
     # sort = False
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 9], sort=False)
-    srs = rc.ViewSeries.from_dataframe(df, 'b')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", 9], sort=False)
+    srs = rc.ViewSeries.from_dataframe(df, "b")
     assert srs.sort is False
     assert srs.index is df.index
-    assert srs.data is df.get_entire_column('b', True)
+    assert srs.data is df.get_entire_column("b", True)
 
     # change cell
-    df['a', 'b'] = 22
+    df["a", "b"] = 22
     assert srs.data == [22, 5, 6]
-    assert srs.index == ['a', 'b', 9]
+    assert srs.index == ["a", "b", 9]
 
     # add a row
-    df[11, 'b'] = -88
+    df[11, "b"] = -88
     assert srs.data == [22, 5, 6, -88]
-    assert srs.index == ['a', 'b', 9, 11]
+    assert srs.index == ["a", "b", 9, 11]
 
     # append row
-    df.append_row(12, {'a': 55, 'b': 77})
+    df.append_row(12, {"a": 55, "b": 77})
     assert srs.data == [22, 5, 6, -88, 77]
-    assert srs.index == ['a', 'b', 9, 11, 12]
+    assert srs.index == ["a", "b", 9, 11, 12]
 
     # sort = True
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
-    srs = rc.ViewSeries.from_dataframe(df, 'a')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_dataframe(df, "a")
     assert srs.sort is True
     assert srs.index is df.index
-    assert srs.data is df.get_entire_column('a', True)
+    assert srs.data is df.get_entire_column("a", True)
 
     # change cell
-    df[1, 'a'] = 22
+    df[1, "a"] = 22
     assert srs.data == [1, 22, 3]
     assert srs.index == [0, 1, 5]
 
     # add a row end
-    df[6, 'a'] = 4
+    df[6, "a"] = 4
     assert srs.data == [1, 22, 3, 4]
     assert srs.index == [0, 1, 5, 6]
 
     # add value in middle
-    df[2, 'a'] = 12
+    df[2, "a"] = 12
     assert srs.data == [1, 22, 12, 3, 4]
     assert srs.index == [0, 1, 2, 5, 6]
 
     # append row
-    df.append_row(7, {'a': 55, 'b': 77})
+    df.append_row(7, {"a": 55, "b": 77})
     assert srs.data == [1, 22, 12, 3, 4, 55]
     assert srs.index == [0, 1, 2, 5, 6, 7]
 
@@ -205,61 +205,61 @@ def test_from_df_view_breaks():
     # These actions will break the view link between the DataFrame and the ViewSeries
 
     # changing index
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
-    srs = rc.ViewSeries.from_dataframe(df, 'a')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_dataframe(df, "a")
     assert srs.index is df.index
-    assert srs.data is df.get_entire_column('a', True)
+    assert srs.data is df.get_entire_column("a", True)
 
     df.index = [1, 2, 3]
     assert srs.index is not df.index
-    assert srs.data is df.get_entire_column('a', True)
+    assert srs.data is df.get_entire_column("a", True)
 
     # sorting index
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
-    srs = rc.ViewSeries.from_dataframe(df, 'a')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_dataframe(df, "a")
     assert srs.index is df.index
-    assert srs.data is df.get_entire_column('a', True)
+    assert srs.data is df.get_entire_column("a", True)
 
     df.sort_index()
     assert srs.index is not df.index
-    assert srs.data is not df.get_entire_column('a', True)
+    assert srs.data is not df.get_entire_column("a", True)
 
     # sorting column
-    df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[0, 1, 5], sort=True)
-    srs = rc.ViewSeries.from_dataframe(df, 'a')
+    df = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=[0, 1, 5], sort=True)
+    srs = rc.ViewSeries.from_dataframe(df, "a")
     assert srs.index is df.index
-    assert srs.data is df.get_entire_column('a', True)
+    assert srs.data is df.get_entire_column("a", True)
 
-    df.sort_columns('b')
+    df.sort_columns("b")
     assert srs.index is not df.index
-    assert srs.data is not df.get_entire_column('a', True)
+    assert srs.data is not df.get_entire_column("a", True)
 
 
 def test_from_series_view():
     # sort = False
-    ins = rc.Series(data=[4, 5, 6], data_name='b', index=['a', 'b', 9], sort=False)
+    ins = rc.Series(data=[4, 5, 6], data_name="b", index=["a", "b", 9], sort=False)
     srs = rc.ViewSeries.from_series(ins)
     assert srs.sort is False
     assert srs.index is srs.index
     assert srs.data is ins.data
 
     # change cell
-    ins['a'] = 22
+    ins["a"] = 22
     assert srs.data == [22, 5, 6]
-    assert srs.index == ['a', 'b', 9]
+    assert srs.index == ["a", "b", 9]
 
     # add a row
     ins[11] = -88
     assert srs.data == [22, 5, 6, -88]
-    assert srs.index == ['a', 'b', 9, 11]
+    assert srs.index == ["a", "b", 9, 11]
 
     # append row
     ins.append_row(12, 77)
     assert srs.data == [22, 5, 6, -88, 77]
-    assert srs.index == ['a', 'b', 9, 11, 12]
+    assert srs.index == ["a", "b", 9, 11, 12]
 
     # sort = True
-    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    ins = rc.Series(data=[1, 2, 3], data_name="a", index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_series(ins)
     assert srs.sort is True
     assert srs.index is srs.index
@@ -290,7 +290,7 @@ def test_from_series_view_breaks():
     # These actions will break the view link between the Series and the ViewSeries
 
     # changing index
-    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    ins = rc.Series(data=[1, 2, 3], data_name="a", index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_series(ins)
     assert srs.index is ins.index
     assert srs.data is ins.data
@@ -300,7 +300,7 @@ def test_from_series_view_breaks():
     assert srs.data is ins.data
 
     # sorting index
-    ins = rc.Series(data=[1, 2, 3], data_name='a', index=[0, 1, 5], sort=True)
+    ins = rc.Series(data=[1, 2, 3], data_name="a", index=[0, 1, 5], sort=True)
     srs = rc.ViewSeries.from_series(ins)
     assert srs.index is ins.index
     assert srs.data is ins.data
@@ -375,13 +375,13 @@ def test_value():
 
 
 def test_get_square_brackets():
-    srs = rc.ViewSeries([10, 11, 12], index=['a', 'b', 'c'], sort=False)
+    srs = rc.ViewSeries([10, 11, 12], index=["a", "b", "c"], sort=False)
 
     # by index
-    assert srs['b'] == 11
-    assert srs[['a', 'c']] == [10, 12]
-    assert srs['b':'c'] == [11, 12]
-    assert srs['a':'b'] == [10, 11]
+    assert srs["b"] == 11
+    assert srs[["a", "c"]] == [10, 12]
+    assert srs["b":"c"] == [11, 12]
+    assert srs["a":"b"] == [10, 11]
 
     # by location
     assert srs[1] == 11
@@ -391,13 +391,13 @@ def test_get_square_brackets():
 
 
 def test_get_square_brackets_offset():
-    srs = rc.ViewSeries([10, 11, 12], index=['a', 'b', 'c'], sort=False, offset=1)
+    srs = rc.ViewSeries([10, 11, 12], index=["a", "b", "c"], sort=False, offset=1)
 
     # by index
-    assert srs['b'] == 11
-    assert srs[['a', 'c']] == [10, 12]
-    assert srs['b':'c'] == [11, 12]
-    assert srs['a':'b'] == [10, 11]
+    assert srs["b"] == 11
+    assert srs[["a", "c"]] == [10, 12]
+    assert srs["b":"c"] == [11, 12]
+    assert srs["a":"b"] == [10, 11]
 
     # by location
     assert srs[1] == 10
@@ -414,13 +414,13 @@ def test_get_square_brackets_offset():
     assert srs[-2:0] == [10, 11, 12]
 
     # sort = True
-    srs = rc.ViewSeries([10, 11, 12], index=['a', 'b', 'c'], sort=True, offset=1)
+    srs = rc.ViewSeries([10, 11, 12], index=["a", "b", "c"], sort=True, offset=1)
 
     # by index
-    assert srs['b'] == 11
-    assert srs[['a', 'c']] == [10, 12]
-    assert srs['b':'c'] == [11, 12]
-    assert srs['a':'b'] == [10, 11]
+    assert srs["b"] == 11
+    assert srs[["a", "c"]] == [10, 12]
+    assert srs["b":"c"] == [11, 12]
+    assert srs["a":"b"] == [10, 11]
 
     # by location
     assert srs[1] == 10

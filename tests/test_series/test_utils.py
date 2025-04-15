@@ -59,8 +59,8 @@ def test_data_function():
         assert_series_equal(srs1, srs2)
 
     # passes with function and proper parameters
-    assert_series_equal(srs1, srs2, assert_approx_equal, {'precision': 0.01})
+    assert_series_equal(srs1, srs2, assert_approx_equal, {"precision": 0.01})
 
     # fails with function and precision parameter to low
     with pytest.raises(AssertionError):
-        assert_series_equal(srs1, srs2, assert_approx_equal, {'precision': 0.00001})
+        assert_series_equal(srs1, srs2, assert_approx_equal, {"precision": 0.00001})

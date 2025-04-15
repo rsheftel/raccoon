@@ -55,7 +55,7 @@ def test_set_cell_sort():
 
     # fails for mixed index type
     with pytest.raises(TypeError):
-        actual.set('Z', 60)
+        actual.set("Z", 60)
 
 
 def test_set_rows():
@@ -146,7 +146,7 @@ def test_set_index_subset():
         actual.set(indexes=[10, 11], values=[1])
 
     # by boolean list
-    actual = rc.Series([7, 8], index=['first', 'second'], sort=False)
+    actual = rc.Series([7, 8], index=["first", "second"], sort=False)
     actual.set(indexes=[False, True], values=[99])
     assert actual.data == [7, 99]
 
@@ -188,16 +188,16 @@ def test_set_index_subset_sort():
     assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15]
 
     # new row new columns
-    actual.set(indexes=[14, 15, 16], values=['zoo', 'boo', 'hoo'])
+    actual.set(indexes=[14, 15, 16], values=["zoo", "boo", "hoo"])
     assert actual.index == [4, 5, 6, 10, 11, 12, 13, 14, 15, 16]
-    assert actual.data == [-120, -130, 6060, -140, 55, 120, 3131, 'zoo', 'boo', 'hoo']
+    assert actual.data == [-120, -130, 6060, -140, 55, 120, 3131, "zoo", "boo", "hoo"]
 
     # values list shorter than indexes, raise error
     with pytest.raises(ValueError):
         actual.set(indexes=[10, 11], values=[1])
 
     # by boolean list
-    actual = rc.Series([1, 2], index=['first', 'second'], sort=True)
+    actual = rc.Series([1, 2], index=["first", "second"], sort=True)
     actual.set(indexes=[False, True], values=[99])
     assert actual.data == [1, 99]
 

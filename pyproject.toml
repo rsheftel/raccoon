@@ -1,6 +1,6 @@
 [project]
 name = "raccoon"
-version = "3.1.1"
+version = "3.2.0"
 authors = [
   { name="Ryan Sheftel", email="rsheftel@alumni.upenn.edu" },
 ]
@@ -25,6 +25,9 @@ classifiers = [
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
 ]
 dependencies = ['tabulate']
 
@@ -62,3 +65,24 @@ exclude_also = [
 ]
 
 ignore_errors = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+extend-select = ['I']  # uncomment to use ruff import sorting
+# ignore = ["E231", "W503", "E203", "W605", "E501"]
+
+#[tool.ruff.lint.isort]
+#force-single-line = false
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+skip_glob = ["tests/data", "profiling"]
+known_first_party = ["black", "blib2to3", "blackd", "_black_version"]

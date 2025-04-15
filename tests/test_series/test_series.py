@@ -9,13 +9,13 @@ from raccoon.utils import assert_series_equal
 
 def test_names():
     srs = rc.Series([1, 2])
-    assert srs.index_name == 'index'
-    assert srs.data_name == 'value'
+    assert srs.index_name == "index"
+    assert srs.data_name == "value"
 
-    srs.index_name = 'new_index'
-    srs.data_name = 'data'
-    assert srs.index_name == 'new_index'
-    assert srs.data_name == 'data'
+    srs.index_name = "new_index"
+    srs.data_name = "data"
+    assert srs.index_name == "new_index"
+    assert srs.data_name == "data"
 
 
 def test_default_list():
@@ -44,24 +44,24 @@ def test_default_list():
 
 
 def test_to_dict():
-    srs = rc.Series([1, 2, 3], index=['a', 'b', 'c'], data_name='a')
+    srs = rc.Series([1, 2, 3], index=["a", "b", "c"], data_name="a")
 
     # with index
     actual = srs.to_dict(index=True)
-    assert actual == {'index': ['a', 'b', 'c'], 'a': [1, 2, 3]}
+    assert actual == {"index": ["a", "b", "c"], "a": [1, 2, 3]}
 
     # without index
     actual = srs.to_dict(index=False)
-    assert actual == {'a': [1, 2, 3]}
+    assert actual == {"a": [1, 2, 3]}
 
     # ordered
     act_order = srs.to_dict(ordered=True)
-    expected = OrderedDict([('index', ['a', 'b', 'c']), ('a', [1, 2, 3])])
+    expected = OrderedDict([("index", ["a", "b", "c"]), ("a", [1, 2, 3])])
     assert act_order == expected
 
 
 def test_print():
-    srs = rc.Series([1.0, 2.55, 3.1], data_name='boo', index=['row1', 'row2', 'row3'])
+    srs = rc.Series([1.0, 2.55, 3.1], data_name="boo", index=["row1", "row2", "row3"])
 
     # __repr__ produces a simple representation
     expected = "object id: %s\ndata:\n[1.0, 2.55, 3.1]\nindex:\n['row1', 'row2', 'row3']\n" % id(srs)
@@ -69,7 +69,7 @@ def test_print():
     assert actual == expected
 
     # __str__ produces the standard table
-    expected = 'index      boo\n-------  -----\nrow1      1\nrow2      2.55\nrow3      3.1'
+    expected = "index      boo\n-------  -----\nrow1      1\nrow2      2.55\nrow3      3.1"
     actual = srs.__str__()
     assert actual == expected
 
@@ -164,66 +164,66 @@ def test_equality():
 
 def test_select_index():
     # simple index, not sort
-    srs = rc.Series([1, 2, 3, 4, 5, 6], index=['a', 'b', 'c', 'd', 'e', 'f'])
+    srs = rc.Series([1, 2, 3, 4, 5, 6], index=["a", "b", "c", "d", "e", "f"])
 
-    actual = srs.select_index('c', 'value')
-    assert actual == ['c']
+    actual = srs.select_index("c", "value")
+    assert actual == ["c"]
 
-    actual = srs.select_index('d', 'boolean')
+    actual = srs.select_index("d", "boolean")
     assert actual == [False, False, False, True, False, False]
 
     # simple index, sort
-    srs = rc.Series([1, 2, 3, 4, 5, 6], index=['a', 'b', 'c', 'd', 'e', 'f'], sort=True)
+    srs = rc.Series([1, 2, 3, 4, 5, 6], index=["a", "b", "c", "d", "e", "f"], sort=True)
 
-    actual = srs.select_index('c', 'value')
-    assert actual == ['c']
+    actual = srs.select_index("c", "value")
+    assert actual == ["c"]
 
-    actual = srs.select_index('d', 'boolean')
+    actual = srs.select_index("d", "boolean")
     assert actual == [False, False, False, True, False, False]
 
     with pytest.raises(ValueError):
-        srs.select_index('a', 'BAD')
+        srs.select_index("a", "BAD")
 
     # simple index, not sort
-    srs = rc.Series([1, 2, 3, 4, 5, 6], index=['a', 'b', 'c', 'd', 'e', 'f'])
+    srs = rc.Series([1, 2, 3, 4, 5, 6], index=["a", "b", "c", "d", "e", "f"])
 
-    actual = srs.select_index('c', 'value')
-    assert actual == ['c']
+    actual = srs.select_index("c", "value")
+    assert actual == ["c"]
 
-    actual = srs.select_index('d', 'boolean')
+    actual = srs.select_index("d", "boolean")
     assert actual == [False, False, False, True, False, False]
 
     # tuple index
-    tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
+    tuples = [("a", 1, 3), ("a", 1, 4), ("a", 2, 3), ("b", 1, 4), ("b", 2, 1), ("b", 3, 3)]
     srs = rc.Series([1, 2, 3, 4, 5, 6], index=tuples)
 
-    compare = ('a', None, None)
+    compare = ("a", None, None)
     assert srs.select_index(compare) == [True, True, True, False, False, False]
 
-    compare = ('a', None, 3)
-    assert srs.select_index(compare, 'boolean') == [True, False, True, False, False, False]
+    compare = ("a", None, 3)
+    assert srs.select_index(compare, "boolean") == [True, False, True, False, False, False]
 
     compare = (None, 2, None)
-    assert srs.select_index(compare, 'value') == [('a', 2, 3), ('b', 2, 1)]
+    assert srs.select_index(compare, "value") == [("a", 2, 3), ("b", 2, 1)]
 
     compare = (None, 3, 3)
     assert srs.select_index(compare) == [False, False, False, False, False, True]
 
     compare = (None, None, 3)
-    assert srs.select_index(compare, 'value') == [('a', 1, 3), ('a', 2, 3), ('b', 3, 3)]
+    assert srs.select_index(compare, "value") == [("a", 1, 3), ("a", 2, 3), ("b", 3, 3)]
 
-    compare = ('a', 1, 4)
-    assert srs.select_index(compare, 'value') == [('a', 1, 4)]
+    compare = ("a", 1, 4)
+    assert srs.select_index(compare, "value") == [("a", 1, 4)]
 
-    compare = ('a', 100, 99)
-    assert srs.select_index(compare, 'value') == []
+    compare = ("a", 100, 99)
+    assert srs.select_index(compare, "value") == []
 
     compare = (None, None, None)
     assert srs.select_index(compare) == [True] * 6
 
     srs = rc.Series([1, 2, 3, 4, 5, 6])
     assert srs.select_index(3) == [False, False, False, True, False, False]
-    assert srs.select_index(3, 'value') == [3]
+    assert srs.select_index(3, "value") == [3]
 
 
 def test_isin():
@@ -242,7 +242,7 @@ def test_reset_index():
     assert_series_equal(srs, expected)
 
     # with index and index name defined
-    srs = rc.Series([1, 2, 3], index=['x', 'y', 'z'], index_name='jelo')
+    srs = rc.Series([1, 2, 3], index=["x", "y", "z"], index_name="jelo")
     srs.reset_index()
     expected = rc.Series([1, 2, 3], [0, 1, 2], sort=False)
     assert_series_equal(srs, expected)
