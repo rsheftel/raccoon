@@ -188,4 +188,4 @@ an installation requirement.
 ~~~~~~~~~~~~~~~~
 - Add type hints
 - Add as_namedtuple option to DataFrame get_columns() and get_location()
-- minimum python version now 3.12
+- minimum python version now 3.11

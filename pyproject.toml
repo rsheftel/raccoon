@@ -6,7 +6,7 @@ authors = [
 ]
 description = 'Python DataFrame with fast insert and appends'
 readme = "README.rst"
-requires-python = ">=3.4"
+requires-python = ">=3.11"
 keywords = ['dataframe', 'data', 'structure']
 license = { text = "MIT" }
 classifiers = [
@@ -17,10 +17,6 @@ classifiers = [
     # Pick your license as you wish (should match "license" above)
     'License :: OSI Approved :: MIT License',
     # Specify the Python versions you support here. In particular, ensure
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
