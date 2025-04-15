@@ -6,7 +6,7 @@ import json
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-from typing import Any, Callable, Generator, Literal, Self
+from typing import Any, Callable, Iterator, Literal, Self
 
 from tabulate import tabulate
 
@@ -1220,7 +1220,7 @@ class DataFrame(object):
         """
         return [x in compare_list for x in self._data[self._columns.index(column)]]
 
-    def iterrows(self, index: bool = True) -> Generator[dict]:
+    def iterrows(self, index: bool = True) -> Iterator[dict]:
         """
         Iterates over DataFrame rows as dictionary of the values. The index will be included.
 
@@ -1233,7 +1233,7 @@ class DataFrame(object):
                 row[col] = self._data[c][i]
             yield row
 
-    def itertuples(self, index: bool = True, name: str = "Raccoon") -> Generator[namedtuple]:
+    def itertuples(self, index: bool = True, name: str = "Raccoon") -> Iterator[namedtuple]:
         """
         Iterates over DataFrame rows as tuple of the values.
 
