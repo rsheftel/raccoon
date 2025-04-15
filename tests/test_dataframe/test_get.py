@@ -351,6 +351,10 @@ def test_get_location_as_dict_namedtuple():
     # single value for column and not list returns just the value
     assert df.get_location(1, "b") == 6
 
+    # cannot have both as_dict and as_namedtuple True
+    with pytest.raises(AssertionError):
+        df.get_location(2, as_dict=True, as_namedtuple=True)
+
 
 def test_get_locations():
     df = rc.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]}, index=[2, 4, 6, 8])

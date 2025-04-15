@@ -187,3 +187,4 @@ an installation requirement.
 3.2.0 (04/14/25)
 ~~~~~~~~~~~~~~~~
 - Add type hints
+- Add as_namedtuple option to DataFrame get_columns() and get_location()
