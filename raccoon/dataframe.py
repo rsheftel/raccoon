@@ -6,6 +6,7 @@ import json
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
+from typing import Any, Callable, Iterator, Literal, Self
 
 from tabulate import tabulate
 
@@ -22,17 +23,27 @@ class DataFrame(object):
     sort by index on construction, and then any addition of a new row will insert it into the DataFrame so that the
     index remains sort.
     """
-    # Define slots to make object faster
-    __slots__ = ['_data', '_index', '_index_name', '_columns', '_sort', '_dropin']
 
-    def __init__(self, data=None, columns=None, index=None, index_name='index', sort=None, dropin=None):
+    # Define slots to make object faster
+    __slots__ = ["_data", "_index", "_index_name", "_columns", "_sort", "_dropin"]
+
+    def __init__(
+        self,
+        data: dict[Any, list] | None = None,
+        columns: list | None = None,
+        index: list | None = None,
+        index_name: str | tuple | None = "index",
+        sort: bool | None = None,
+        dropin: Callable = None,
+    ):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
         the lists will be used for the column data.
         :param columns: (optional) list of column names that will define the order
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param index_name: (optional) name for the index. Default is "index"
-        :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type
+        :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type.
+            If None then will default to True if no index is provided.
         :param dropin: if supplied the drop-in replacement for list that will be used
         """
         # standard variable setup
@@ -43,23 +54,24 @@ class DataFrame(object):
 
         # quality checks
         if (index is not None) and not (self._check_list(index) or isinstance(index, list)):
-            raise TypeError('index must be a list. if dropin provided, must be of that type')
+            raise TypeError("index must be a list. if dropin provided, must be of that type")
         if (columns is not None) and not (self._check_list(columns) or isinstance(columns, list)):
-            raise TypeError('columns must be a list. if dropin provided, must be of that type')
+            raise TypeError("columns must be a list. if dropin provided, must be of that type")
 
         # define from dictionary
         if data is None:
             self._data = dropin() if dropin else list()
             if columns:
                 # expand to the number of columns
-                self._data = dropin([dropin() for _ in range(len(columns))]) if dropin \
-                    else [[] for _ in range(len(columns))]
+                self._data = (
+                    dropin([dropin() for _ in range(len(columns))]) if dropin else [[] for _ in range(len(columns))]
+                )
                 self.columns = columns
             else:
                 self.columns = list()
             if index:
                 if not columns:
-                    raise ValueError('cannot initialize with index but no columns')
+                    raise ValueError("cannot initialize with index but no columns")
                 # pad out to the number of rows
                 self._pad_data(max_len=len(index))
                 self.index = index
@@ -67,9 +79,13 @@ class DataFrame(object):
                 self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
-            self._data = dropin([dropin(x) if ((type(x) == dropin) or (type(x) == list))
-                                 else dropin([x]) for x in data.values()]) if dropin \
+            self._data = (
+                dropin(
+                    [dropin(x) if ((type(x) == dropin) or (type(x) == list)) else dropin([x]) for x in data.values()]
+                )
+                if dropin
                 else [x if type(x) == list else [x] for x in data.values()]
+            )
             # setup columns from directory keys
             self.columns = data.keys()
             # pad the data
@@ -80,7 +96,7 @@ class DataFrame(object):
             else:
                 self.index = range(len(self._data[0]))
         else:
-            raise TypeError('Not valid data type.')
+            raise TypeError("Not valid data type.")
 
         # sort by columns if provided
         if columns:
@@ -97,20 +113,24 @@ class DataFrame(object):
                 self.sort = True
 
     def __repr__(self):
-        return 'object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n' % (id(self), self._columns,
-                                                                         self._data, self._index)
+        return "object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n" % (
+            id(self),
+            self._columns,
+            self._data,
+            self._index,
+        )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._make_table()
 
-    def _check_list(self, x):
+    def _check_list(self, x: list) -> bool:
         return type(x) == (self._dropin if self._dropin else list)
 
-    def _make_table(self, index=True, **kwargs):
-        kwargs['headers'] = 'keys' if 'headers' not in kwargs.keys() else kwargs['headers']
+    def _make_table(self, index: bool = True, **kwargs) -> str:
+        kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def print(self, index=True, **kwargs):
+    def print(self, index: bool = True, **kwargs) -> None:
         """
         Print the contents of the DataFrame. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.
@@ -121,7 +141,7 @@ class DataFrame(object):
         """
         print(self._make_table(index=index, **kwargs))
 
-    def _sort_columns(self, columns_list):
+    def _sort_columns(self, columns_list: list) -> None:
         """
         Given a list of column names will sort the DataFrame columns to match the given order
 
@@ -130,16 +150,19 @@ class DataFrame(object):
         """
         if not (all([x in columns_list for x in self._columns]) and all([x in self._columns for x in columns_list])):
             raise ValueError(
-                'columns_list must be all in current columns, and all current columns must be in columns_list')
+                "columns_list must be all in current columns, and all current columns must be in columns_list"
+            )
         new_sort = [self._columns.index(x) for x in columns_list]
-        self._data = self._dropin([self._data[x] for x in new_sort]) if self._dropin \
-            else [self._data[x] for x in new_sort]
-        self._columns = self._dropin([self._columns[x] for x in new_sort]) if self._dropin \
-            else [self._columns[x] for x in new_sort]
+        self._data = (
+            self._dropin([self._data[x] for x in new_sort]) if self._dropin else [self._data[x] for x in new_sort]
+        )
+        self._columns = (
+            self._dropin([self._columns[x] for x in new_sort]) if self._dropin else [self._columns[x] for x in new_sort]
+        )
 
-    def _pad_data(self, max_len=None):
+    def _pad_data(self, max_len: int | None = None) -> None:
         """
-        Pad the data in DataFrame with [None} to ensure that all columns have the same length.
+        Pad the data in DataFrame with [None] to ensure that all columns have the same length.
 
         :param max_len: If provided will extend all columns to this length, if not then will use the longest column
         :return: nothing
@@ -149,24 +172,24 @@ class DataFrame(object):
         for _, col in enumerate(self._data):
             col.extend([None] * (max_len - len(col)))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._index)
 
     @property
-    def data(self):
+    def data(self) -> list[list]:
         return self._data.copy()
 
     @property
-    def columns(self):
+    def columns(self) -> list:
         return self._columns.copy()
 
     @columns.setter
-    def columns(self, columns_list):
+    def columns(self, columns_list: list) -> None:
         self._validate_columns(columns_list)
         self._columns = self._dropin(columns_list) if self._dropin else list(columns_list)
 
     @property
-    def index(self):
+    def index(self) -> list:
         """
         Return a view of the index as a list. Because this is a view any change to the return list from this method
         will corrupt the DataFrame.
@@ -176,36 +199,36 @@ class DataFrame(object):
         return self._index
 
     @index.setter
-    def index(self, index_list):
+    def index(self, index_list: list) -> None:
         self._validate_index(index_list)
         self._index = self._dropin(index_list) if self._dropin else list(index_list)
 
     @property
-    def index_name(self):
+    def index_name(self) -> str | tuple | None:
         return self._index_name
 
     @index_name.setter
-    def index_name(self, name):
+    def index_name(self, name: str | tuple | None) -> None:
         self._index_name = name
 
     @property
-    def dropin(self):
+    def dropin(self) -> Callable:
         return self._dropin
 
     @property
-    def sort(self):
+    def sort(self) -> bool:
         return self._sort
 
     @sort.setter
-    def sort(self, boolean):
+    def sort(self, boolean: bool) -> None:
         self._sort = boolean
         if self._sort:
             self.sort_index()
 
-    def select_index(self, compare, result='boolean'):
+    def select_index(self, compare: Any | tuple, result: Literal["boolean", "value"] = "boolean") -> list[bool | Any]:
         """
         Finds the elements in the index that match the compare parameter and returns either a list of the values that
-        match, of a boolean list the length of the index with True to each index that matches. If the indexes are
+        match, or a boolean list the length of the index with True to each index that matches. If the indexes are
         tuples then the compare is a tuple where None in any field of the tuple will be treated as "*" and match all
         values.
 
@@ -215,22 +238,30 @@ class DataFrame(object):
         """
         if isinstance(compare, tuple):
             # this crazy list comprehension will match all the tuples in the list with None being an * wildcard
-            booleans = [all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)])
-                        for x, v in enumerate(self._index)]
+            booleans = [
+                all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)])
+                for x, v in enumerate(self._index)
+            ]
         else:
             booleans = [False] * len(self._index)
             if self._sort:
                 booleans[sorted_index(self._index, compare)] = True
             else:
                 booleans[self._index.index(compare)] = True
-        if result == 'boolean':
+        if result == "boolean":
             return booleans
-        elif result == 'value':
+        elif result == "value":
             return list(compress(self._index, booleans))
         else:
-            raise ValueError('only valid values for result parameter are: boolean or value.')
+            raise ValueError("only valid values for result parameter are: boolean or value.")
 
-    def get(self, indexes=None, columns=None, as_list=False, as_dict=False):
+    def get(
+        self,
+        indexes: Any | list[Any | bool] = None,
+        columns: Any | list = None,
+        as_list: bool = False,
+        as_dict: bool = False,
+    ) -> Self | list | dict | Any:
         """
         Given indexes and columns will return a sub-set of the DataFrame. This method will direct to the below methods
         based on what types are passed in for the indexes and columns. The type of the return is determined by the
@@ -261,7 +292,7 @@ class DataFrame(object):
         else:
             return self.get_cell(indexes, columns)
 
-    def get_cell(self, index, column):
+    def get_cell(self, index: Any, column: Any) -> Any:
         """
         For a single index and column value return the value of the cell
 
@@ -273,7 +304,7 @@ class DataFrame(object):
         c = self._columns.index(column)
         return self._data[c][i]
 
-    def get_rows(self, indexes, column, as_list=False):
+    def get_rows(self, indexes: list[bool | Any], column: Any, as_list: bool = False) -> Self | list:
         """
         For a list of indexes and a single column name return the values of the indexes in that column.
 
@@ -285,7 +316,7 @@ class DataFrame(object):
         c = self._columns.index(column)
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
-                raise ValueError('boolean index list must be same size of existing index')
+                raise ValueError("boolean index list must be same size of existing index")
             if all(indexes):  # the entire column
                 data = self._data[c]
                 index = self._index
@@ -293,27 +324,48 @@ class DataFrame(object):
                 data = list(compress(self._data[c], indexes))
                 index = list(compress(self._index, indexes))
         else:  # index values list
-            locations = [sorted_index(self._index, x) for x in indexes] if self._sort \
+            locations = (
+                [sorted_index(self._index, x) for x in indexes]
+                if self._sort
                 else [self._index.index(x) for x in indexes]
+            )
             data = [self._data[c][i] for i in locations]
             index = [self._index[i] for i in locations]
-        return data if as_list else DataFrame(data={column: data}, index=index, index_name=self._index_name,
-                                              sort=self._sort)
+        return (
+            data
+            if as_list
+            else DataFrame(data={column: data}, index=index, index_name=self._index_name, sort=self._sort)
+        )
 
-    def get_columns(self, index, columns=None, as_dict=False):
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> Self | dict | namedtuple:
         """
         For a single index and list of column names return a DataFrame of the values in that index as either a dict
-        or a DataFrame
+        namedtuple or a DataFrame.
 
         :param index: single index value
         :param columns: list of column names
         :param as_dict: if True then return the result as a dictionary
+        :param as_namedtuple: if True then return the result as a named tuple
+        :param name: if as_namedtuple is True, this will be the name of the tuple
+        :param include_index: if True then include the index value in the result
         :return: DataFrame or dictionary
         """
+        assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         i = sorted_index(self._index, index) if self._sort else self._index.index(index)
-        return self.get_location(i, columns, as_dict)
+        if as_namedtuple:
+            dict_row = self.get_location(location=i, columns=columns, as_dict=True, index=include_index)
+            return namedtuple(name, dict_row.keys())(**dict_row)
+        return self.get_location(location=i, columns=columns, as_dict=as_dict, index=include_index)
 
-    def get_entire_column(self, column, as_list=False):
+    def get_entire_column(self, column: Any, as_list: bool = False) -> Self | list:
         """
         Shortcut method to retrieve a single column all rows. Since this is a common use case this method will be
         faster than the more general method.
@@ -324,10 +376,13 @@ class DataFrame(object):
         """
         c = self._columns.index(column)
         data = self._data[c]
-        return data if as_list else DataFrame(data={column: data}, index=self._index, index_name=self._index_name,
-                                              sort=self._sort)
+        return (
+            data
+            if as_list
+            else DataFrame(data={column: data}, index=self._index, index_name=self._index_name, sort=self._sort)
+        )
 
-    def get_matrix(self, indexes, columns):
+    def get_matrix(self, indexes: list[Any | bool], columns: list[Any]) -> Self:
         """
         For a list of indexes and list of columns return a DataFrame of the values.
 
@@ -340,42 +395,58 @@ class DataFrame(object):
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             is_bool_indexes = True
             if len(indexes) != len(self._index):
-                raise ValueError('boolean index list must be same size of existing index')
+                raise ValueError("boolean index list must be same size of existing index")
             bool_indexes = indexes
             indexes = list(compress(self._index, indexes))
         else:
             is_bool_indexes = False
-            locations = [sorted_index(self._index, x) for x in indexes] if self._sort \
+            locations = (
+                [sorted_index(self._index, x) for x in indexes]
+                if self._sort
                 else [self._index.index(x) for x in indexes]
+            )
 
         if all([isinstance(i, bool) for i in columns]):  # boolean list
             if len(columns) != len(self._columns):
-                raise ValueError('boolean column list must be same size of existing columns')
+                raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
 
         col_locations = [self._columns.index(x) for x in columns]
         data_dict = dict()
 
         for c in col_locations:
-            data_dict[self._columns[c]] = list(compress(self._data[c], bool_indexes)) if is_bool_indexes \
+            data_dict[self._columns[c]] = (
+                list(compress(self._data[c], bool_indexes))
+                if is_bool_indexes
                 else [self._data[c][i] for i in locations]
+            )
 
-        return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name,
-                         sort=self._sort)
+        return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name, sort=self._sort)
 
-    def get_location(self, location, columns=None, as_dict=False, index=True):
+    def get_location(
+        self,
+        location: int,
+        columns: Any | list | None = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> Self | dict | namedtuple | Any:
         """
         For an index location and either (1) list of columns return a DataFrame or dictionary of the values or
         (2) single column name and return the value of that cell. This is optimized for speed because it does not need
-        to lookup the index location with a search. Also can accept relative indexing from the end of the DataFrame
+        to look up the index location with a search. Also, can accept relative indexing from the end of the DataFrame
         in standard python notation [-3, -2, -1]
 
         :param location: index location in standard python form of positive or negative number
         :param columns: list of columns, single column name, or None to include all columns
         :param as_dict: if True then return a dictionary
+        :param as_namedtuple: if True then return the result as a named tuple
+        :param name: if as_namedtuple is True, this will be the name of the tuple
         :param index: if True then include the index in the dictionary if as_dict=True
-        :return: DataFrame or dictionary if columns is a list or value if columns is a single column name
+        :return: DataFrame, dictionary or namedtuple if columns is a list or value if columns is a single column name
         """
+        assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         if columns is None:
             columns = self._columns
         elif not isinstance(columns, list):  # single value for columns
@@ -383,7 +454,7 @@ class DataFrame(object):
             return self._data[c][location]
         elif all([isinstance(i, bool) for i in columns]):
             if len(columns) != len(self._columns):
-                raise ValueError('boolean column list must be same size of existing columns')
+                raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
         data = dict()
         for column in columns:
@@ -394,12 +465,17 @@ class DataFrame(object):
             if index:
                 data[self._index_name] = index_value
             return data
+        elif as_namedtuple:
+            if index:
+                data[self._index_name] = index_value
+            return namedtuple(name, data.keys())(**data)
         else:
             data = {k: [data[k]] for k in data}  # this makes the dict items lists
-            return DataFrame(data=data, index=[index_value], columns=columns, index_name=self._index_name,
-                             sort=self._sort)
+            return DataFrame(
+                data=data, index=[index_value], columns=columns, index_name=self._index_name, sort=self._sort
+            )
 
-    def get_locations(self, locations, columns=None, **kwargs):
+    def get_locations(self, locations: list, columns: Any | list | None = None, **kwargs) -> Self:
         """
         For list of locations and list of columns return a DataFrame of the values.
 
@@ -412,9 +488,11 @@ class DataFrame(object):
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, columns, **kwargs)
 
-    def get_slice(self, start_index=None, stop_index=None, columns=None, as_dict=False):
+    def get_slice(
+        self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
+    ) -> Self | tuple:
         """
-        For sorted DataFrames will return either a DataFrame or dict of all of the rows where the index is greater than
+        For sorted DataFrames will return either a DataFrame or dict of all the rows where the index is greater than
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
         start or stop index is None then will include from the first or last element, similar to standard python
         slide of [:5] or [:5]. Both end points are considered inclusive.
@@ -426,13 +504,13 @@ class DataFrame(object):
         :return: DataFrame or tuple
         """
         if not self._sort:
-            raise RuntimeError('Can only use get_slice on sorted DataFrames')
+            raise RuntimeError("Can only use get_slice on sorted DataFrames")
 
         if columns is None:
             columns = self._columns
         elif all([isinstance(i, bool) for i in columns]):
             if len(columns) != len(self._columns):
-                raise ValueError('boolean column list must be same size of existing columns')
+                raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
 
         start_location = bisect_left(self._index, start_index) if start_index is not None else None
@@ -448,10 +526,16 @@ class DataFrame(object):
             return index, data
         else:
             data = data if data else None  # if the dict is empty, convert to None
-            return DataFrame(data=data, index=index, columns=columns, index_name=self._index_name, sort=self._sort,
-                             dropin=self._dropin)
+            return DataFrame(
+                data=data,
+                index=index,
+                columns=columns,
+                index_name=self._index_name,
+                sort=self._sort,
+                dropin=self._dropin,
+            )
 
-    def _insert_row(self, i, index):
+    def _insert_row(self, i: int, index: Any) -> None:
         """
         Insert a new row in the DataFrame.
 
@@ -466,7 +550,7 @@ class DataFrame(object):
             for c in range(len(self._columns)):
                 self._data[c].insert(i, None)
 
-    def _insert_missing_rows(self, indexes):
+    def _insert_missing_rows(self, indexes: list[Any]) -> None:
         """
         Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
         that index, inserting into the index. This requires the DataFrame to be sort=True
@@ -478,7 +562,7 @@ class DataFrame(object):
         for x in new_indexes:
             self._insert_row(bisect_left(self._index, x), x)
 
-    def _add_row(self, index):
+    def _add_row(self, index: Any) -> None:
         """
         Add a new row to the DataFrame
 
@@ -489,7 +573,7 @@ class DataFrame(object):
         for c, _ in enumerate(self._columns):
             self._data[c].append(None)
 
-    def _add_missing_rows(self, indexes):
+    def _add_missing_rows(self, indexes: list[Any]) -> None:
         """
         Given a list of indexes, find all the indexes that are not currently in the DataFrame and make a new row for
         that index by appending to the DataFrame. This does not maintain sort order for the index.
@@ -501,7 +585,7 @@ class DataFrame(object):
         for x in new_indexes:
             self._add_row(x)
 
-    def _add_column(self, column):
+    def _add_column(self, column: Any) -> None:
         """
         Add a new column to the DataFrame
 
@@ -514,18 +598,20 @@ class DataFrame(object):
         else:
             self._data.append([None] * len(self._index))
 
-    def set(self, indexes=None, columns=None, values=None):
+    def set(
+        self, indexes: Any | list | list[bool] = None, columns: Any | None = None, values: Any | list = None
+    ) -> None:
         """
         Given indexes and columns will set a sub-set of the DataFrame to the values provided. This method will direct
         to the below methods based on what types are passed in for the indexes and columns. If the indexes or columns
         contains values not in the DataFrame then new rows or columns will be added.
 
         :param indexes: indexes value, list of indexes values, or a list of booleans. If None then all indexes are used
-        :param columns: columns name, if None then all columns are used. Currently can only handle a single column or\
-        all columns
-        :param values: value or list of values to set (index, column) to. If setting just a single row, then must be a\
-        dict where the keys are the column names. If a list then must be the same length as the indexes parameter, if\
-        indexes=None, then must be the same and length of DataFrame
+        :param columns: columns name, if None then all columns are used. Currently, can only handle a single column or
+            all columns
+        :param values: value or list of values to set (index, column) to. If setting just a single row, then must be a
+            dict where the keys are the column names. If a list then must be the same length as the indexes parameter, if
+            indexes=None, then must be the same and length of DataFrame
         :return: nothing
         """
         if (indexes is not None) and (columns is not None):
@@ -538,7 +624,7 @@ class DataFrame(object):
         elif (indexes is None) and (columns is not None):
             self.set_column(indexes, columns, values)
         else:
-            raise ValueError('either or both of indexes or columns must be provided')
+            raise ValueError("either or both of indexes or columns must be provided")
 
     def set_cell(self, index, column, value):
         """
@@ -587,11 +673,11 @@ class DataFrame(object):
                 self._add_row(index)
         if isinstance(values, dict):
             if not (set(values.keys()).issubset(self._columns)):
-                raise ValueError('keys of values are not all in existing columns')
+                raise ValueError("keys of values are not all in existing columns")
             for c, column in enumerate(self._columns):
                 self._data[c][i] = values.get(column, self._data[c][i])
         else:
-            raise TypeError('cannot handle values of this type.')
+            raise TypeError("cannot handle values of this type.")
 
     def set_column(self, index=None, column=None, values=None):
         """
@@ -615,9 +701,9 @@ class DataFrame(object):
                 if not self._check_list(values):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
-                    raise ValueError('boolean index list must be same size of existing index')
+                    raise ValueError("boolean index list must be same size of existing index")
                 if len(values) != index.count(True):
-                    raise ValueError('length of values list must equal number of True entries in index list')
+                    raise ValueError("length of values list must equal number of True entries in index list")
                 indexes = [i for i, x in enumerate(index) if x]
                 for x, i in enumerate(indexes):
                     self._data[c][i] = values[x]
@@ -625,7 +711,7 @@ class DataFrame(object):
                 if not self._check_list(values):  # single value provided, not a list, so turn values into list
                     values = [values for _ in index]
                 if len(values) != len(index):
-                    raise ValueError('length of values and index must be the same.')
+                    raise ValueError("length of values and index must be the same.")
                 # insert or append indexes as needed
                 if self._sort:
                     exists_tuples = list(zip(*[sorted_exists(self._index, x) for x in index]))
@@ -646,7 +732,7 @@ class DataFrame(object):
             if not self._check_list(values):  # values not a list, turn into one of length same as index
                 values = [values for _ in self._index]
             if len(values) != len(self._index):
-                raise ValueError('values list must be at same length as current index length.')
+                raise ValueError("values list must be at same length as current index length.")
             else:
                 self._data[c] = self._dropin(values) if self._dropin else values
 
@@ -696,7 +782,7 @@ class DataFrame(object):
         """
 
         if index in self._index:
-            raise IndexError('index already in DataFrame')
+            raise IndexError("index already in DataFrame")
 
         if new_cols:
             for col in values:
@@ -725,12 +811,12 @@ class DataFrame(object):
         # check that the values data is less than or equal to the length of the indexes
         for column in values:
             if len(values[column]) > len(indexes):
-                raise ValueError('length of %s column in values is longer than indexes' % column)
+                raise ValueError("length of %s column in values is longer than indexes" % column)
 
         # check the indexes are not duplicates
         combined_index = self._index + indexes
         if len(set(combined_index)) != len(combined_index):
-            raise IndexError('duplicate indexes in DataFrames')
+            raise IndexError("duplicate indexes in DataFrames")
 
         if new_cols:
             for col in values:
@@ -749,13 +835,13 @@ class DataFrame(object):
         try:
             start_index = sorted_index(self._index, slicer.start) if self._sort else self._index.index(slicer.start)
         except ValueError:
-            raise IndexError('start of slice not in the index')
+            raise IndexError("start of slice not in the index")
         try:
             end_index = sorted_index(self._index, slicer.stop) if self._sort else self._index.index(slicer.stop)
         except ValueError:
-            raise IndexError('end of slice not in the index')
+            raise IndexError("end of slice not in the index")
         if end_index < start_index:
-            raise IndexError('end of slice is before start of slice')
+            raise IndexError("end of slice is before start of slice")
 
         pre_list = [False] * start_index
         mid_list = [True] * (end_index - start_index + 1)
@@ -817,12 +903,12 @@ class DataFrame(object):
 
     def to_list(self):
         """
-        For a single column DataFrame returns a list of the values. Raises error if more then one column.
+        For a single column DataFrame returns a list of the values. Raises error if more than one column.
 
         :return: list
         """
         if len(self._columns) > 1:
-            raise TypeError('tolist() only works with a single column DataFrame')
+            raise TypeError("tolist() only works with a single column DataFrame")
         return self._data[0]
 
     def to_dict(self, index=True, ordered=False):
@@ -850,24 +936,24 @@ class DataFrame(object):
         the DataFrame will have a string representation in place of the object and will not reconstruct exactly.
 
         If there is a dropin supplied then the output will have a string representation of the droping func class
-        in the meta data as the dropin function cannot be stored with the JSON.
+        in the metadata as the dropin function cannot be stored with the JSON.
 
         :return: json string
         """
-        input_dict = {'data': self.to_dict(index=False), 'index': list(self._index)}
+        input_dict = {"data": self.to_dict(index=False), "index": list(self._index)}
 
         # if self._dropin, turn into lists
         if self._dropin:
-            input_dict['index'] = list(input_dict['index'])
-            for key in input_dict['data']:
-                input_dict['data'][key] = list(input_dict['data'][key])
+            input_dict["index"] = list(input_dict["index"])
+            for key in input_dict["data"]:
+                input_dict["data"][key] = list(input_dict["data"][key])
 
         meta_data = dict()
         for key in self.__slots__:
-            if key not in ['_data', '_index']:
+            if key not in ["_data", "_index"]:
                 value = self.__getattribute__(key)
-                meta_data[key.lstrip('_')] = value if not type(value) == self._dropin else list(value)
-        input_dict['meta_data'] = meta_data
+                meta_data[key.lstrip("_")] = value if not type(value) == self._dropin else list(value)
+        input_dict["meta_data"] = meta_data
         return json.dumps(input_dict, default=repr)
 
     def rename_columns(self, rename_dict):
@@ -878,7 +964,7 @@ class DataFrame(object):
         :return: nothing
         """
         if not all([x in self._columns for x in rename_dict.keys()]):
-            raise ValueError('all dictionary keys must be in current columns')
+            raise ValueError("all dictionary keys must be in current columns")
         for current in rename_dict.keys():
             self._columns[self._columns.index(current)] = rename_dict[current]
 
@@ -914,11 +1000,14 @@ class DataFrame(object):
         indexes = [indexes] if not self._check_list(indexes) else indexes
         if all([isinstance(i, bool) for i in indexes]):  # boolean list
             if len(indexes) != len(self._index):
-                raise ValueError('boolean indexes list must be same size of existing indexes')
+                raise ValueError("boolean indexes list must be same size of existing indexes")
             indexes = [i for i, x in enumerate(indexes) if x]
         else:
-            indexes = [sorted_index(self._index, x) for x in indexes] if self._sort \
+            indexes = (
+                [sorted_index(self._index, x) for x in indexes]
+                if self._sort
                 else [self._index.index(x) for x in indexes]
+            )
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
         for c, _ in enumerate(self._columns):
             for i in indexes:
@@ -931,7 +1020,7 @@ class DataFrame(object):
         """
         Deletes the contents of all rows in the DataFrame. This function is faster than delete_rows() to remove all
         information, and at the same time it keeps the container lists for the columns and index so if there is another
-        object that references this DataFrame, like a ViewSeries, the reference remains in tact.
+        object that references this DataFrame, like a ViewSeries, the reference remains intact.
 
         :return: nothing
         """
@@ -948,7 +1037,7 @@ class DataFrame(object):
         """
         columns = [columns] if not self._check_list(columns) else columns
         if not all([x in self._columns for x in columns]):
-            raise ValueError('all columns must be in current columns')
+            raise ValueError("all columns must be in current columns")
         for column in columns:
             c = self._columns.index(column)
             del self._data[c]
@@ -967,8 +1056,9 @@ class DataFrame(object):
         self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin \
-                else [self._data[c][i] for i in sort]
+            self._data[c] = (
+                self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
+            )
 
     def sort_columns(self, column, key=None, reverse=False):
         """
@@ -982,35 +1072,36 @@ class DataFrame(object):
         :return: nothing
         """
         if self._check_list(column):
-            raise TypeError('Can only sort by a single column  ')
+            raise TypeError("Can only sort by a single column  ")
         sort = sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
         # sort index
         self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = self._dropin([self._data[c][i] for i in sort]) if self._dropin \
-                else [self._data[c][i] for i in sort]
+            self._data[c] = (
+                self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
+            )
 
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
-            raise ValueError('index contains duplicates')
+            raise ValueError("index contains duplicates")
         if self._data:
             if len(indexes) != len(self._data[0]):
-                raise ValueError('index length does not match data length')
+                raise ValueError("index length does not match data length")
 
     def _validate_columns(self, columns):
         if len(columns) != len(set(columns)):
-            raise ValueError('columns contains duplicates')
+            raise ValueError("columns contains duplicates")
         if self._data:
             if len(columns) != len(self._data):
-                raise ValueError('number of column names does not match number of data columns')
+                raise ValueError("number of column names does not match number of data columns")
 
     def _validate_data(self):
         if self._data:
             max_rows = max([len(x) for x in self._data])
             same_lens = all([len(x) == max_rows for x in self._data])
             if not same_lens:
-                raise ValueError('data is corrupted, each column not all same length')
+                raise ValueError("data is corrupted, each column not all same length")
 
     def validate_integrity(self):
         """
@@ -1037,7 +1128,7 @@ class DataFrame(object):
         data_frame_index = data_frame.index
         combined_index = self._index + data_frame_index
         if len(set(combined_index)) != len(combined_index):
-            raise ValueError('duplicate indexes in DataFrames')
+            raise ValueError("duplicate indexes in DataFrames")
 
         for c, column in enumerate(data_frame.columns):
             self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c].copy())
@@ -1119,9 +1210,9 @@ class DataFrame(object):
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
         return [l / r for l, r in zip(left_list, right_list)]
 
-    def isin(self, column, compare_list):
+    def isin(self, column: Any, compare_list: list) -> list[bool]:
         """
-        Returns a boolean list where each elements is whether that element in the column is in the compare_list.
+        Returns a boolean list where each element is whether that element in the column is in the compare_list.
 
         :param column: single column name, does not work for multiple columns
         :param compare_list: list of items to compare to
@@ -1129,7 +1220,7 @@ class DataFrame(object):
         """
         return [x in compare_list for x in self._data[self._columns.index(column)]]
 
-    def iterrows(self, index=True):
+    def iterrows(self, index: bool = True) -> Iterator[dict]:
         """
         Iterates over DataFrame rows as dictionary of the values. The index will be included.
 
@@ -1142,7 +1233,7 @@ class DataFrame(object):
                 row[col] = self._data[c][i]
             yield row
 
-    def itertuples(self, index=True, name='Raccoon'):
+    def itertuples(self, index: bool = True, name: str = "Raccoon") -> Iterator[namedtuple]:
         """
         Iterates over DataFrame rows as tuple of the values.
 
@@ -1159,7 +1250,7 @@ class DataFrame(object):
                 row[col] = self._data[c][i]
             yield row_tuple(**row)
 
-    def reset_index(self, drop=False):
+    def reset_index(self, drop: bool = False) -> None:
         """
         Resets the index of the DataFrame to simple integer list and the index name to 'index'. If drop is True then
         the existing index is dropped, if drop is False then the current index is made a column in the DataFrame with
@@ -1176,18 +1267,18 @@ class DataFrame(object):
                 for i in range(len(self.index_name)):
                     self.set_column(column=self.index_name[i], values=index_data[i])
             else:
-                col_name = self.index_name if self.index_name != 'index' else 'index_0'
+                col_name = self.index_name if self.index_name != "index" else "index_0"
                 self.set_column(column=col_name, values=self._index)
         self.index = list(range(self.__len__()))
-        self.index_name = 'index'
+        self.index_name = "index"
 
     # DataFrame creation functions
     @classmethod
-    def from_json(cls, json_string: str, dropin_func=None):
+    def from_json(cls, json_string: str, dropin_func: Callable | None = None) -> Self:
         """
         Creates and return a DataFrame from a JSON of the type created by to_json.
 
-        If a dropin is in the meta data from the JSON, then the same dropin class must be provided here to
+        If a dropin is in the metadata from the JSON, then the same dropin class must be provided here to
         allow construction as the dropin function cannot be stored with the JSON. If required use a pickle
         object for that.
 
@@ -1197,20 +1288,24 @@ class DataFrame(object):
         """
         input_dict = json.loads(json_string)
         # convert index to tuple if required
-        if input_dict['index'] and isinstance(input_dict['index'][0], list):
-            input_dict['index'] = [tuple(x) for x in input_dict['index']]
+        if input_dict["index"] and isinstance(input_dict["index"][0], list):
+            input_dict["index"] = [tuple(x) for x in input_dict["index"]]
         # convert index_name to tuple if required
-        if isinstance(input_dict['meta_data']['index_name'], list):
-            input_dict['meta_data']['index_name'] = tuple(input_dict['meta_data']['index_name'])
-        data = input_dict['data'] if input_dict['data'] else None
+        if isinstance(input_dict["meta_data"]["index_name"], list):
+            input_dict["meta_data"]["index_name"] = tuple(input_dict["meta_data"]["index_name"])
+        data = input_dict["data"] if input_dict["data"] else None
         # confirm the dropin and replace with the actual class
-        if input_dict['meta_data']['dropin']:
+        if input_dict["meta_data"]["dropin"]:
             if not dropin_func:
-                raise AttributeError('the JSON has a dropin : %s : but the dropin parameter was not supplied'
-                                     % input_dict['meta_data']['dropin'])
-            elif input_dict['meta_data']['dropin'] == dropin_func.__str__(dropin_func):
-                input_dict['meta_data']['dropin'] = dropin_func
+                raise AttributeError(
+                    "the JSON has a dropin : %s : but the dropin parameter was not supplied"
+                    % input_dict["meta_data"]["dropin"]
+                )
+            elif input_dict["meta_data"]["dropin"] == dropin_func.__str__(dropin_func):
+                input_dict["meta_data"]["dropin"] = dropin_func
             else:
-                raise AttributeError('the supplied dropin parameter: %s : does not match the value in '
-                                     'the JSON: %s' % (dropin_func, input_dict['meta_data']['dropin']))
-        return cls(data=data, index=input_dict['index'], **input_dict['meta_data'])
+                raise AttributeError(
+                    "the supplied dropin parameter: %s : does not match the value in "
+                    "the JSON: %s" % (dropin_func, input_dict["meta_data"]["dropin"])
+                )
+        return cls(data=data, index=input_dict["index"], **input_dict["meta_data"])

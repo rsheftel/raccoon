@@ -4,14 +4,14 @@ import raccoon as rc
 
 
 def test_index():
-    actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'])
+    actual = rc.Series([4, 5, 6], index=["a", "b", "c"])
     result = actual.index
-    assert result == ['a', 'b', 'c']
+    assert result == ["a", "b", "c"]
     assert isinstance(result, list)
 
     # test that a view is returned
-    result.append('bad')
-    assert actual.index == ['a', 'b', 'c', 'bad']
+    result.append("bad")
+    assert actual.index == ["a", "b", "c", "bad"]
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -21,21 +21,21 @@ def test_index():
     with pytest.raises(ValueError):
         actual.index = [1, 3, 4, 5, 6]
 
-    assert actual.index_name == 'index'
-    actual.index_name = 'new name'
-    assert actual.index_name == 'new name'
+    assert actual.index_name == "index"
+    actual.index_name = "new name"
+    assert actual.index_name == "new name"
 
-    actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'], index_name='letters')
-    assert actual.index_name == 'letters'
+    actual = rc.Series([4, 5, 6], index=["a", "b", "c"], index_name="letters")
+    assert actual.index_name == "letters"
 
 
 def test_index_view():
     data = [4, 5, 6]
-    index = ['a', 'b', 'c']
+    index = ["a", "b", "c"]
 
     actual = rc.ViewSeries(data, index)
     result = actual.index
-    assert result == ['a', 'b', 'c']
+    assert result == ["a", "b", "c"]
     assert isinstance(result, list)
 
     # test that a view is returned
@@ -43,25 +43,25 @@ def test_index_view():
     assert result is actual.index
 
     # modify
-    result[1] = 'new'
-    assert actual.index == ['a', 'new', 'c']
-    assert index == ['a', 'new', 'c']
+    result[1] = "new"
+    assert actual.index == ["a", "new", "c"]
+    assert index == ["a", "new", "c"]
 
     # index too long
     with pytest.raises(ValueError):
         actual.index = [1, 3, 4, 5, 6]
 
-    assert actual.index_name == 'index'
-    actual.index_name = 'new name'
-    assert actual.index_name == 'new name'
+    assert actual.index_name == "index"
+    actual.index_name = "new name"
+    assert actual.index_name == "new name"
 
-    actual = rc.Series([4, 5, 6], index=['a', 'b', 'c'], index_name='letters')
-    assert actual.index_name == 'letters'
+    actual = rc.Series([4, 5, 6], index=["a", "b", "c"], index_name="letters")
+    assert actual.index_name == "letters"
 
 
 def test_data():
     data = [4, 5, 6]
-    index = ['a', 'b', 'c']
+    index = ["a", "b", "c"]
     actual = rc.Series(data, index)
 
     assert isinstance(actual.data, list)
@@ -84,7 +84,7 @@ def test_data():
 
 def test_data_view():
     data = [4, 5, 6]
-    index = ['a', 'b', 'c']
+    index = ["a", "b", "c"]
     actual = rc.ViewSeries(data, index)
 
     assert isinstance(actual.data, list)
@@ -101,7 +101,7 @@ def test_data_view():
     new.append(88)
     assert new == [99, 5, 6, 88]
     assert actual.data == [99, 5, 6, 88]
-    assert actual.index == ['a', 'b', 'c']
+    assert actual.index == ["a", "b", "c"]
 
     with pytest.raises(AttributeError):
         # noinspection PyPropertyAccess

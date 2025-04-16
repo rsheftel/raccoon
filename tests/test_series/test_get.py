@@ -41,9 +41,9 @@ def test_get_cell_sorted():
 
 
 def test_get_rows():
-    srs = rc.Series([1, 2, 3, 4], index=[10, 11, 12, 99], index_name='start_10', sort=False)
+    srs = rc.Series([1, 2, 3, 4], index=[10, 11, 12, 99], index_name="start_10", sort=False)
 
-    expected = rc.Series([2, 3], index=[11, 12], index_name='start_10', sort=False)
+    expected = rc.Series([2, 3], index=[11, 12], index_name="start_10", sort=False)
     actual = srs.get([11, 12])
     assert_series_equal(actual, expected)
 
@@ -52,7 +52,7 @@ def test_get_rows():
     assert_series_equal(actual, expected)
 
     # index out of order
-    expected = rc.Series([4, 1], index=[99, 10], index_name='start_10', sort=False)
+    expected = rc.Series([4, 1], index=[99, 10], index_name="start_10", sort=False)
     actual = srs.get([99, 10])
     assert_series_equal(actual, expected)
 
@@ -72,9 +72,9 @@ def test_get_rows():
 
 
 def test_get_rows_sorted():
-    srs = rc.Series([1, 2, 3, 4], index=[10, 11, 12, 99], index_name='start_10', sort=True)
+    srs = rc.Series([1, 2, 3, 4], index=[10, 11, 12, 99], index_name="start_10", sort=True)
 
-    expected = rc.Series([2, 3], index=[11, 12], index_name='start_10', sort=True)
+    expected = rc.Series([2, 3], index=[11, 12], index_name="start_10", sort=True)
     actual = srs.get([11, 12])
     assert_series_equal(actual, expected)
 
@@ -83,7 +83,7 @@ def test_get_rows_sorted():
     assert_series_equal(actual, expected)
 
     # index out of order
-    expected = rc.Series([4, 1], index=[99, 10], index_name='start_10', sort=True)
+    expected = rc.Series([4, 1], index=[99, 10], index_name="start_10", sort=True)
     actual = srs.get([99, 10])
     assert_series_equal(actual, expected)
 
@@ -105,8 +105,8 @@ def test_get_rows_sorted():
 def test_get_location():
     srs = rc.Series([5, 6, 7, 8], index=[2, 4, 6, 8])
 
-    assert srs.get_location(2) == {'value': 7, 'index': 6}
-    assert srs.get_location(-1) == {'index': 8, 'value': 8}
+    assert srs.get_location(2) == {"value": 7, "index": 6}
+    assert srs.get_location(-1) == {"index": 8, "value": 8}
 
 
 def test_get_locations():
@@ -172,15 +172,15 @@ def test_get_slice_as_list():
 
 
 def test_get_square_brackets():
-    srs = rc.Series([10, 11, 12], index=['a', 'b', 'c'], sort=False)
+    srs = rc.Series([10, 11, 12], index=["a", "b", "c"], sort=False)
 
-    assert srs['b'] == 11
-    assert_series_equal(srs[['a', 'c']], rc.Series([10, 12], ['a', 'c']))
+    assert srs["b"] == 11
+    assert_series_equal(srs[["a", "c"]], rc.Series([10, 12], ["a", "c"]))
 
     # get a series back
-    assert_series_equal(srs[['b']], rc.Series([11], ['b'], sort=False))
+    assert_series_equal(srs[["b"]], rc.Series([11], ["b"], sort=False))
 
-    assert_series_equal(srs[['c', 'a']], rc.Series([12, 10], ['c', 'a'], sort=False))
+    assert_series_equal(srs[["c", "a"]], rc.Series([12, 10], ["c", "a"], sort=False))
 
     # srs[[0, 2]] -- get indexes = [0, 2]
     srs = rc.Series([10, 11, 12], sort=False)
@@ -190,15 +190,15 @@ def test_get_square_brackets():
 
 
 def test_get_square_brackets_sorted():
-    srs = rc.Series([10, 11, 12], index=['a', 'b', 'c'], sort=True)
+    srs = rc.Series([10, 11, 12], index=["a", "b", "c"], sort=True)
 
-    assert srs['b'] == 11
-    assert_series_equal(srs[['a', 'c']], rc.Series([10, 12], ['a', 'c'], sort=True))
+    assert srs["b"] == 11
+    assert_series_equal(srs[["a", "c"]], rc.Series([10, 12], ["a", "c"], sort=True))
 
     # get a series back
-    assert_series_equal(srs[['b']], rc.Series([11], ['b'], sort=True))
+    assert_series_equal(srs[["b"]], rc.Series([11], ["b"], sort=True))
 
-    assert_series_equal(srs[['c', 'a']], rc.Series([12, 10], ['c', 'a'], sort=True))
+    assert_series_equal(srs[["c", "a"]], rc.Series([12, 10], ["c", "a"], sort=True))
 
     # srs[[0, 2]] -- get indexes = [0, 2]
     srs = rc.Series([10, 11, 12], sort=True)

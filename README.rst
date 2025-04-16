@@ -64,7 +64,7 @@ My hope is that one day Pandas solves the speed problem with growing DataFrames 
 
 Python Version
 ~~~~~~~~~~~~~~
-Raccoon requires Python 3.4 or greater. Python 2.7 support was eliminated as of version 3.0. If you need to use raccoon
+Raccoon requires Python 3.11 or greater. Python 2.7 support was eliminated as of version 3.0. If you need to use raccoon
 with Python 2.7 use any version less than 3.0
 
 Helper scripts

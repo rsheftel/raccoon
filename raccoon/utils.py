@@ -5,7 +5,7 @@ Raccoon utilities
 import raccoon as rc
 
 
-def assert_frame_equal(left, right, data_function=None, data_args=None):
+def assert_frame_equal(left: rc.DataFrame, right: rc.DataFrame, data_function=None, data_args=None) -> None:
     """
     For unit testing equality of two DataFrames.
 
@@ -27,7 +27,9 @@ def assert_frame_equal(left, right, data_function=None, data_args=None):
     assert left.dropin == right.dropin
 
 
-def assert_series_equal(left, right, data_function=None, data_args=None):
+def assert_series_equal(
+    left: rc.Series | rc.ViewSeries, right: rc.Series | rc.ViewSeries, data_function=None, data_args=None
+) -> None:
     """
     For unit testing equality of two Series.
 

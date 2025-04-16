@@ -1,30 +1,25 @@
 [project]
 name = "raccoon"
-version = "3.1.1"
+version = "3.2.0"
 authors = [
-  { name="Ryan Sheftel", email="rsheftel@alumni.upenn.edu" },
+    { name = "Ryan Sheftel", email = "rsheftel@alumni.upenn.edu" },
 ]
 description = 'Python DataFrame with fast insert and appends'
 readme = "README.rst"
-requires-python = ">=3.4"
+requires-python = ">=3.11"
 keywords = ['dataframe', 'data', 'structure']
-license = { text="MIT" }
+license = { text = "MIT" }
 classifiers = [
-        'Development Status :: 5 - Production/Stable',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Software Development',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
-
-        # Specify the Python versions you support here. In particular, ensure
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
+    'Development Status :: 5 - Production/Stable',
+    # Indicate who your project is intended for
+    'Intended Audience :: Developers',
+    'Topic :: Software Development',
+    # Pick your license as you wish (should match "license" above)
+    'License :: OSI Approved :: MIT License',
+    # Specify the Python versions you support here. In particular, ensure
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
 ]
 dependencies = ['tabulate']
 
@@ -62,3 +57,24 @@ exclude_also = [
 ]
 
 ignore_errors = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+extend-select = ['I']  # uncomment to use ruff import sorting
+# ignore = ["E231", "W503", "E203", "W605", "E501"]
+
+#[tool.ruff.lint.isort]
+#force-single-line = false
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+skip_glob = ["tests/data", "profiling"]
+known_first_party = ["black", "blib2to3", "blackd", "_black_version"]

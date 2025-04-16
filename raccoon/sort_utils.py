@@ -3,9 +3,10 @@ Utility functions for sorting and dealing with sorted Series and DataFrames
 """
 
 from bisect import bisect_left, bisect_right
+from typing import Any, Callable
 
 
-def sorted_exists(values, x):
+def sorted_exists(values: list, x: Any) -> tuple[bool, int]:
     """
     For list, values, returns the insert position for item x and whether the item already exists in the list. This
     allows one function call to return either the index to overwrite an existing value in the list, or the index to
@@ -21,7 +22,7 @@ def sorted_exists(values, x):
     return exists, i
 
 
-def sorted_index(values, x):
+def sorted_index(values: list, x: Any) -> int:
     """
     For list, values, returns the index location of element x. If x does not exist will raise an error.
 
@@ -34,7 +35,7 @@ def sorted_index(values, x):
     return values[i:j].index(x) + i
 
 
-def sorted_list_indexes(list_to_sort, key=None, reverse=False):
+def sorted_list_indexes(list_to_sort: list, key: Callable | Any = None, reverse: bool = False) -> list[int]:
     """
     Sorts a list but returns the order of the index values of the list for the sort and not the values themselves.
     For example is the list provided is ['b', 'a', 'c'] then the result will be [2, 1, 3]
@@ -46,6 +47,7 @@ def sorted_list_indexes(list_to_sort, key=None, reverse=False):
     :return: list of sorted index values
     """
     if key is not None:
+
         def key_func(i):
             return key(list_to_sort.__getitem__(i))
     else:

@@ -183,3 +183,9 @@ an installation requirement.
 - Small fixes to pyproject.toml
 - Remove travis-CI configs as it is no longer used
 - Merge coveragerc file into pyproject.toml
+
+3.2.0 (04/14/25)
+~~~~~~~~~~~~~~~~
+- Add type hints
+- Add as_namedtuple option to DataFrame get_columns() and get_location()
+- minimum python version now 3.11

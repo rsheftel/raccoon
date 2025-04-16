@@ -4,32 +4,32 @@ import raccoon as rc
 
 
 def test_columns():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    actual = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "c"], columns=["b", "a"])
     names = actual.columns
-    assert names == ['b', 'a']
+    assert names == ["b", "a"]
     assert isinstance(names, list)
 
     # test that a copy is returned
-    names.append('bad')
-    assert actual.columns == ['b', 'a']
+    names.append("bad")
+    assert actual.columns == ["b", "a"]
 
-    actual.columns = ['new1', 'new2']
-    assert actual.columns == ['new1', 'new2']
+    actual.columns = ["new1", "new2"]
+    assert actual.columns == ["new1", "new2"]
     assert isinstance(actual.columns, list)
 
     with pytest.raises(ValueError):
-        actual.columns = ['list', 'too', 'long']
+        actual.columns = ["list", "too", "long"]
 
 
 def test_index():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    actual = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "c"], columns=["b", "a"])
     result = actual.index
-    assert result == ['a', 'b', 'c']
+    assert result == ["a", "b", "c"]
     assert isinstance(result, list)
 
     # test that a view is returned
-    result.append('bad')
-    assert actual.index == ['a', 'b', 'c', 'bad']
+    result.append("bad")
+    assert actual.index == ["a", "b", "c", "bad"]
 
     actual.index = [9, 10, 11]
     assert actual.index == [9, 10, 11]
@@ -39,17 +39,22 @@ def test_index():
     with pytest.raises(ValueError):
         actual.index = [1, 3, 4, 5, 6]
 
-    assert actual.index_name == 'index'
-    actual.index_name = 'new name'
-    assert actual.index_name == 'new name'
+    assert actual.index_name == "index"
+    actual.index_name = "new name"
+    assert actual.index_name == "new name"
 
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], index_name='letters')
-    assert actual.index_name == 'letters'
+    actual = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "c"], index_name="letters")
+    assert actual.index_name == "letters"
 
 
 def test_get_index():
-    df = rc.DataFrame({'a': [1, 2, 3, 4], 'b': [4, 5, 6, 7], 'c': [7, 8, 9, None]}, index=[10, 11, 12, 99],
-                      columns=['a', 'b', 'c'], index_name='start_10', sort=False)
+    df = rc.DataFrame(
+        {"a": [1, 2, 3, 4], "b": [4, 5, 6, 7], "c": [7, 8, 9, None]},
+        index=[10, 11, 12, 99],
+        columns=["a", "b", "c"],
+        index_name="start_10",
+        sort=False,
+    )
 
     # test that then using .index returns a view
     res = df.index
@@ -59,7 +64,7 @@ def test_get_index():
 
 
 def test_data():
-    actual = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
+    actual = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "c"], columns=["b", "a"])
     assert actual.data == [[4, 5, 6], [1, 2, 3]]
 
     # test shallow copy

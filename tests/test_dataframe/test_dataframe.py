@@ -205,7 +205,7 @@ def test_input_data_mutability():
     assert df.data != orig_data
     assert df.get(0, 'a') == [1, 11]
 
-    # using set to change the DataFrame data does not effect the input data
+    # using set to change the DataFrame data does not affect the input data
     df[1, 'a'] = [2, 22]
     assert input_data['a'] == [[1, 11], [2], [3]]
 
