@@ -9,38 +9,37 @@ raccoon.dataframe module
 
 .. automodule:: raccoon.dataframe
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 raccoon.series module
 ---------------------
 
 .. automodule:: raccoon.series
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 raccoon.sort\_utils module
 --------------------------
 
 .. automodule:: raccoon.sort_utils
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 raccoon.utils module
 --------------------
 
 .. automodule:: raccoon.utils
    :members:
-   :undoc-members:
    :show-inheritance:
-
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: raccoon
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

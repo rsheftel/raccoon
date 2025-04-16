@@ -4,7 +4,9 @@ Example Usage for DataFrame
 .. code:: python
 
     # remove comment to use latest development version
-    import sys; sys.path.insert(0, '../')
+    import sys;
+    
+    sys.path.insert(0, '../')
 
 .. code:: python
 
@@ -25,7 +27,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2305959579080
+    object id: 1602323641696
     columns:
     []
     data:
@@ -46,7 +48,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2305959578792
+    object id: 1602323630096
     columns:
     ['a', 'b', 'c']
     data:
@@ -67,7 +69,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 2305959818248
+    object id: 1602323182784
     columns:
     ['a', 'b']
     data:
@@ -400,7 +402,7 @@ Set Values
 .. code:: python
 
     # append rows, again use caution
-    df.append_rows([15, 16], {'a': [55, 56], 'd': [100,101]})
+    df.append_rows([15, 16], {'a': [55, 56], 'd': [100, 101]})
     print(df)
 
 
@@ -544,6 +546,20 @@ Get Values
 
 
 
+.. code:: python
+
+    # get a row and return as a namedtuple, excluding the index
+    df.get_columns(index=13, columns=['a', 'b'], as_namedtuple=True, name="tuplename", include_index=False)
+
+
+
+
+.. parsed-literal::
+
+    tuplename(a=33, b=55)
+
+
+
 Set and Get by Location
 -----------------------
 
@@ -579,13 +595,29 @@ from 0…len(index)
 
 .. code:: python
 
-    print(df.get_location(0, ['b', 'c'], as_dict=True))
+    df.get_location(0, ['b', 'c'], as_dict=True)
+
+
 
 
 .. parsed-literal::
 
     {'b': 88, 'c': 1, 'index': 10}
-    
+
+
+
+.. code:: python
+
+    df.get_location(1, as_namedtuple=True, name="tuplename", index=False)
+
+
+
+
+.. parsed-literal::
+
+    tuplename(a=2, b=55, c=2, d=None)
+
+
 
 .. code:: python
 
@@ -1134,7 +1166,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 2305960012584
+    object id: 1602314513728
     columns:
     ['a', 'b', 'index_0']
     data:
@@ -1177,7 +1209,7 @@ Reset Index
 .. code:: python
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
-                       index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
+                      index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
     print(df)
 
 
