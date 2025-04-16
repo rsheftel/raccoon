@@ -43,6 +43,19 @@ def test_default_list():
     check_list()
 
 
+def test_construction():
+    actual = rc.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}, index=["a", "b", "c"], columns=["b", "a"])
+    assert actual.data == [[4, 5, 6], [1, 2, 3]]
+    actual = rc.DataFrame({"a": 9, "b": 10})
+    assert actual.data == [[9], [10]]
+    actual = rc.DataFrame({"a": 9, "b": {"another": 90}}, index=["odd"])
+    assert actual.data == [[9], [{"another": 90}]]
+
+    # data length is mismatch with index length
+    with pytest.raises(ValueError):
+        rc.DataFrame({"a": 9, "b": {"another": 90}}, index=["a", "b", "c"])
+
+
 def test_to_dict():
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=['a', 'b', 'c'], columns=['b', 'a'])
 

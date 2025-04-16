@@ -29,7 +29,7 @@ class DataFrame(object):
 
     def __init__(
         self,
-        data: dict[Any, list] | None = None,
+        data: dict[Any, list | Any] | None = None,
         columns: list | None = None,
         index: list | None = None,
         index_name: str | tuple | None = "index",
