@@ -79,6 +79,7 @@ celerybeat-schedule
 .env
 
 # virtualenv
+.venv/
 venv/
 ENV/
 
@@ -90,3 +91,6 @@ ENV/
 
 # Pycharm files
 .idea/
+
+# uv files
+uv.lock

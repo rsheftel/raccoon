@@ -193,3 +193,8 @@ an installation requirement.
 3.2.1 (04/15/25)
 ~~~~~~~~~~~~~~~~
 - Fix to type hints
+
+3.2.2 (11/01/25)
+~~~~~~~~~~~~~~~~
+- Added setup for using uv
+- Added 3.14 to the list of working pythons
