@@ -1,6 +1,6 @@
 [project]
 name = "raccoon"
-version = "3.2.2"
+version = "3.3.0"
 authors = [
     { name = "Ryan Sheftel", email = "rsheftel@alumni.upenn.edu" },
 ]
@@ -11,21 +11,15 @@ keywords = ['dataframe', 'data', 'structure']
 license = { text = "MIT" }
 classifiers = [
     'Development Status :: 5 - Production/Stable',
-    # Indicate who your project is intended for
     'Intended Audience :: Developers',
     'Topic :: Software Development',
-    # Pick your license as you wish (should match "license" above)
     'License :: OSI Approved :: MIT License',
-    # Specify the Python versions you support here. In particular, ensure
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3.14',
 ]
 dependencies = ['tabulate']
-
-[project.optional-dependencies]
-test = ['pytest']
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
@@ -61,17 +55,10 @@ ignore_errors = true
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py314"
 
 [tool.ruff.lint]
-extend-select = ['I']  # uncomment to use ruff import sorting
-# ignore = ["E231", "W503", "E203", "W605", "E501"]
-
-#[tool.ruff.lint.isort]
-#force-single-line = false
-
-[tool.black]
-line-length = 120
+extend-select = ['I']
 
 [tool.isort]
 profile = "black"

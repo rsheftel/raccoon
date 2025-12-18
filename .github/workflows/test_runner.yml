@@ -1,0 +1,65 @@
+name: test_runner
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Required for pushing commits if needed in future
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        python-version: [ '3.11', '3.12', '3.13', '3.14' ]
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest tabulate coveralls
+          pip install .
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: run tests
+        run: |
+          coverage run --source=pandas_market_calendars -m pytest tests
+          coverage lcov -o coverage.lcov
+
+      - name: coveralls parallel
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.github_token }}
+          flag-name: test_${{ matrix.os }}_${{ matrix.python-version }}
+          parallel: true
+          file: coverage.lcov
+
+  report_coverage:
+    if: ${{ always() }}
+    needs: [ run_tests ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: coveralls finalize
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
