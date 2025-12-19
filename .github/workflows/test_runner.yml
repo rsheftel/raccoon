@@ -39,7 +39,7 @@ jobs:
 
       - name: run tests
         run: |
-          coverage run --source=pandas_market_calendars -m pytest tests
+          coverage run --source=raccoon -m pytest tests
           coverage lcov -o coverage.lcov
 
       - name: coveralls parallel
