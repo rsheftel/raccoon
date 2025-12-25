@@ -198,3 +198,9 @@ an installation requirement.
 ~~~~~~~~~~~~~~~~
 - Added setup for using uv
 - Added 3.14 to the list of working pythons
+
+3.3.1 (12/24/25)
+~~~~~~~~~~~~~~~~
+- Added setup for using agentic AI
+- Used AI to add type hints
+- Used AI to make performance optimizations

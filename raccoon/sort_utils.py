@@ -2,7 +2,7 @@
 Utility functions for sorting and dealing with sorted Series and DataFrames
 """
 
-from bisect import bisect_left, bisect_right
+from bisect import bisect_left
 from typing import Any, Callable
 
 
@@ -17,8 +17,7 @@ def sorted_exists(values: list, x: Any) -> tuple[bool, int]:
     :return: (exists, index) tuple
     """
     i = bisect_left(values, x)
-    j = bisect_right(values, x)
-    exists = x in values[i:j]
+    exists = i < len(values) and values[i] == x
     return exists, i
 
 
@@ -31,8 +30,9 @@ def sorted_index(values: list, x: Any) -> int:
     :return: integer index
     """
     i = bisect_left(values, x)
-    j = bisect_right(values, x)
-    return values[i:j].index(x) + i
+    if i < len(values) and values[i] == x:
+        return i
+    raise ValueError(f"{x!r} is not in list")
 
 
 def sorted_list_indexes(list_to_sort: list, key: Callable | Any = None, reverse: bool = False) -> list[int]:

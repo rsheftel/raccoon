@@ -2,10 +2,17 @@
 Raccoon utilities
 """
 
+from typing import Callable
+
 import raccoon as rc
 
 
-def assert_frame_equal(left: rc.DataFrame, right: rc.DataFrame, data_function=None, data_args=None) -> None:
+def assert_frame_equal(
+        left: rc.DataFrame,
+        right: rc.DataFrame,
+        data_function: Callable | None = None,
+        data_args: dict | None = None,
+) -> None:
     """
     For unit testing equality of two DataFrames.
 
@@ -28,7 +35,8 @@ def assert_frame_equal(left: rc.DataFrame, right: rc.DataFrame, data_function=No
 
 
 def assert_series_equal(
-    left: rc.Series | rc.ViewSeries, right: rc.Series | rc.ViewSeries, data_function=None, data_args=None
+        left: rc.Series | rc.ViewSeries, right: rc.Series | rc.ViewSeries, data_function: Callable | None = None,
+        data_args: dict | None = None
 ) -> None:
     """
     For unit testing equality of two Series.
@@ -39,7 +47,7 @@ def assert_series_equal(
     :param data_args: arguments to pass to the data_function
     :return: nothing
     """
-    assert type(left) == type(right)
+    assert type(left) is type(right)
     if data_function:
         data_args = {} if not data_args else data_args
         data_function(left.data, right.data, **data_args)

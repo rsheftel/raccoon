@@ -43,11 +43,11 @@ class SeriesBase(ABC):
     def __str__(self) -> str:
         return self._make_table()
 
-    def _make_table(self, index: bool = True, **kwargs) -> str:
+    def _make_table(self, index: bool = True, **kwargs: Any) -> str:
         kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def print(self, index: bool = True, **kwargs) -> None:
+    def print(self, index: bool = True, **kwargs: Any) -> None:
         """
         Print the contents of the Series. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.
@@ -95,7 +95,7 @@ class SeriesBase(ABC):
         return
 
     def _check_list(self, x: Any) -> bool:
-        return type(x) == (self._dropin if self._dropin else list)
+        return isinstance(x, self._dropin) if self._dropin else isinstance(x, list)
 
     def get(self, indexes: Any | list | list[bool], as_list: bool = False) -> Self | list | Any:
         """
@@ -130,7 +130,7 @@ class SeriesBase(ABC):
         :param as_list: if True return a list, if False return Series
         :return: Series if as_list if False, a list if as_list is True
         """
-        if all([isinstance(i, bool) for i in indexes]):  # boolean list
+        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError("boolean index list must be same size of existing index")
             if all(indexes):  # the entire column
@@ -184,7 +184,7 @@ class SeriesBase(ABC):
         return self.get(indexes, as_list)
 
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
+            self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
     ) -> Self | tuple[list, list]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
@@ -230,13 +230,8 @@ class SeriesBase(ABC):
         if end_index < start_index:
             raise IndexError("end of slice is before start of slice")
 
-        pre_list = [False] * start_index
-        mid_list = [True] * (end_index - start_index + 1)
-        post_list = [False] * (len(self._index) - 1 - end_index)
-
-        pre_list.extend(mid_list)
-        pre_list.extend(post_list)
-        return pre_list
+        index_len = len(self._index)
+        return [False] * start_index + [True] * (end_index - start_index + 1) + [False] * (index_len - 1 - end_index)
 
     def _validate_index(self, indexes: list) -> None:
         """
@@ -245,7 +240,7 @@ class SeriesBase(ABC):
         :param list indexes: list of indexes
         :return: nothing
         """
-        if not (self._check_list(indexes) or type(indexes) == list or indexes is None):
+        if not (self._check_list(indexes) or isinstance(indexes, list) or indexes is None):
             raise TypeError("indexes must be list, %s or None" % self._dropin)
         if len(indexes) != len(set(indexes)):  # noqa
             raise ValueError("index contains duplicates")
@@ -339,7 +334,8 @@ class SeriesBase(ABC):
         :param compare_list: list of items to compare to
         :return: list of booleans
         """
-        return [x in compare_list for x in self._data]
+        compare_set = set(compare_list)
+        return [x in compare_set for x in self._data]
 
     def equality(self, indexes: list | list[bool] = None, value: Any = None) -> list[bool]:
         """
@@ -368,13 +364,13 @@ class Series(SeriesBase):
     """
 
     def __init__(
-        self,
-        data: dict | list | None = None,
-        index: list | None = None,
-        data_name: str | tuple | None = "value",
-        index_name: str | tuple | None = "index",
-        sort: bool = None,
-        dropin: Callable = None,
+            self,
+            data: dict | list | None = None,
+            index: list | None = None,
+            data_name: str | tuple | None = "value",
+            index_name: str | tuple | None = "index",
+            sort: bool = None,
+            dropin: Callable = None,
     ):
         """
         :param data: (optional) list of values.
@@ -403,7 +399,7 @@ class Series(SeriesBase):
                 self.index = index
             else:
                 self.index = list()
-        elif self._check_list(data) or type(data) == list:
+        elif self._check_list(data) or isinstance(data, list):
             self._data = dropin([x for x in data]) if dropin else [x for x in data]
             # setup index
             if index:
@@ -518,7 +514,8 @@ class Series(SeriesBase):
         :param indexes: list of indexes
         :return: nothing
         """
-        new_indexes = [x for x in indexes if x not in self._index]
+        existing = set(self._index)
+        new_indexes = [x for x in indexes if x not in existing]
         for x in new_indexes:
             self._add_row(x)
 
@@ -530,7 +527,8 @@ class Series(SeriesBase):
         :param indexes: list of indexes
         :return: nothing
         """
-        new_indexes = [x for x in indexes if x not in self._index]
+        existing = set(self._index)
+        new_indexes = [x for x in indexes if x not in existing]
         for x in new_indexes:
             self._insert_row(bisect_left(self._index, x), x)
 
@@ -565,7 +563,7 @@ class Series(SeriesBase):
         list is values, or the length of the True values in the index list if the index list is booleans
         :return: nothing
         """
-        if all([isinstance(i, bool) for i in index]):  # boolean list
+        if index and isinstance(index[0], bool) and all(isinstance(i, bool) for i in index):  # boolean list
             if not self._check_list(values):  # single value provided, not a list, so turn values into list
                 values = [values for x in index if x]
             if len(index) != len(self._index):
@@ -582,9 +580,12 @@ class Series(SeriesBase):
                 raise ValueError("length of values and index must be the same.")
             # insert or append indexes as needed
             if self._sort:
-                exists_tuples = list(zip(*[sorted_exists(self._index, x) for x in index]))
-                exists = exists_tuples[0]
-                indexes = exists_tuples[1]
+                exists = []
+                indexes = []
+                for x in index:
+                    e, i = sorted_exists(self._index, x)
+                    exists.append(e)
+                    indexes.append(i)
                 if not all(exists):
                     self._insert_missing_rows(index)
                     indexes = [sorted_index(self._index, x) for x in index]
@@ -701,7 +702,7 @@ class Series(SeriesBase):
         :return: nothing
         """
         indexes = [indexes] if not self._check_list(indexes) else indexes
-        if all([isinstance(i, bool) for i in indexes]):  # boolean list
+        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError("boolean indexes list must be same size of existing indexes")
             indexes = [i for i, x in enumerate(indexes) if x]
@@ -714,8 +715,6 @@ class Series(SeriesBase):
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
         for i in indexes:
             del self._data[i]
-        # now remove from index
-        for i in indexes:
             del self._index[i]
 
     def reset_index(self) -> None:
@@ -737,13 +736,13 @@ class ViewSeries(SeriesBase):
     """
 
     def __init__(
-        self,
-        data: list | tuple | None = None,
-        index: list | None = None,
-        data_name: str | tuple | None = "value",
-        index_name: str | tuple | None = "index",
-        sort: bool = False,
-        offset: int = 0,
+            self,
+            data: list | tuple | None = None,
+            index: list | None = None,
+            data_name: str | tuple | None = "value",
+            index_name: str | tuple | None = "index",
+            sort: bool = False,
+            offset: int = 0,
     ):
         """
         :param data: (optional) list of values.
