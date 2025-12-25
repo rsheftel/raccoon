@@ -43,11 +43,11 @@ class SeriesBase(ABC):
     def __str__(self) -> str:
         return self._make_table()
 
-    def _make_table(self, index: bool = True, **kwargs) -> str:
+    def _make_table(self, index: bool = True, **kwargs: Any) -> str:
         kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def print(self, index: bool = True, **kwargs) -> None:
+    def print(self, index: bool = True, **kwargs: Any) -> None:
         """
         Print the contents of the Series. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.
@@ -95,7 +95,7 @@ class SeriesBase(ABC):
         return
 
     def _check_list(self, x: Any) -> bool:
-        return type(x) == (self._dropin if self._dropin else list)
+        return isinstance(x, self._dropin) if self._dropin else isinstance(x, list)
 
     def get(self, indexes: Any | list | list[bool], as_list: bool = False) -> Self | list | Any:
         """
@@ -184,7 +184,7 @@ class SeriesBase(ABC):
         return self.get(indexes, as_list)
 
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
+            self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
     ) -> Self | tuple[list, list]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
@@ -245,7 +245,7 @@ class SeriesBase(ABC):
         :param list indexes: list of indexes
         :return: nothing
         """
-        if not (self._check_list(indexes) or type(indexes) == list or indexes is None):
+        if not (self._check_list(indexes) or isinstance(indexes, list) or indexes is None):
             raise TypeError("indexes must be list, %s or None" % self._dropin)
         if len(indexes) != len(set(indexes)):  # noqa
             raise ValueError("index contains duplicates")
@@ -368,13 +368,13 @@ class Series(SeriesBase):
     """
 
     def __init__(
-        self,
-        data: dict | list | None = None,
-        index: list | None = None,
-        data_name: str | tuple | None = "value",
-        index_name: str | tuple | None = "index",
-        sort: bool = None,
-        dropin: Callable = None,
+            self,
+            data: dict | list | None = None,
+            index: list | None = None,
+            data_name: str | tuple | None = "value",
+            index_name: str | tuple | None = "index",
+            sort: bool = None,
+            dropin: Callable = None,
     ):
         """
         :param data: (optional) list of values.
@@ -403,7 +403,7 @@ class Series(SeriesBase):
                 self.index = index
             else:
                 self.index = list()
-        elif self._check_list(data) or type(data) == list:
+        elif self._check_list(data) or isinstance(data, list):
             self._data = dropin([x for x in data]) if dropin else [x for x in data]
             # setup index
             if index:
@@ -737,13 +737,13 @@ class ViewSeries(SeriesBase):
     """
 
     def __init__(
-        self,
-        data: list | tuple | None = None,
-        index: list | None = None,
-        data_name: str | tuple | None = "value",
-        index_name: str | tuple | None = "index",
-        sort: bool = False,
-        offset: int = 0,
+            self,
+            data: list | tuple | None = None,
+            index: list | None = None,
+            data_name: str | tuple | None = "value",
+            index_name: str | tuple | None = "index",
+            sort: bool = False,
+            offset: int = 0,
     ):
         """
         :param data: (optional) list of values.

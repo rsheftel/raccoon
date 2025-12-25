@@ -28,13 +28,13 @@ class DataFrame(object):
     __slots__ = ["_data", "_index", "_index_name", "_columns", "_sort", "_dropin"]
 
     def __init__(
-        self,
-        data: dict[Any, list | Any] | None = None,
-        columns: list | None = None,
-        index: list | None = None,
-        index_name: str | tuple | None = "index",
-        sort: bool | None = None,
-        dropin: Callable = None,
+            self,
+            data: dict[Any, list | Any] | None = None,
+            columns: list | None = None,
+            index: list | None = None,
+            index_name: str | tuple | None = "index",
+            sort: bool | None = None,
+            dropin: Callable = None,
     ):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
@@ -81,10 +81,11 @@ class DataFrame(object):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = (
                 dropin(
-                    [dropin(x) if ((type(x) == dropin) or (type(x) == list)) else dropin([x]) for x in data.values()]
+                    [dropin(x) if ((isinstance(x, dropin)) or (isinstance(x, list))) else dropin([x]) for x in
+                     data.values()]
                 )
                 if dropin
-                else [x if type(x) == list else [x] for x in data.values()]
+                else [x if isinstance(x, list) else [x] for x in data.values()]
             )
             # setup columns from directory keys
             self.columns = data.keys()
@@ -123,8 +124,8 @@ class DataFrame(object):
     def __str__(self) -> str:
         return self._make_table()
 
-    def _check_list(self, x: list) -> bool:
-        return type(x) == (self._dropin if self._dropin else list)
+    def _check_list(self, x: Any) -> bool:
+        return isinstance(x, self._dropin) if self._dropin else isinstance(x, list)
 
     def _make_table(self, index: bool = True, **kwargs) -> str:
         kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
@@ -256,11 +257,11 @@ class DataFrame(object):
             raise ValueError("only valid values for result parameter are: boolean or value.")
 
     def get(
-        self,
-        indexes: Any | list[Any | bool] = None,
-        columns: Any | list = None,
-        as_list: bool = False,
-        as_dict: bool = False,
+            self,
+            indexes: Any | list[Any | bool] = None,
+            columns: Any | list = None,
+            as_list: bool = False,
+            as_dict: bool = False,
     ) -> Self | list | dict | Any:
         """
         Given indexes and columns will return a sub-set of the DataFrame. This method will direct to the below methods
@@ -338,13 +339,13 @@ class DataFrame(object):
         )
 
     def get_columns(
-        self,
-        index: Any,
-        columns: list[Any] = None,
-        as_dict: bool = False,
-        as_namedtuple: bool = False,
-        name: str = "raccoon",
-        include_index: bool = True,
+            self,
+            index: Any,
+            columns: list[Any] = None,
+            as_dict: bool = False,
+            as_namedtuple: bool = False,
+            name: str = "raccoon",
+            include_index: bool = True,
     ) -> Self | dict | namedtuple:
         """
         For a single index and list of column names return a DataFrame of the values in that index as either a dict
@@ -424,13 +425,13 @@ class DataFrame(object):
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name, sort=self._sort)
 
     def get_location(
-        self,
-        location: int,
-        columns: Any | list | None = None,
-        as_dict: bool = False,
-        as_namedtuple: bool = False,
-        name: str = "raccoon",
-        index: bool = True,
+            self,
+            location: int,
+            columns: Any | list | None = None,
+            as_dict: bool = False,
+            as_namedtuple: bool = False,
+            name: str = "raccoon",
+            index: bool = True,
     ) -> Self | dict | namedtuple | Any:
         """
         For an index location and either (1) list of columns return a DataFrame or dictionary of the values or
@@ -489,7 +490,7 @@ class DataFrame(object):
         return self.get(indexes, columns, **kwargs)
 
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
+            self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
     ) -> Self | tuple:
         """
         For sorted DataFrames will return either a DataFrame or dict of all the rows where the index is greater than
@@ -599,7 +600,7 @@ class DataFrame(object):
             self._data.append([None] * len(self._index))
 
     def set(
-        self, indexes: Any | list | list[bool] = None, columns: Any | None = None, values: Any | list = None
+            self, indexes: Any | list | list[bool] = None, columns: Any | None = None, values: Any | list = None
     ) -> None:
         """
         Given indexes and columns will set a sub-set of the DataFrame to the values provided. This method will direct
@@ -626,7 +627,7 @@ class DataFrame(object):
         else:
             raise ValueError("either or both of indexes or columns must be provided")
 
-    def set_cell(self, index, column, value):
+    def set_cell(self, index: Any, column: Any, value: Any) -> None:
         """
         Sets the value of a single cell. If the index and/or column is not in the current index/columns then a new
         index and/or column will be created.
@@ -653,7 +654,7 @@ class DataFrame(object):
             self._add_column(column)
         self._data[c][i] = value
 
-    def set_row(self, index, values):
+    def set_row(self, index: Any, values: dict[str, Any] | Any) -> None:
         """
         Sets the values of the columns in a single row.
 
@@ -769,7 +770,7 @@ class DataFrame(object):
         indexes = [self._index[x] for x in locations]
         self.set(indexes, column, values)
 
-    def append_row(self, index, values, new_cols=True):
+    def append_row(self, index: Any, values: dict[str, Any], new_cols: bool = True) -> None:
         """
         Appends a row of values to the end of the data. If there are new columns in the values and new_cols is True
         they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order.
@@ -796,7 +797,7 @@ class DataFrame(object):
         for c, col in enumerate(self._columns):
             self._data[c].append(values.get(col, None))
 
-    def append_rows(self, indexes, values, new_cols=True):
+    def append_rows(self, indexes: list[Any], values: dict[str, list[Any]], new_cols: bool = True) -> None:
         """
         Appends rows of values to the end of the data. If there are new columns in the values and new_cols is True
         they will be added. Be very careful with this function as for sort DataFrames it will not enforce sort order.
@@ -952,7 +953,8 @@ class DataFrame(object):
         for key in self.__slots__:
             if key not in ["_data", "_index"]:
                 value = self.__getattribute__(key)
-                meta_data[key.lstrip("_")] = value if not type(value) == self._dropin else list(value)
+                meta_data[key.lstrip("_")] = value if not (self._dropin and isinstance(value, self._dropin)) else list(
+                    value)
         input_dict["meta_data"] = meta_data
         return json.dumps(input_dict, default=repr)
 
@@ -1154,10 +1156,10 @@ class DataFrame(object):
         right_list = self.get_rows(indexes, right_column, as_list=True)
         return left_list, right_list
 
-    def add(self, left_column, right_column, indexes=None):
+    def add(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
         """
-        Math helper method that adds element-wise two columns. If indexes are not None then will only perform the math
-        on that sub-set of the columns.
+        Math helper method that adds element-wise two columns. If indexes are not None then will only perform the
+        math on that sub-set of the columns.
 
         :param left_column: first column name
         :param right_column: second column name
@@ -1166,9 +1168,9 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l + r for l, r in zip(left_list, right_list)]
+        return [left_val + r for left_val, r in zip(left_list, right_list)]
 
-    def subtract(self, left_column, right_column, indexes=None):
+    def subtract(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
         """
         Math helper method that subtracts element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1180,9 +1182,9 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l - r for l, r in zip(left_list, right_list)]
+        return [left_val - r for left_val, r in zip(left_list, right_list)]
 
-    def multiply(self, left_column, right_column, indexes=None):
+    def multiply(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
         """
         Math helper method that multiplies element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1194,9 +1196,9 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l * r for l, r in zip(left_list, right_list)]
+        return [left_val * r for left_val, r in zip(left_list, right_list)]
 
-    def divide(self, left_column, right_column, indexes=None):
+    def divide(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
         """
         Math helper method that divides element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1208,7 +1210,7 @@ class DataFrame(object):
         :return: list
         """
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
-        return [l / r for l, r in zip(left_list, right_list)]
+        return [left_val / r for left_val, r in zip(left_list, right_list)]
 
     def isin(self, column: Any, compare_list: list) -> list[bool]:
         """

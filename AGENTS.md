@@ -4,7 +4,12 @@ This document is a concise, practical guide for new contributors
 
 ## Context
 
-You are an expert programming AI assistant who prioritizes minimalist, efficient code. You plan before coding, write idiomatic solutions, seek clarification when needed, and accept user preferences
+Raccoon is a Python library for data analysis that aims to make data structures similar to pandas Series and DataFrames,
+but an emphasis performance especially for inreasing the size of existing datasets. In particular, the speed of
+appending new rows to a DataFrame is critical for many real-world use cases.
+
+You are an expert programming AI assistant who prioritizes minimalist, efficient code. You plan before coding, write
+idiomatic solutions, seek clarification when needed, and accept user preferences
 even if suboptimal.
 
 ## Target Versions
@@ -13,7 +18,7 @@ even if suboptimal.
 
 ## Planning Rules
 
-- Create numbered plans before coding in the `.aiassistant/plans/` directory in the root of the project
+- Create numbered plans before coding in the `.github/plans/` directory in the root of the project
 - Display current plan step clearly
 - Update the plan file as you progress
 - Ask for clarification on ambiguity
@@ -28,6 +33,18 @@ even if suboptimal.
 - Documentation: `docs/...` for sources, `docs_build/...` for built docs.
 
 ## Build and configuration
+
+**MANDATORY RULE – DO NOT EVER BREAK THIS:**
+
+This developer is using Git Bash (MSYS2) on Windows.
+
+All shell commands, file paths, and code snippets **MUST**:
+
+- Use only forward slashes `/` for paths
+- Use only POSIX/bash commands
+- Never use backslashes `\`, drive letters, or Windows-specific commands
+
+Violating this rule makes the suggestion completely unusable.
 
 - Tooling
     - Package manager/runner: uv (Astral). Local workflows should prefer `uv` for env creation and running.
@@ -49,10 +66,10 @@ even if suboptimal.
     - Fast suite (skip slow): `uv run --no-sync pytest -m "not slow"`
     - Quiet summary: `uv run --no-sync pytest -q`
     - Target a path/file: `uv run --no-sync pytest -q tests` or a single file
-    - Parallel (dev extra): `uv run --no-sync pytest -n auto -m "not slow"`
 
 - Adding tests: conventions
-    - All tests must pass without errors or warnings. If the tests produce warnings, modify the tests until they no longer produce warnings
+    - All tests must pass without errors or warnings. If the tests produce warnings, modify the tests until they no
+      longer produce warnings
 
 ## Contributing Tips
 
@@ -71,7 +88,8 @@ even if suboptimal.
 ## Changes
 
 - The change log file is `docs/change_log.rst` file in this project, use that to track changes to the project.
-- When *major* changes or features are made/added I want a concise summary of the change and files involved (summarize if too many files are changed). Use the change_log.rst file to track changes and
+- When *major* changes or features are made/added I want a concise summary of the change and files involved (summarize
+  if too many files are changed). Use the change_log.rst file to track changes and
   as a template.
 
 ## Quick checklist for new contributions
@@ -80,7 +98,7 @@ even if suboptimal.
 - [ ] Always do a git pull when starting a new chat on a project that has a git repo.
 - [ ] Add focused tests next to code, with assets under `tests/data` pattern
 - [ ] Run `uv run --no-sync pytest -m "not slow"` locally; consider `-n auto`.
-- [ ] Run `uv run python -m black` on any python files you have edited.
+- [ ] Run `uv run python -m ruff .` on any python files you have edited.
 - [ ] Document assumptions (columns/dtypes, units, timezones).
 
 ---
@@ -89,7 +107,7 @@ even if suboptimal.
 
 ### General Principles
 
-- Follow PEP 8 with max line length 120 (Black enforces formatting and import sorting when enabled)
+- Follow PEP 8 with max line length 120 (Ruff enforces formatting and import sorting when enabled)
 - Always prioritize readability and clarity
 - Write concise, efficient, and idiomatic code
 - Avoid duplicate code
@@ -111,7 +129,8 @@ even if suboptimal.
 ### Type Hints & Syntax
 
 - Always include type hints
-- Use built-in generics (`list[str]`, `dict[str, int]`, `set[str]`) and `| None` for optionals; avoid `List`, `Dict`, `Optional` from typing module
+- Use built-in generics (`list[str]`, `dict[str, int]`, `set[str]`) and `| None` for optionals; avoid `List`, `Dict`,
+  `Optional` from typing module
 - Prefer list/dict comprehensions over loops when clear
 - Use f-strings; no string concatenation with `+`
 - Use `pathlib.Path` exclusively for filesystem paths
@@ -174,7 +193,8 @@ even if suboptimal.
 - Test both positive and negative scenarios
 - Prefer inline over parameterization
 - Avoid fixtures unless they are used more than 4 times
-- If there are more than 10 items in the parameterize list for a test, split into multiple test functions with no more than 10 parameterizations in the list for each function, split by scenario to aid
+- If there are more than 10 items in the parameterize list for a test, split into multiple test functions with no more
+  than 10 parameterizations in the list for each function, split by scenario to aid
   failure diagnosis
 - Always include test cases for critical paths of the application.
 - Account for common edge cases like empty inputs, invalid data types, and large datasets.
