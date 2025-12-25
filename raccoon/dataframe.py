@@ -149,7 +149,7 @@ class DataFrame(object):
         :param columns_list: list of column names. Must include all column names
         :return: nothing
         """
-        if not (all([x in columns_list for x in self._columns]) and all([x in self._columns for x in columns_list])):
+        if set(columns_list) != set(self._columns):
             raise ValueError(
                 "columns_list must be all in current columns, and all current columns must be in columns_list"
             )
@@ -315,7 +315,7 @@ class DataFrame(object):
         :return: DataFrame is as_list if False, a list if as_list is True
         """
         c = self._columns.index(column)
-        if all([isinstance(i, bool) for i in indexes]):  # boolean list
+        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError("boolean index list must be same size of existing index")
             if all(indexes):  # the entire column
@@ -393,7 +393,7 @@ class DataFrame(object):
         """
         bool_indexes = []
         locations = []
-        if all([isinstance(i, bool) for i in indexes]):  # boolean list
+        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
             is_bool_indexes = True
             if len(indexes) != len(self._index):
                 raise ValueError("boolean index list must be same size of existing index")
@@ -407,7 +407,7 @@ class DataFrame(object):
                 else [self._index.index(x) for x in indexes]
             )
 
-        if all([isinstance(i, bool) for i in columns]):  # boolean list
+        if columns and isinstance(columns[0], bool) and all(isinstance(i, bool) for i in columns):  # boolean list
             if len(columns) != len(self._columns):
                 raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
@@ -453,14 +453,14 @@ class DataFrame(object):
         elif not isinstance(columns, list):  # single value for columns
             c = self._columns.index(columns)
             return self._data[c][location]
-        elif all([isinstance(i, bool) for i in columns]):
+        elif columns and isinstance(columns[0], bool) and all(isinstance(i, bool) for i in columns):
             if len(columns) != len(self._columns):
                 raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
+        col_to_idx = {col: i for i, col in enumerate(self._columns)}
         data = dict()
         for column in columns:
-            c = self._columns.index(column)
-            data[column] = self._data[c][location]
+            data[column] = self._data[col_to_idx[column]][location]
         index_value = self._index[location]
         if as_dict:
             if index:
@@ -509,7 +509,7 @@ class DataFrame(object):
 
         if columns is None:
             columns = self._columns
-        elif all([isinstance(i, bool) for i in columns]):
+        elif columns and isinstance(columns[0], bool) and all(isinstance(i, bool) for i in columns):
             if len(columns) != len(self._columns):
                 raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
@@ -518,10 +518,10 @@ class DataFrame(object):
         stop_location = bisect_right(self._index, stop_index) if stop_index is not None else None
 
         index = self._index[start_location:stop_location]
+        col_to_idx = {col: i for i, col in enumerate(self._columns)}
         data = dict()
         for column in columns:
-            c = self._columns.index(column)
-            data[column] = self._data[c][start_location:stop_location]
+            data[column] = self._data[col_to_idx[column]][start_location:stop_location]
 
         if as_dict:
             return index, data
@@ -559,7 +559,8 @@ class DataFrame(object):
         :param indexes: list of indexes
         :return: nothing
         """
-        new_indexes = [x for x in indexes if x not in self._index]
+        existing = set(self._index)
+        new_indexes = [x for x in indexes if x not in existing]
         for x in new_indexes:
             self._insert_row(bisect_left(self._index, x), x)
 
@@ -582,7 +583,8 @@ class DataFrame(object):
         :param indexes: list of indexes
         :return: nothing
         """
-        new_indexes = [x for x in indexes if x not in self._index]
+        existing = set(self._index)
+        new_indexes = [x for x in indexes if x not in existing]
         for x in new_indexes:
             self._add_row(x)
 
@@ -698,7 +700,7 @@ class DataFrame(object):
             c = len(self._columns)
             self._add_column(column)
         if index:  # index was provided
-            if all([isinstance(i, bool) for i in index]):  # boolean list
+            if index and isinstance(index[0], bool) and all(isinstance(i, bool) for i in index):  # boolean list
                 if not self._check_list(values):  # single value provided, not a list, so turn values into list
                     values = [values for x in index if x]
                 if len(index) != len(self._index):
@@ -715,9 +717,12 @@ class DataFrame(object):
                     raise ValueError("length of values and index must be the same.")
                 # insert or append indexes as needed
                 if self._sort:
-                    exists_tuples = list(zip(*[sorted_exists(self._index, x) for x in index]))
-                    exists = exists_tuples[0]
-                    indexes = exists_tuples[1]
+                    exists = []
+                    indexes = []
+                    for x in index:
+                        e, i = sorted_exists(self._index, x)
+                        exists.append(e)
+                        indexes.append(i)
                     if not all(exists):
                         self._insert_missing_rows(index)
                         indexes = [sorted_index(self._index, x) for x in index]
@@ -844,13 +849,8 @@ class DataFrame(object):
         if end_index < start_index:
             raise IndexError("end of slice is before start of slice")
 
-        pre_list = [False] * start_index
-        mid_list = [True] * (end_index - start_index + 1)
-        post_list = [False] * (len(self._index) - 1 - end_index)
-
-        pre_list.extend(mid_list)
-        pre_list.extend(post_list)
-        return pre_list
+        index_len = len(self._index)
+        return [False] * start_index + [True] * (end_index - start_index + 1) + [False] * (index_len - 1 - end_index)
 
     def __getitem__(self, index):
         """
@@ -1000,7 +1000,7 @@ class DataFrame(object):
         :return: nothing
         """
         indexes = [indexes] if not self._check_list(indexes) else indexes
-        if all([isinstance(i, bool) for i in indexes]):  # boolean list
+        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
             if len(indexes) != len(self._index):
                 raise ValueError("boolean indexes list must be same size of existing indexes")
             indexes = [i for i, x in enumerate(indexes) if x]
@@ -1011,11 +1011,9 @@ class DataFrame(object):
                 else [self._index.index(x) for x in indexes]
             )
         indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
-        for c, _ in enumerate(self._columns):
-            for i in indexes:
-                del self._data[c][i]
-        # now remove from index
         for i in indexes:
+            for c in range(len(self._columns)):
+                del self._data[c][i]
             del self._index[i]
 
     def delete_all_rows(self):
@@ -1220,7 +1218,8 @@ class DataFrame(object):
         :param compare_list: list of items to compare to
         :return: list of booleans
         """
-        return [x in compare_list for x in self._data[self._columns.index(column)]]
+        compare_set = set(compare_list)
+        return [x in compare_set for x in self._data[self._columns.index(column)]]
 
     def iterrows(self, index: bool = True) -> Iterator[dict]:
         """
