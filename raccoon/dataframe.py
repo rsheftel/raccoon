@@ -6,7 +6,7 @@ import json
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-from typing import Any, Callable, Iterator, Literal, Self
+from typing import Any, Iterator, Literal, Self
 
 from tabulate import tabulate
 
@@ -18,23 +18,21 @@ class DataFrame(object):
     DataFrame class. The raccoon DataFrame implements a simplified version of the pandas DataFrame with the key
     objective difference that the raccoon DataFrame is meant for use cases where the size of the DataFrame rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
-    Raccoon uses native lists, or any other provided drop-in replacement for lists, as the underlying data structure
-    which is quick to expand and grow the size. The DataFrame can be designated as sort, in which case the rows will be
-    sort by index on construction, and then any addition of a new row will insert it into the DataFrame so that the
-    index remains sort.
+    Raccoon uses native lists as the underlying data structure which is quick to expand and grow the size. The
+    DataFrame can be designated as sort, in which case the rows will be sort by index on construction, and then any
+    addition of a new row will insert it into the DataFrame so that the index remains sort.
     """
 
     # Define slots to make object faster
-    __slots__ = ["_data", "_index", "_index_name", "_columns", "_sort", "_dropin"]
+    __slots__ = ["_data", "_index", "_index_name", "_columns", "_sort"]
 
     def __init__(
-            self,
-            data: dict[Any, list | Any] | None = None,
-            columns: list | None = None,
-            index: list | None = None,
-            index_name: str | tuple | None = "index",
-            sort: bool | None = None,
-            dropin: Callable = None,
+        self,
+        data: dict[Any, list | Any] | None = None,
+        columns: list | None = None,
+        index: list | None = None,
+        index_name: str | tuple | None = "index",
+        sort: bool | None = None,
     ):
         """
         :param data: (optional) dictionary of lists. The keys of the dictionary will be used for the column names and\
@@ -44,28 +42,24 @@ class DataFrame(object):
         :param index_name: (optional) name for the index. Default is "index"
         :param sort: if True then DataFrame will keep the index sort. If True all index values must be of same type.
             If None then will default to True if no index is provided.
-        :param dropin: if supplied the drop-in replacement for list that will be used
         """
         # standard variable setup
         self._index = None
         self._index_name = index_name
         self._columns = None
-        self._dropin = dropin
 
         # quality checks
-        if (index is not None) and not (self._check_list(index) or isinstance(index, list)):
-            raise TypeError("index must be a list. if dropin provided, must be of that type")
-        if (columns is not None) and not (self._check_list(columns) or isinstance(columns, list)):
-            raise TypeError("columns must be a list. if dropin provided, must be of that type")
+        if (index is not None) and not isinstance(index, list):
+            raise TypeError("index must be a list")
+        if (columns is not None) and not isinstance(columns, list):
+            raise TypeError("columns must be a list")
 
         # define from dictionary
         if data is None:
-            self._data = dropin() if dropin else list()
+            self._data = list()
             if columns:
                 # expand to the number of columns
-                self._data = (
-                    dropin([dropin() for _ in range(len(columns))]) if dropin else [[] for _ in range(len(columns))]
-                )
+                self._data = [[] for _ in range(len(columns))]
                 self.columns = columns
             else:
                 self.columns = list()
@@ -79,14 +73,7 @@ class DataFrame(object):
                 self.index = list()
         elif isinstance(data, dict):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
-            self._data = (
-                dropin(
-                    [dropin(x) if ((isinstance(x, dropin)) or (isinstance(x, list))) else dropin([x]) for x in
-                     data.values()]
-                )
-                if dropin
-                else [x if isinstance(x, list) else [x] for x in data.values()]
-            )
+            self._data = [x if isinstance(x, list) else [x] for x in data.values()]
             # setup columns from directory keys
             self.columns = data.keys()
             # pad the data
@@ -125,7 +112,7 @@ class DataFrame(object):
         return self._make_table()
 
     def _check_list(self, x: Any) -> bool:
-        return isinstance(x, self._dropin) if self._dropin else isinstance(x, list)
+        return isinstance(x, list)
 
     def _make_table(self, index: bool = True, **kwargs) -> str:
         kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
@@ -154,12 +141,8 @@ class DataFrame(object):
                 "columns_list must be all in current columns, and all current columns must be in columns_list"
             )
         new_sort = [self._columns.index(x) for x in columns_list]
-        self._data = (
-            self._dropin([self._data[x] for x in new_sort]) if self._dropin else [self._data[x] for x in new_sort]
-        )
-        self._columns = (
-            self._dropin([self._columns[x] for x in new_sort]) if self._dropin else [self._columns[x] for x in new_sort]
-        )
+        self._data = [self._data[x] for x in new_sort]
+        self._columns = [self._columns[x] for x in new_sort]
 
     def _pad_data(self, max_len: int | None = None) -> None:
         """
@@ -187,7 +170,7 @@ class DataFrame(object):
     @columns.setter
     def columns(self, columns_list: list) -> None:
         self._validate_columns(columns_list)
-        self._columns = self._dropin(columns_list) if self._dropin else list(columns_list)
+        self._columns = list(columns_list)
 
     @property
     def index(self) -> list:
@@ -202,7 +185,7 @@ class DataFrame(object):
     @index.setter
     def index(self, index_list: list) -> None:
         self._validate_index(index_list)
-        self._index = self._dropin(index_list) if self._dropin else list(index_list)
+        self._index = list(index_list)
 
     @property
     def index_name(self) -> str | tuple | None:
@@ -211,10 +194,6 @@ class DataFrame(object):
     @index_name.setter
     def index_name(self, name: str | tuple | None) -> None:
         self._index_name = name
-
-    @property
-    def dropin(self) -> Callable:
-        return self._dropin
 
     @property
     def sort(self) -> bool:
@@ -257,11 +236,11 @@ class DataFrame(object):
             raise ValueError("only valid values for result parameter are: boolean or value.")
 
     def get(
-            self,
-            indexes: Any | list[Any | bool] = None,
-            columns: Any | list = None,
-            as_list: bool = False,
-            as_dict: bool = False,
+        self,
+        indexes: Any | list[Any | bool] = None,
+        columns: Any | list = None,
+        as_list: bool = False,
+        as_dict: bool = False,
     ) -> Self | list | dict | Any:
         """
         Given indexes and columns will return a sub-set of the DataFrame. This method will direct to the below methods
@@ -339,13 +318,13 @@ class DataFrame(object):
         )
 
     def get_columns(
-            self,
-            index: Any,
-            columns: list[Any] = None,
-            as_dict: bool = False,
-            as_namedtuple: bool = False,
-            name: str = "raccoon",
-            include_index: bool = True,
+        self,
+        index: Any,
+        columns: list[Any] = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        include_index: bool = True,
     ) -> Self | dict | namedtuple:
         """
         For a single index and list of column names return a DataFrame of the values in that index as either a dict
@@ -425,13 +404,13 @@ class DataFrame(object):
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name, sort=self._sort)
 
     def get_location(
-            self,
-            location: int,
-            columns: Any | list | None = None,
-            as_dict: bool = False,
-            as_namedtuple: bool = False,
-            name: str = "raccoon",
-            index: bool = True,
+        self,
+        location: int,
+        columns: Any | list | None = None,
+        as_dict: bool = False,
+        as_namedtuple: bool = False,
+        name: str = "raccoon",
+        index: bool = True,
     ) -> Self | dict | namedtuple | Any:
         """
         For an index location and either (1) list of columns return a DataFrame or dictionary of the values or
@@ -490,7 +469,7 @@ class DataFrame(object):
         return self.get(indexes, columns, **kwargs)
 
     def get_slice(
-            self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
+        self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
     ) -> Self | tuple:
         """
         For sorted DataFrames will return either a DataFrame or dict of all the rows where the index is greater than
@@ -533,7 +512,6 @@ class DataFrame(object):
                 columns=columns,
                 index_name=self._index_name,
                 sort=self._sort,
-                dropin=self._dropin,
             )
 
     def _insert_row(self, i: int, index: Any) -> None:
@@ -596,13 +574,10 @@ class DataFrame(object):
         :return: nothing
         """
         self._columns.append(column)
-        if self._dropin:
-            self._data.append(self._dropin([None] * len(self._index)))
-        else:
-            self._data.append([None] * len(self._index))
+        self._data.append([None] * len(self._index))
 
     def set(
-            self, indexes: Any | list | list[bool] = None, columns: Any | None = None, values: Any | list = None
+        self, indexes: Any | list | list[bool] = None, columns: Any | None = None, values: Any | list = None
     ) -> None:
         """
         Given indexes and columns will set a sub-set of the DataFrame to the values provided. This method will direct
@@ -740,7 +715,7 @@ class DataFrame(object):
             if len(values) != len(self._index):
                 raise ValueError("values list must be at same length as current index length.")
             else:
-                self._data[c] = self._dropin(values) if self._dropin else values
+                self._data[c] = values
 
     def set_location(self, location, values, missing_to_none=False):
         """
@@ -936,25 +911,14 @@ class DataFrame(object):
         that cannot be serialized will be replaced with the representation of the object using repr(). In that instance
         the DataFrame will have a string representation in place of the object and will not reconstruct exactly.
 
-        If there is a dropin supplied then the output will have a string representation of the droping func class
-        in the metadata as the dropin function cannot be stored with the JSON.
-
         :return: json string
         """
         input_dict = {"data": self.to_dict(index=False), "index": list(self._index)}
 
-        # if self._dropin, turn into lists
-        if self._dropin:
-            input_dict["index"] = list(input_dict["index"])
-            for key in input_dict["data"]:
-                input_dict["data"][key] = list(input_dict["data"][key])
-
         meta_data = dict()
         for key in self.__slots__:
             if key not in ["_data", "_index"]:
-                value = self.__getattribute__(key)
-                meta_data[key.lstrip("_")] = value if not (self._dropin and isinstance(value, self._dropin)) else list(
-                    value)
+                meta_data[key.lstrip("_")] = self.__getattribute__(key)
         input_dict["meta_data"] = meta_data
         return json.dumps(input_dict, default=repr)
 
@@ -1053,12 +1017,10 @@ class DataFrame(object):
         """
         sort = sorted_list_indexes(self._index)
         # sort index
-        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
+        self._index = [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = (
-                self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
-            )
+            self._data[c] = [self._data[c][i] for i in sort]
 
     def sort_columns(self, column, key=None, reverse=False):
         """
@@ -1075,12 +1037,10 @@ class DataFrame(object):
             raise TypeError("Can only sort by a single column  ")
         sort = sorted_list_indexes(self._data[self._columns.index(column)], key, reverse)
         # sort index
-        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
+        self._index = [self._index[x] for x in sort]
         # each column
         for c in range(len(self._data)):
-            self._data[c] = (
-                self._dropin([self._data[c][i] for i in sort]) if self._dropin else [self._data[c][i] for i in sort]
-            )
+            self._data[c] = [self._data[c][i] for i in sort]
 
     def _validate_index(self, indexes):
         if len(indexes) != len(set(indexes)):
@@ -1275,16 +1235,11 @@ class DataFrame(object):
 
     # DataFrame creation functions
     @classmethod
-    def from_json(cls, json_string: str, dropin_func: Callable | None = None) -> Self:
+    def from_json(cls, json_string: str) -> Self:
         """
         Creates and return a DataFrame from a JSON of the type created by to_json.
 
-        If a dropin is in the metadata from the JSON, then the same dropin class must be provided here to
-        allow construction as the dropin function cannot be stored with the JSON. If required use a pickle
-        object for that.
-
         :param json_string: JSON
-        :param dropin_func: drop-in replacement for list that was used in the JSON
         :return: DataFrame
         """
         input_dict = json.loads(json_string)
@@ -1295,18 +1250,4 @@ class DataFrame(object):
         if isinstance(input_dict["meta_data"]["index_name"], list):
             input_dict["meta_data"]["index_name"] = tuple(input_dict["meta_data"]["index_name"])
         data = input_dict["data"] if input_dict["data"] else None
-        # confirm the dropin and replace with the actual class
-        if input_dict["meta_data"]["dropin"]:
-            if not dropin_func:
-                raise AttributeError(
-                    "the JSON has a dropin : %s : but the dropin parameter was not supplied"
-                    % input_dict["meta_data"]["dropin"]
-                )
-            elif input_dict["meta_data"]["dropin"] == dropin_func.__str__(dropin_func):
-                input_dict["meta_data"]["dropin"] = dropin_func
-            else:
-                raise AttributeError(
-                    "the supplied dropin parameter: %s : does not match the value in "
-                    "the JSON: %s" % (dropin_func, input_dict["meta_data"]["dropin"])
-                )
         return cls(data=data, index=input_dict["index"], **input_dict["meta_data"])

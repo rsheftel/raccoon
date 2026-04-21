@@ -42,9 +42,7 @@ The raccoon DataFrame is not intended for math operations like pandas and only l
 
 Underlying Data Structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Raccoon uses the standard built in lists as its default underlying data structure. There is an option on object
-construction to use any other drop-in replacement for lists. For example the fast blist package
-http://stutzbachenterprises.com/blist/ could be used as a list replacement for the underlying data structure.
+Raccoon uses the standard built in lists as its underlying data structure.
 
 Why Raccoon?
 ~~~~~~~~~~~~

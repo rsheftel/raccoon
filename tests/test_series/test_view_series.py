@@ -110,9 +110,6 @@ def test_not_implemented():
     ser = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
 
     with pytest.raises(AttributeError):
-        ser.dropin
-
-    with pytest.raises(AttributeError):
         # noinspection PyPropertyAccess
         ser.sort = True
 

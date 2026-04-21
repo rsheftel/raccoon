@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict
 from itertools import compress
-from typing import Any, Callable, Literal, Self
+from typing import Any, Literal, Self
 
 from tabulate import tabulate
 
@@ -21,7 +21,7 @@ class SeriesBase(ABC):
     """
 
     # Define slots to make object faster
-    __slots__ = ["_data", "_data_name", "_index", "_index_name", "_sort", "_dropin"]
+    __slots__ = ["_data", "_data_name", "_index", "_index_name", "_sort"]
 
     def __init__(self):
         """
@@ -32,7 +32,6 @@ class SeriesBase(ABC):
         self._data: list | None = None
         self._data_name: str | tuple | None = None
         self._sort: bool | None = None
-        self._dropin: Callable = None
 
     def __len__(self) -> int:
         return len(self._index)
@@ -95,7 +94,7 @@ class SeriesBase(ABC):
         return
 
     def _check_list(self, x: Any) -> bool:
-        return isinstance(x, self._dropin) if self._dropin else isinstance(x, list)
+        return isinstance(x, list)
 
     def get(self, indexes: Any | list | list[bool], as_list: bool = False) -> Self | list | Any:
         """
@@ -156,7 +155,6 @@ class SeriesBase(ABC):
                 data_name=self._data_name,
                 index_name=self._index_name,
                 sort=self._sort,
-                dropin=self._dropin,
             )
         )
 
@@ -184,7 +182,7 @@ class SeriesBase(ABC):
         return self.get(indexes, as_list)
 
     def get_slice(
-            self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
+        self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
     ) -> Self | tuple[list, list]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
@@ -215,7 +213,6 @@ class SeriesBase(ABC):
                 data_name=self._data_name,
                 index_name=self._index_name,
                 sort=self._sort,
-                dropin=self._dropin,
             )
 
     def _slice_index(self, slicer: slice) -> list:
@@ -240,8 +237,8 @@ class SeriesBase(ABC):
         :param list indexes: list of indexes
         :return: nothing
         """
-        if not (self._check_list(indexes) or isinstance(indexes, list) or indexes is None):
-            raise TypeError("indexes must be list, %s or None" % self._dropin)
+        if not (self._check_list(indexes) or indexes is None):
+            raise TypeError("indexes must be list or None")
         if len(indexes) != len(set(indexes)):  # noqa
             raise ValueError("index contains duplicates")
         if self._data:
@@ -357,20 +354,18 @@ class Series(SeriesBase):
     Series class. The raccoon Series implements a simplified version of the pandas Series with the key
     objective difference that the raccoon Series is meant for use cases where the size of the Series rows is
     expanding frequently. This is known to be slow with Pandas due to the use of numpy as the underlying data structure.
-    Raccoon uses native lists, or any other provided drop-in replacement for lists, as the underlying data structure
-    which is quick to expand and grow the size. The Series can be designated as sort, in which case the rows will be
-    sort by index on construction, and then any addition of a new row will insert it into the Series so that the
-    index remains sort.
+    Raccoon uses native lists as the underlying data structure which is quick to expand and grow the size. The Series
+    can be designated as sort, in which case the rows will be sort by index on construction, and then any addition of
+    a new row will insert it into the Series so that the index remains sort.
     """
 
     def __init__(
-            self,
-            data: dict | list | None = None,
-            index: list | None = None,
-            data_name: str | tuple | None = "value",
-            index_name: str | tuple | None = "index",
-            sort: bool = None,
-            dropin: Callable = None,
+        self,
+        data: dict | list | None = None,
+        index: list | None = None,
+        data_name: str | tuple | None = "value",
+        index_name: str | tuple | None = "index",
+        sort: bool = None,
     ):
         """
         :param data: (optional) list of values.
@@ -379,7 +374,6 @@ class Series(SeriesBase):
         :param index_name: (optional) name for the index. Default is "index"
         :param sort: if True then Series will keep the index sort. If True all index values must be of same type. If
             None then will default to True if no index is provided.
-        :param dropin: if supplied the drop-in replacement for list that will be used
         """
         super(SeriesBase, self).__init__()
 
@@ -388,11 +382,10 @@ class Series(SeriesBase):
         self._index_name = index_name
         self._data = None
         self._data_name = data_name
-        self._dropin = dropin
 
         # setup data list
         if data is None:
-            self._data = dropin() if dropin else list()
+            self._data = list()
             if index:
                 # pad out to the number of rows
                 self._pad_data(len(index))
@@ -400,7 +393,7 @@ class Series(SeriesBase):
             else:
                 self.index = list()
         elif self._check_list(data) or isinstance(data, list):
-            self._data = dropin([x for x in data]) if dropin else [x for x in data]
+            self._data = [x for x in data]
             # setup index
             if index:
                 self.index = index
@@ -439,11 +432,7 @@ class Series(SeriesBase):
     @index.setter
     def index(self, index_list: list) -> None:
         self._validate_index(index_list)
-        self._index = self._dropin(index_list) if self._dropin else list(index_list)
-
-    @property
-    def dropin(self) -> Callable:
-        return self._dropin
+        self._index = list(index_list)
 
     @property
     def sort(self) -> bool:
@@ -463,9 +452,9 @@ class Series(SeriesBase):
         """
         sort = sorted_list_indexes(self._index)
         # sort index
-        self._index = self._dropin([self._index[x] for x in sort]) if self._dropin else [self._index[x] for x in sort]
+        self._index = [self._index[x] for x in sort]
         # sort data
-        self._data = self._dropin([self._data[x] for x in sort]) if self._dropin else [self._data[x] for x in sort]
+        self._data = [self._data[x] for x in sort]
 
     def set(self, indexes: Any | list, values: Any | list = None) -> None:
         """
@@ -736,13 +725,13 @@ class ViewSeries(SeriesBase):
     """
 
     def __init__(
-            self,
-            data: list | tuple | None = None,
-            index: list | None = None,
-            data_name: str | tuple | None = "value",
-            index_name: str | tuple | None = "index",
-            sort: bool = False,
-            offset: int = 0,
+        self,
+        data: list | tuple | None = None,
+        index: list | None = None,
+        data_name: str | tuple | None = "value",
+        index_name: str | tuple | None = "index",
+        sort: bool = False,
+        offset: int = 0,
     ):
         """
         :param data: (optional) list of values.
@@ -753,9 +742,6 @@ class ViewSeries(SeriesBase):
         :param offset: integer to add to location to transform to standard python list location index
         """
         super(SeriesBase, self).__init__()
-
-        # dropin is not a parameter, set it to the value of data
-        self._dropin = data.__class__
 
         # check inputs
         if index is None:
