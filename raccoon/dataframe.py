@@ -2,11 +2,13 @@
 DataFrame class
 """
 
+from __future__ import annotations
+
 import json
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-from typing import Any, Iterator, Literal, Self
+from typing import Any, Callable, Iterator, Literal, Self, overload
 
 from tabulate import tabulate
 
@@ -29,8 +31,8 @@ class DataFrame(object):
     def __init__(
         self,
         data: dict[Any, list | Any] | None = None,
-        columns: list | None = None,
-        index: list | None = None,
+        columns: list[Any] | None = None,
+        index: list[Any] | None = None,
         index_name: str | tuple | None = "index",
         sort: bool | None = None,
     ):
@@ -44,9 +46,11 @@ class DataFrame(object):
             If None then will default to True if no index is provided.
         """
         # standard variable setup
-        self._index = None
+        self._data: list[list[Any]] = []
+        self._index: list[Any] = []
         self._index_name = index_name
-        self._columns = None
+        self._columns: list[Any] = []
+        self._sort: bool = False
 
         # quality checks
         if (index is not None) and not isinstance(index, list):
@@ -75,14 +79,14 @@ class DataFrame(object):
             # set data from dict values. If dict value is not a list, wrap it to make a single element list
             self._data = [x if isinstance(x, list) else [x] for x in data.values()]
             # setup columns from directory keys
-            self.columns = data.keys()
+            self.columns = list(data.keys())
             # pad the data
             self._pad_data()
             # setup index
             if index:
                 self.index = index
             else:
-                self.index = range(len(self._data[0]))
+                self.index = list(range(len(self._data[0])))
         else:
             raise TypeError("Not valid data type.")
 
@@ -91,7 +95,6 @@ class DataFrame(object):
             self._sort_columns(columns)
 
         # setup sort
-        self._sort = None
         if sort is not None:
             self.sort = sort
         else:
@@ -100,7 +103,7 @@ class DataFrame(object):
             else:
                 self.sort = True
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "object id: %s\ncolumns:\n%s\ndata:\n%s\nindex:\n%s\n" % (
             id(self),
             self._columns,
@@ -114,11 +117,11 @@ class DataFrame(object):
     def _check_list(self, x: Any) -> bool:
         return isinstance(x, list)
 
-    def _make_table(self, index: bool = True, **kwargs) -> str:
+    def _make_table(self, index: bool = True, **kwargs: Any) -> str:
         kwargs["headers"] = "keys" if "headers" not in kwargs.keys() else kwargs["headers"]
         return tabulate(self.to_dict(ordered=True, index=index), **kwargs)
 
-    def print(self, index: bool = True, **kwargs) -> None:
+    def print(self, index: bool = True, **kwargs: Any) -> None:
         """
         Print the contents of the DataFrame. This method uses the tabulate function from the tabulate package. Use the
         kwargs to pass along any arguments to the tabulate function.
@@ -129,7 +132,7 @@ class DataFrame(object):
         """
         print(self._make_table(index=index, **kwargs))
 
-    def _sort_columns(self, columns_list: list) -> None:
+    def _sort_columns(self, columns_list: list[Any]) -> None:
         """
         Given a list of column names will sort the DataFrame columns to match the given order
 
@@ -160,20 +163,20 @@ class DataFrame(object):
         return len(self._index)
 
     @property
-    def data(self) -> list[list]:
+    def data(self) -> list[list[Any]]:
         return self._data.copy()
 
     @property
-    def columns(self) -> list:
+    def columns(self) -> list[Any]:
         return self._columns.copy()
 
     @columns.setter
-    def columns(self, columns_list: list) -> None:
+    def columns(self, columns_list: list[Any]) -> None:
         self._validate_columns(columns_list)
         self._columns = list(columns_list)
 
     @property
-    def index(self) -> list:
+    def index(self) -> list[Any]:
         """
         Return a view of the index as a list. Because this is a view any change to the return list from this method
         will corrupt the DataFrame.
@@ -183,7 +186,7 @@ class DataFrame(object):
         return self._index
 
     @index.setter
-    def index(self, index_list: list) -> None:
+    def index(self, index_list: list[Any]) -> None:
         self._validate_index(index_list)
         self._index = list(index_list)
 
@@ -205,7 +208,15 @@ class DataFrame(object):
         if self._sort:
             self.sort_index()
 
-    def select_index(self, compare: Any | tuple, result: Literal["boolean", "value"] = "boolean") -> list[bool | Any]:
+    @overload
+    def select_index(self, compare: Any | tuple, result: Literal["boolean"] = "boolean") -> list[bool]: ...
+
+    @overload
+    def select_index(self, compare: Any | tuple, result: Literal["value"]) -> list[Any]: ...
+
+    def select_index(
+        self, compare: Any | tuple, result: Literal["boolean", "value"] = "boolean"
+    ) -> list[bool] | list[Any]:
         """
         Finds the elements in the index that match the compare parameter and returns either a list of the values that
         match, or a boolean list the length of the index with True to each index that matches. If the indexes are
@@ -235,13 +246,58 @@ class DataFrame(object):
         else:
             raise ValueError("only valid values for result parameter are: boolean or value.")
 
+    @overload
+    def get(
+        self,
+        indexes: list[Any] | list[bool],
+        columns: Any,
+        as_list: Literal[True],
+        as_dict: Literal[False] = False,
+    ) -> list[Any]: ...
+
+    @overload
+    def get(
+        self,
+        indexes: None,
+        columns: Any,
+        as_list: Literal[True],
+        as_dict: Literal[False] = False,
+    ) -> list[Any]: ...
+
+    @overload
+    def get(
+        self,
+        indexes: Any,
+        columns: list[Any] | list[bool] | None,
+        as_list: Literal[False] = False,
+        as_dict: Literal[True] = True,
+    ) -> dict[Any, Any]: ...
+
+    @overload
+    def get(
+        self,
+        indexes: list[Any] | list[bool] | None = None,
+        columns: list[Any] | list[bool] | None = None,
+        as_list: Literal[False] = False,
+        as_dict: Literal[False] = False,
+    ) -> Self: ...
+
+    @overload
+    def get(
+        self,
+        indexes: Any,
+        columns: Any,
+        as_list: Literal[False] = False,
+        as_dict: Literal[False] = False,
+    ) -> Any: ...
+
     def get(
         self,
         indexes: Any | list[Any | bool] = None,
         columns: Any | list = None,
         as_list: bool = False,
         as_dict: bool = False,
-    ) -> Self | list | dict | Any:
+    ) -> Self | list[Any] | dict[Any, Any] | Any:
         """
         Given indexes and columns will return a sub-set of the DataFrame. This method will direct to the below methods
         based on what types are passed in for the indexes and columns. The type of the return is determined by the
@@ -268,7 +324,7 @@ class DataFrame(object):
         elif self._check_list(indexes) and (not self._check_list(columns)):
             return self.get_rows(indexes, columns, as_list)
         elif (not self._check_list(indexes)) and self._check_list(columns):
-            return self.get_columns(indexes, columns, as_dict)
+            return self.get_columns(indexes, columns, as_dict=as_dict)
         else:
             return self.get_cell(indexes, columns)
 
@@ -284,7 +340,13 @@ class DataFrame(object):
         c = self._columns.index(column)
         return self._data[c][i]
 
-    def get_rows(self, indexes: list[bool | Any], column: Any, as_list: bool = False) -> Self | list:
+    @overload
+    def get_rows(self, indexes: list[Any] | list[bool], column: Any, as_list: Literal[True]) -> list[Any]: ...
+
+    @overload
+    def get_rows(self, indexes: list[Any] | list[bool], column: Any, as_list: Literal[False] = False) -> DataFrame: ...
+
+    def get_rows(self, indexes: list[Any] | list[bool], column: Any, as_list: bool = False) -> DataFrame | list[Any]:
         """
         For a list of indexes and a single column name return the values of the indexes in that column.
 
@@ -317,18 +379,54 @@ class DataFrame(object):
             else DataFrame(data={column: data}, index=index, index_name=self._index_name, sort=self._sort)
         )
 
+    @overload
     def get_columns(
         self,
         index: Any,
-        columns: list[Any] = None,
+        columns: list[Any] | None = None,
+        *,
+        as_dict: Literal[True],
+        as_namedtuple: Literal[False] = False,
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> dict[Any, Any]: ...
+
+    @overload
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] | None = None,
+        *,
+        as_dict: Literal[False] = False,
+        as_namedtuple: Literal[True],
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> tuple[Any, ...]: ...
+
+    @overload
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] | None = None,
+        *,
+        as_dict: Literal[False] = False,
+        as_namedtuple: Literal[False] = False,
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> "DataFrame": ...
+
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] | None = None,
         as_dict: bool = False,
         as_namedtuple: bool = False,
         name: str = "raccoon",
         include_index: bool = True,
-    ) -> Self | dict | namedtuple:
+    ) -> DataFrame | dict[Any, Any] | tuple[Any, ...]:
         """
-        For a single index and list of column names return a DataFrame of the values in that index as either a dict
-        namedtuple or a DataFrame.
+        For a single index and list of column names return a DataFrame of the values in that index as either a dict,
+        tuple-like namedtuple instance, or a DataFrame.
 
         :param index: single index value
         :param columns: list of column names
@@ -336,7 +434,7 @@ class DataFrame(object):
         :param as_namedtuple: if True then return the result as a named tuple
         :param name: if as_namedtuple is True, this will be the name of the tuple
         :param include_index: if True then include the index value in the result
-        :return: DataFrame or dictionary
+        :return: DataFrame, dictionary, or tuple-like namedtuple instance
         """
         assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         i = sorted_index(self._index, index) if self._sort else self._index.index(index)
@@ -345,7 +443,13 @@ class DataFrame(object):
             return namedtuple(name, dict_row.keys())(**dict_row)
         return self.get_location(location=i, columns=columns, as_dict=as_dict, index=include_index)
 
-    def get_entire_column(self, column: Any, as_list: bool = False) -> Self | list:
+    @overload
+    def get_entire_column(self, column: Any, as_list: Literal[True]) -> list[Any]: ...
+
+    @overload
+    def get_entire_column(self, column: Any, as_list: Literal[False] = False) -> DataFrame: ...
+
+    def get_entire_column(self, column: Any, as_list: bool = False) -> DataFrame | list[Any]:
         """
         Shortcut method to retrieve a single column all rows. Since this is a common use case this method will be
         faster than the more general method.
@@ -362,7 +466,7 @@ class DataFrame(object):
             else DataFrame(data={column: data}, index=self._index, index_name=self._index_name, sort=self._sort)
         )
 
-    def get_matrix(self, indexes: list[Any | bool], columns: list[Any]) -> Self:
+    def get_matrix(self, indexes: list[Any] | list[bool], columns: list[Any] | list[bool]) -> DataFrame:
         """
         For a list of indexes and list of columns return a DataFrame of the values.
 
@@ -403,15 +507,51 @@ class DataFrame(object):
 
         return DataFrame(data=data_dict, index=indexes, columns=columns, index_name=self._index_name, sort=self._sort)
 
+    @overload
     def get_location(
         self,
         location: int,
-        columns: Any | list | None = None,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[True],
+        as_namedtuple: Literal[False] = False,
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> dict[Any, Any]: ...
+
+    @overload
+    def get_location(
+        self,
+        location: int,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[False] = False,
+        as_namedtuple: Literal[False] = False,
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> DataFrame: ...
+
+    @overload
+    def get_location(
+        self,
+        location: int,
+        columns: Any,
+        *,
+        as_dict: Literal[False] = False,
+        as_namedtuple: Literal[False] = False,
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> Any: ...
+
+    def get_location(
+        self,
+        location: int,
+        columns: Any | list[Any] | list[bool] | None = None,
         as_dict: bool = False,
         as_namedtuple: bool = False,
         name: str = "raccoon",
         index: bool = True,
-    ) -> Self | dict | namedtuple | Any:
+    ) -> DataFrame | dict[Any, Any] | tuple[Any, ...] | Any:
         """
         For an index location and either (1) list of columns return a DataFrame or dictionary of the values or
         (2) single column name and return the value of that cell. This is optimized for speed because it does not need
@@ -424,7 +564,7 @@ class DataFrame(object):
         :param as_namedtuple: if True then return the result as a named tuple
         :param name: if as_namedtuple is True, this will be the name of the tuple
         :param index: if True then include the index in the dictionary if as_dict=True
-        :return: DataFrame, dictionary or namedtuple if columns is a list or value if columns is a single column name
+        :return: DataFrame, dictionary, tuple-like namedtuple instance, or a single cell value
         """
         assert not (as_dict and as_namedtuple), "can only provide as_dict or as_namedtuple as True, not both"
         if columns is None:
@@ -437,7 +577,7 @@ class DataFrame(object):
                 raise ValueError("boolean column list must be same size of existing columns")
             columns = list(compress(self._columns, columns))
         col_to_idx = {col: i for i, col in enumerate(self._columns)}
-        data = dict()
+        data: dict[Any, Any] = {}
         for column in columns:
             data[column] = self._data[col_to_idx[column]][location]
         index_value = self._index[location]
@@ -455,7 +595,9 @@ class DataFrame(object):
                 data=data, index=[index_value], columns=columns, index_name=self._index_name, sort=self._sort
             )
 
-    def get_locations(self, locations: list, columns: Any | list | None = None, **kwargs) -> Self:
+    def get_locations(
+        self, locations: list[int], columns: Any | list[Any] | list[bool] | None = None, **kwargs: Any
+    ) -> DataFrame:
         """
         For list of locations and list of columns return a DataFrame of the values.
 
@@ -468,9 +610,33 @@ class DataFrame(object):
         indexes = [self._index[x] for x in locations]
         return self.get(indexes, columns, **kwargs)
 
+    @overload
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, columns: list | None = None, as_dict: bool = False
-    ) -> Self | tuple:
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[True],
+    ) -> tuple[list[Any], dict[Any, list[Any]]]: ...
+
+    @overload
+    def get_slice(
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[False] = False,
+    ) -> DataFrame: ...
+
+    def get_slice(
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        columns: list[Any] | list[bool] | None = None,
+        as_dict: bool = False,
+    ) -> DataFrame | tuple[list[Any], dict[Any, list[Any]]]:
         """
         For sorted DataFrames will return either a DataFrame or dict of all the rows where the index is greater than
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
@@ -812,7 +978,7 @@ class DataFrame(object):
             self._data[c].extend(values.get(col, [None] * len(indexes)))
         self._pad_data()
 
-    def _slice_index(self, slicer):
+    def _slice_index(self, slicer: slice) -> list[bool]:
         try:
             start_index = sorted_index(self._index, slicer.start) if self._sort else self._index.index(slicer.start)
         except ValueError:
@@ -827,7 +993,7 @@ class DataFrame(object):
         index_len = len(self._index)
         return [False] * start_index + [True] * (end_index - start_index + 1) + [False] * (index_len - 1 - end_index)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: Any) -> Self | list[Any] | Any:
         """
         Convenience wrapper around the get() method for using df[]
         Usage...
@@ -858,7 +1024,7 @@ class DataFrame(object):
         else:  # just the columns
             return self.get(columns=index)
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: Any, value: Any) -> None:
         """
         Convenience wrapper around the set() method for using df[] = X
         Usage...
@@ -877,7 +1043,7 @@ class DataFrame(object):
         else:  # just the columns
             return self.set(indexes=None, columns=index, values=value)
 
-    def to_list(self):
+    def to_list(self) -> list[Any]:
         """
         For a single column DataFrame returns a list of the values. Raises error if more than one column.
 
@@ -887,7 +1053,7 @@ class DataFrame(object):
             raise TypeError("tolist() only works with a single column DataFrame")
         return self._data[0]
 
-    def to_dict(self, index=True, ordered=False):
+    def to_dict(self, index: bool = True, ordered: bool = False) -> dict[Any, Any] | OrderedDict[Any, Any]:
         """
         Returns a dict where the keys are the column names and the values are lists of the values for that column.
 
@@ -922,7 +1088,7 @@ class DataFrame(object):
         input_dict["meta_data"] = meta_data
         return json.dumps(input_dict, default=repr)
 
-    def rename_columns(self, rename_dict):
+    def rename_columns(self, rename_dict: dict[Any, Any]) -> None:
         """
         Renames the columns
 
@@ -934,7 +1100,7 @@ class DataFrame(object):
         for current in rename_dict.keys():
             self._columns[self._columns.index(current)] = rename_dict[current]
 
-    def head(self, rows):
+    def head(self, rows: int) -> Self:
         """
         Return a DataFrame of the first N rows
 
@@ -945,7 +1111,7 @@ class DataFrame(object):
         rows_bool.extend([False] * max(0, len(self._index) - rows))
         return self.get(indexes=rows_bool)
 
-    def tail(self, rows):
+    def tail(self, rows: int) -> Self:
         """
         Return a DataFrame of the last N rows
 
@@ -956,7 +1122,7 @@ class DataFrame(object):
         rows_bool.extend([True] * min(rows, len(self._index)))
         return self.get(indexes=rows_bool)
 
-    def delete_rows(self, indexes):
+    def delete_rows(self, indexes: Any | list[Any] | list[bool]) -> None:
         """
         Delete rows from the DataFrame
 
@@ -980,7 +1146,7 @@ class DataFrame(object):
                 del self._data[c][i]
             del self._index[i]
 
-    def delete_all_rows(self):
+    def delete_all_rows(self) -> None:
         """
         Deletes the contents of all rows in the DataFrame. This function is faster than delete_rows() to remove all
         information, and at the same time it keeps the container lists for the columns and index so if there is another
@@ -992,7 +1158,7 @@ class DataFrame(object):
         for c in range(len(self._columns)):
             del self._data[c][:]
 
-    def delete_columns(self, columns):
+    def delete_columns(self, columns: Any | list[Any]) -> None:
         """
         Delete columns from the DataFrame
 
@@ -1009,7 +1175,7 @@ class DataFrame(object):
         if not len(self._data):  # if all the columns have been deleted, remove index
             self.index = list()
 
-    def sort_index(self):
+    def sort_index(self) -> None:
         """
         Sort the DataFrame by the index. The sort modifies the DataFrame inplace
 
@@ -1022,7 +1188,7 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
 
-    def sort_columns(self, column, key=None, reverse=False):
+    def sort_columns(self, column: Any, key: Callable[[Any], Any] | None = None, reverse: bool = False) -> None:
         """
         Sort the DataFrame by one of the columns. The sort modifies the DataFrame inplace. The key and reverse
         parameters have the same meaning as for the built-in sort() function.
@@ -1042,28 +1208,28 @@ class DataFrame(object):
         for c in range(len(self._data)):
             self._data[c] = [self._data[c][i] for i in sort]
 
-    def _validate_index(self, indexes):
+    def _validate_index(self, indexes: list[Any]) -> None:
         if len(indexes) != len(set(indexes)):
             raise ValueError("index contains duplicates")
         if self._data:
             if len(indexes) != len(self._data[0]):
                 raise ValueError("index length does not match data length")
 
-    def _validate_columns(self, columns):
+    def _validate_columns(self, columns: list[Any]) -> None:
         if len(columns) != len(set(columns)):
             raise ValueError("columns contains duplicates")
         if self._data:
             if len(columns) != len(self._data):
                 raise ValueError("number of column names does not match number of data columns")
 
-    def _validate_data(self):
+    def _validate_data(self) -> None:
         if self._data:
             max_rows = max([len(x) for x in self._data])
             same_lens = all([len(x) == max_rows for x in self._data])
             if not same_lens:
                 raise ValueError("data is corrupted, each column not all same length")
 
-    def validate_integrity(self):
+    def validate_integrity(self) -> None:
         """
         Validate the integrity of the DataFrame. This checks that the indexes, column names and internal data are not
         corrupted. Will raise an error if there is a problem.
@@ -1074,7 +1240,7 @@ class DataFrame(object):
         self._validate_index(self._index)
         self._validate_data()
 
-    def append(self, data_frame):
+    def append(self, data_frame: Self) -> None:
         """
         Append another DataFrame to this DataFrame. If the new data_frame has columns that are not in the current
         DataFrame then new columns will be created. All of the indexes in the data_frame must be different from the
@@ -1093,7 +1259,7 @@ class DataFrame(object):
         for c, column in enumerate(data_frame.columns):
             self.set(indexes=data_frame_index, columns=column, values=data_frame.data[c].copy())
 
-    def equality(self, column, indexes=None, value=None):
+    def equality(self, column: Any, indexes: list[Any] | list[bool] | None = None, value: Any = None) -> list[bool]:
         """
         Math helper method. Given a column and optional indexes will return a list of booleans on the equality of the
         value for that index in the DataFrame to the value parameter.
@@ -1108,13 +1274,15 @@ class DataFrame(object):
         compare_list = self.get_rows(indexes, column, as_list=True)
         return [x == value for x in compare_list]
 
-    def _get_lists(self, left_column, right_column, indexes):
+    def _get_lists(
+        self, left_column: Any, right_column: Any, indexes: list[Any] | list[bool] | None
+    ) -> tuple[list[Any], list[Any]]:
         indexes = [True] * len(self._index) if indexes is None else indexes
         left_list = self.get_rows(indexes, left_column, as_list=True)
         right_list = self.get_rows(indexes, right_column, as_list=True)
         return left_list, right_list
 
-    def add(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
+    def add(self, left_column: Any, right_column: Any, indexes: list[Any] | list[bool] | None = None) -> list[Any]:
         """
         Math helper method that adds element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1128,7 +1296,7 @@ class DataFrame(object):
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
         return [left_val + r for left_val, r in zip(left_list, right_list)]
 
-    def subtract(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
+    def subtract(self, left_column: Any, right_column: Any, indexes: list[Any] | list[bool] | None = None) -> list[Any]:
         """
         Math helper method that subtracts element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1142,7 +1310,7 @@ class DataFrame(object):
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
         return [left_val - r for left_val, r in zip(left_list, right_list)]
 
-    def multiply(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
+    def multiply(self, left_column: Any, right_column: Any, indexes: list[Any] | list[bool] | None = None) -> list[Any]:
         """
         Math helper method that multiplies element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1156,7 +1324,7 @@ class DataFrame(object):
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
         return [left_val * r for left_val, r in zip(left_list, right_list)]
 
-    def divide(self, left_column: Any, right_column: Any, indexes: list | list[bool] | None = None) -> list:
+    def divide(self, left_column: Any, right_column: Any, indexes: list[Any] | list[bool] | None = None) -> list[Any]:
         """
         Math helper method that divides element-wise two columns. If indexes are not None then will only perform the
         math on that sub-set of the columns.
@@ -1170,7 +1338,7 @@ class DataFrame(object):
         left_list, right_list = self._get_lists(left_column, right_column, indexes)
         return [left_val / r for left_val, r in zip(left_list, right_list)]
 
-    def isin(self, column: Any, compare_list: list) -> list[bool]:
+    def isin(self, column: Any, compare_list: list[Any]) -> list[bool]:
         """
         Returns a boolean list where each element is whether that element in the column is in the compare_list.
 
@@ -1181,7 +1349,7 @@ class DataFrame(object):
         compare_set = set(compare_list)
         return [x in compare_set for x in self._data[self._columns.index(column)]]
 
-    def iterrows(self, index: bool = True) -> Iterator[dict]:
+    def iterrows(self, index: bool = True) -> Iterator[dict[Any, Any]]:
         """
         Iterates over DataFrame rows as dictionary of the values. The index will be included.
 
@@ -1194,13 +1362,13 @@ class DataFrame(object):
                 row[col] = self._data[c][i]
             yield row
 
-    def itertuples(self, index: bool = True, name: str = "Raccoon") -> Iterator[namedtuple]:
+    def itertuples(self, index: bool = True, name: str = "Raccoon") -> Iterator[tuple[Any, ...]]:
         """
         Iterates over DataFrame rows as tuple of the values.
 
         :param index: if True then include the index
         :param name: name of the namedtuple
-        :return: namedtuple
+        :return: tuple-like namedtuple instances
         """
         fields = [self._index_name] if index else list()
         fields.extend(self._columns)

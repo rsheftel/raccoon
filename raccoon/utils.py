@@ -2,7 +2,7 @@
 Raccoon utilities
 """
 
-from typing import Callable
+from typing import Any, Callable
 
 import raccoon as rc
 
@@ -10,8 +10,8 @@ import raccoon as rc
 def assert_frame_equal(
     left: rc.DataFrame,
     right: rc.DataFrame,
-    data_function: Callable | None = None,
-    data_args: dict | None = None,
+    data_function: Callable[..., Any] | None = None,
+    data_args: dict[str, Any] | None = None,
 ) -> None:
     """
     For unit testing equality of two DataFrames.
@@ -36,8 +36,8 @@ def assert_frame_equal(
 def assert_series_equal(
     left: rc.Series | rc.ViewSeries,
     right: rc.Series | rc.ViewSeries,
-    data_function: Callable | None = None,
-    data_args: dict | None = None,
+    data_function: Callable[..., Any] | None = None,
+    data_args: dict[str, Any] | None = None,
 ) -> None:
     """
     For unit testing equality of two Series.
