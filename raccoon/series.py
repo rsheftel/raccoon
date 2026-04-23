@@ -29,7 +29,7 @@ class SeriesBase(ABC):
         """
         self._index: list[Any] = []
         self._index_name: str | tuple | None = None
-        self._data: list[Any] | tuple[Any, ...] = []
+        self._data: list[Any] = []
         self._data_name: str | tuple | None = None
         self._sort: bool = False
 
@@ -59,7 +59,7 @@ class SeriesBase(ABC):
 
     @property
     @abstractmethod
-    def data(self) -> list[Any] | tuple[Any, ...]:
+    def data(self) -> list[Any]:
         return
 
     @property
@@ -184,7 +184,13 @@ class SeriesBase(ABC):
         """
         return {self.index_name: self._index[location], self.data_name: self._data[location]}
 
-    def get_locations(self, locations: list[int], as_list: bool = False) -> Self | list:
+    @overload
+    def get_locations(self, locations: list[int], as_list: Literal[True]) -> list[Any]: ...
+
+    @overload
+    def get_locations(self, locations: list[int], as_list: Literal[False] = False) -> Self: ...
+
+    def get_locations(self, locations: list[int], as_list: bool = False) -> Self | list[Any]:
         """
         For list of locations return a Series or list of the values.
 
@@ -198,14 +204,27 @@ class SeriesBase(ABC):
 
     @overload
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, as_list: Literal[True] = True
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        *,
+        as_list: Literal[True],
     ) -> tuple[list[Any], list[Any]]: ...
 
     @overload
-    def get_slice(self, start_index: Any = None, stop_index: Any = None, as_list: Literal[False] = False) -> Self: ...
+    def get_slice(
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        *,
+        as_list: Literal[False] = False,
+    ) -> Self: ...
 
     def get_slice(
-        self, start_index: Any = None, stop_index: Any = None, as_list: bool = False
+        self,
+        start_index: Any = None,
+        stop_index: Any = None,
+        as_list: bool = False,
     ) -> Self | tuple[list[Any], list[Any]]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
@@ -757,7 +776,7 @@ class ViewSeries(SeriesBase):
 
     def __init__(
         self,
-        data: list[Any] | tuple[Any, ...] | None = None,
+        data: list[Any] | None = None,
         index: list[Any] | None = None,
         data_name: str | tuple | None = "value",
         index_name: str | tuple | None = "index",
@@ -789,7 +808,7 @@ class ViewSeries(SeriesBase):
         self._offset = offset
 
     @property
-    def data(self) -> list[Any] | tuple[Any, ...]:
+    def data(self) -> list[Any]:
         return self._data
 
     @property
@@ -816,12 +835,14 @@ class ViewSeries(SeriesBase):
     def value(self, indexes: slice, int_as_index: bool = False) -> list[Any]: ...
 
     @overload
-    def value(self, indexes: list[Any] | list[bool], int_as_index: bool = False) -> list[Any]: ...
+    def value(self, indexes: list[int] | list[Any] | list[bool], int_as_index: bool = False) -> list[Any]: ...
 
     @overload
     def value(self, indexes: Any, int_as_index: bool = False) -> Any: ...
 
-    def value(self, indexes: int | Any | list[Any] | list[bool], int_as_index: bool = False) -> Any | list[Any]:
+    def value(
+        self, indexes: int | Any | list[int] | list[Any] | list[bool], int_as_index: bool = False
+    ) -> Any | list[Any]:
         """
         Wrapper function for get. It will return a list, no index. If the indexes are integers it will be assumed
         that they are locations unless int_as_index = True. If the indexes are locations then they will be rotated to
