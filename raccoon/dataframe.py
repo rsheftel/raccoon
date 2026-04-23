@@ -414,7 +414,7 @@ class DataFrame(object):
         as_namedtuple: Literal[False] = False,
         name: str = "raccoon",
         include_index: bool = True,
-    ) -> "DataFrame": ...
+    ) -> DataFrame: ...
 
     def get_columns(
         self,
@@ -999,6 +999,27 @@ class DataFrame(object):
         index_len = len(self._index)
         return [False] * start_index + [True] * (end_index - start_index + 1) + [False] * (index_len - 1 - end_index)
 
+    @overload
+    def __getitem__(self, index: tuple[slice, Any]) -> Self: ...
+
+    @overload
+    def __getitem__(self, index: tuple[list[Any] | list[bool], Any]) -> Self: ...
+
+    @overload
+    def __getitem__(self, index: tuple[Any, list[Any] | list[bool]]) -> Self: ...
+
+    @overload
+    def __getitem__(self, index: tuple[Any, Any]) -> Any: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Self: ...
+
+    @overload
+    def __getitem__(self, index: list[Any] | list[bool]) -> Self: ...
+
+    @overload
+    def __getitem__(self, index: str | int | float | bool) -> Self: ...
+
     def __getitem__(self, index: Any) -> Self | list[Any] | Any:
         """
         Convenience wrapper around the get() method for using df[]
@@ -1029,6 +1050,24 @@ class DataFrame(object):
                 return self.get(indexes=self._slice_index(index))
         else:  # just the columns
             return self.get(columns=index)
+
+    @overload
+    def __setitem__(self, index: tuple[slice, Any], value: Any) -> None: ...
+
+    @overload
+    def __setitem__(self, index: tuple[list[Any] | list[bool], Any], value: Any) -> None: ...
+
+    @overload
+    def __setitem__(self, index: tuple[Any, Any], value: Any) -> None: ...
+
+    @overload
+    def __setitem__(self, index: slice, value: Any) -> None: ...
+
+    @overload
+    def __setitem__(self, index: list[Any] | list[bool], value: Any) -> None: ...
+
+    @overload
+    def __setitem__(self, index: Any, value: Any) -> None: ...
 
     def __setitem__(self, index: Any, value: Any) -> None:
         """

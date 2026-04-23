@@ -79,7 +79,7 @@ def test_data():
 
     with pytest.raises(AttributeError):
         # noinspection PyPropertyAccess
-        actual.data = [4, 5]
+        actual.data = [4, 5] # type: ignore
 
 
 def test_data_view():
@@ -105,4 +105,4 @@ def test_data_view():
 
     with pytest.raises(AttributeError):
         # noinspection PyPropertyAccess
-        actual.data = [4, 5]
+        actual.data = [4, 5] # type: ignore
