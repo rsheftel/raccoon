@@ -60,17 +60,17 @@ class SeriesBase(ABC):
     @property
     @abstractmethod
     def data(self) -> list[Any]:
-        return
+        pass
 
     @property
     @abstractmethod
     def index(self) -> list[Any]:
-        return
+        pass
 
     @index.setter
     @abstractmethod
     def index(self, index_list: list[Any]):
-        return
+        pass
 
     @property
     def data_name(self) -> str | tuple | None:
@@ -91,7 +91,7 @@ class SeriesBase(ABC):
     @property
     @abstractmethod
     def sort(self) -> bool:
-        return
+        pass
 
     def _check_list(self, x: Any) -> bool:
         return isinstance(x, list)
@@ -134,9 +134,9 @@ class SeriesBase(ABC):
     def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[Any]: ...
 
     @overload
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Self: ...
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series: ...
 
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Self | list[Any]:
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Series | list[Any]:
         """
         For a list of indexes return the values of the indexes in that column.
 
@@ -218,14 +218,14 @@ class SeriesBase(ABC):
         stop_index: Any = None,
         *,
         as_list: Literal[False] = False,
-    ) -> Self: ...
+    ) -> Series: ...
 
     def get_slice(
         self,
         start_index: Any = None,
         stop_index: Any = None,
         as_list: bool = False,
-    ) -> Self | tuple[list[Any], list[Any]]:
+    ) -> Series | tuple[list[Any], list[Any]]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
@@ -453,7 +453,6 @@ class Series(SeriesBase):
             raise TypeError("Not valid data type.")
 
         # setup sort
-        self._sort = None
         if sort is not None:
             self.sort = sort
         else:

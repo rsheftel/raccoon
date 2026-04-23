@@ -5,6 +5,7 @@ DataFrame class
 from __future__ import annotations
 
 import json
+import keyword
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
@@ -823,7 +824,12 @@ class DataFrame(object):
         else:
             raise TypeError("cannot handle values of this type.")
 
-    def set_column(self, index=None, column=None, values=None):
+    def set_column(
+        self,
+        index: list[Any] | list[bool] | None = None,
+        column: Any | tuple[Any] = None,
+        values: Any | list[Any] = None,
+    ) -> None:
         """
         Set a column to a single value or list of values. If any of the index values are not in the current indexes
         then a new row will be created.
@@ -1366,18 +1372,55 @@ class DataFrame(object):
         """
         Iterates over DataFrame rows as tuple of the values.
 
+        Field names on the returned namedtuple instances are normalized to valid Python identifiers. Invalid
+        characters are replaced with underscores, leading/trailing underscores are removed, names that start with a
+        digit or match a Python keyword are prefixed, and duplicate normalized names are suffixed to keep them unique.
+
         :param index: if True then include the index
         :param name: name of the namedtuple
         :return: tuple-like namedtuple instances
         """
-        fields = [self._index_name] if index else list()
-        fields.extend(self._columns)
+
+        def _get_field_name(label: Any, prefix: str, used_names: set[str]) -> str:
+            if label is None:
+                field_name = prefix
+            elif isinstance(label, str):
+                field_name = label
+            elif isinstance(label, tuple):
+                field_name = "_".join(str(value) for value in label)
+            else:
+                field_name = str(label)
+
+            field_name = "".join(char if char.isalnum() or char == "_" else "_" for char in field_name).strip("_")
+            if not field_name:
+                field_name = prefix
+            if field_name[0].isdigit() or keyword.iskeyword(field_name):
+                field_name = f"{prefix}_{field_name}"
+
+            result = field_name
+            suffix = 1
+            while result in used_names:
+                result = f"{field_name}_{suffix}"
+                suffix += 1
+
+            used_names.add(result)
+            return result
+
+        used_names: set[str] = set()
+        fields: list[str] = []
+        index_field = _get_field_name(self._index_name, "index", used_names) if index else None
+        if index_field is not None:
+            fields.append(index_field)
+
+        column_fields = [_get_field_name(column, "col", used_names) for column in self._columns]
+        fields.extend(column_fields)
+
         row_tuple = namedtuple(name, fields)
-        for i in range(len(self._index)):
-            row = {self._index_name: self._index[i]} if index else dict()
-            for c, col in enumerate(self._columns):
-                row[col] = self._data[c][i]
-            yield row_tuple(**row)
+
+        for row_index, index_value in enumerate(self._index):
+            values = [index_value] if index else []
+            values.extend(column_data[row_index] for column_data in self._data)
+            yield row_tuple(*values)
 
     def reset_index(self, drop: bool = False) -> None:
         """
