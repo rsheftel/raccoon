@@ -9,7 +9,7 @@ from bisect import bisect_left, bisect_right
 from collections import OrderedDict
 from collections.abc import Sequence
 from itertools import compress
-from typing import Any, Literal, Self, overload
+from typing import Any, Literal, Self, cast, overload
 
 from tabulate import tabulate
 
@@ -17,7 +17,11 @@ from raccoon import DataFrame
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 
-class SeriesBase[T](ABC):
+def _is_non_string_sequence(value: Any) -> bool:
+    return isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray))
+
+
+class SeriesBase[IndexT, T](ABC):
     """
     Base Series abstract base class that concrete implementations inherit from. Note that the .data and .index property
     methods in Series are views to the underlying data and not copies.
@@ -67,7 +71,7 @@ class SeriesBase[T](ABC):
 
     @property
     @abstractmethod
-    def index(self) -> list[Any]:
+    def index(self) -> list[IndexT]:
         pass
 
     @index.setter
@@ -96,19 +100,16 @@ class SeriesBase[T](ABC):
     def sort(self) -> bool:
         pass
 
-    def _check_list(self, x: Any) -> bool:
-        return isinstance(x, list)
+    @overload
+    def get(self, indexes: list[IndexT] | list[bool], as_list: Literal[True]) -> list[T]: ...
 
     @overload
-    def get(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[T]: ...
+    def get(self, indexes: list[IndexT] | list[bool], as_list: Literal[False] = False) -> Series[IndexT, T]: ...
 
     @overload
-    def get(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series[T]: ...
+    def get(self, indexes: IndexT, as_list: bool = False) -> T: ...
 
-    @overload
-    def get(self, indexes: object, as_list: bool = False) -> T: ...
-
-    def get(self, indexes: Any | list[Any] | list[bool], as_list: bool = False) -> Series[T] | list[T] | T:
+    def get(self, indexes: Any | list[Any] | list[bool], as_list: bool = False) -> Series[IndexT, T] | list[T] | T:
         """
         Given indexes will return a sub-set of the Series. This method will direct to the specific methods
         based on what types are passed in for the indexes. The type of the return is determined by the
@@ -118,12 +119,13 @@ class SeriesBase[T](ABC):
         :param as_list: if True then return the values as a list, if False return a Series.
         :return: either Series, list, or single value. The return is a shallow copy
         """
-        if self._check_list(indexes):
-            return self.get_rows(indexes, as_list)
+        if isinstance(indexes, list):
+            return self.get_rows(indexes, as_list=True) if as_list else self.get_rows(indexes)
         else:
+            assert not isinstance(indexes, list)
             return self.get_cell(indexes)
 
-    def get_cell(self, index: object) -> T:
+    def get_cell(self, index: IndexT) -> T:
         """
         For a single index and return the value
 
@@ -134,12 +136,12 @@ class SeriesBase[T](ABC):
         return self._data[i]
 
     @overload
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[T]: ...
+    def get_rows(self, indexes: list[IndexT] | list[bool], as_list: Literal[True]) -> list[T]: ...
 
     @overload
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series[T]: ...
+    def get_rows(self, indexes: list[IndexT] | list[bool], as_list: Literal[False] = False) -> Series[IndexT, T]: ...
 
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Series[T] | list[T]:
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Series[IndexT, T] | list[T]:
         """
         For a list of indexes return the values of the indexes in that column.
 
@@ -176,7 +178,7 @@ class SeriesBase[T](ABC):
             )
         )
 
-    def get_location(self, location: int) -> dict[Any, Any]:
+    def get_location(self, location: int) -> dict[Any, IndexT | T]:
         """
         For an index location return a dict of the index and value. This is optimized for speed because
         it does not need to look up the index location with a search. Also, can accept relative indexing from the end of
@@ -188,12 +190,12 @@ class SeriesBase[T](ABC):
         return {self.index_name: self._index[location], self.data_name: self._data[location]}
 
     @overload
-    def get_locations(self, locations: list[int], as_list: Literal[True]) -> list[Any]: ...
+    def get_locations(self, locations: list[int], as_list: Literal[True]) -> list[T]: ...
 
     @overload
-    def get_locations(self, locations: list[int], as_list: Literal[False] = False) -> Series[T]: ...
+    def get_locations(self, locations: list[int], as_list: Literal[False] = False) -> Series[IndexT, T]: ...
 
-    def get_locations(self, locations: list[int], as_list: bool = False) -> Series[T] | list[T]:
+    def get_locations(self, locations: list[int], as_list: bool = False) -> Series[IndexT, T] | list[T]:
         """
         For list of locations return a Series or list of the values.
 
@@ -214,7 +216,7 @@ class SeriesBase[T](ABC):
         stop_index: Any = None,
         *,
         as_list: Literal[True],
-    ) -> tuple[list[Any], list[T]]: ...
+    ) -> tuple[list[IndexT], list[T]]: ...
 
     @overload
     def get_slice(
@@ -223,14 +225,14 @@ class SeriesBase[T](ABC):
         stop_index: Any = None,
         *,
         as_list: Literal[False] = False,
-    ) -> Series[T]: ...
+    ) -> Series[IndexT, T]: ...
 
     def get_slice(
         self,
         start_index: Any = None,
         stop_index: Any = None,
         as_list: bool = False,
-    ) -> Series[T] | tuple[list[Any], list[T]]:
+    ) -> Series[IndexT, T] | tuple[list[IndexT], list[T]]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
@@ -277,14 +279,14 @@ class SeriesBase[T](ABC):
         index_len = len(self._index)
         return [False] * start_index + [True] * (end_index - start_index + 1) + [False] * (index_len - 1 - end_index)
 
-    def _validate_index(self, indexes: list[Any]) -> None:
+    def _validate_index(self, indexes: list[IndexT]) -> None:
         """
         Raises an error if the indexes are not valid
 
         :param list indexes: list of indexes
         :return: nothing
         """
-        if not (self._check_list(indexes) or indexes is None):
+        if not (isinstance(indexes, list) or indexes is None):
             raise TypeError("indexes must be list or None")
         if len(indexes) != len(set(indexes)):  # noqa
             raise ValueError("index contains duplicates")
@@ -319,7 +321,7 @@ class SeriesBase[T](ABC):
         result.update(data_dict)
         return result
 
-    def head(self, rows: int) -> Series[T]:
+    def head(self, rows: int) -> Series[IndexT, T]:
         """
         Return a Series of the first N rows
 
@@ -330,7 +332,7 @@ class SeriesBase[T](ABC):
         rows_bool.extend([False] * max(0, len(self._index) - rows))
         return self.get(indexes=rows_bool)
 
-    def tail(self, rows: int) -> Series[T]:
+    def tail(self, rows: int) -> Series[IndexT, T]:
         """
         Return a Series of the last N rows
 
@@ -345,11 +347,11 @@ class SeriesBase[T](ABC):
     def select_index(self, compare: Any | tuple, result: Literal["boolean"] = "boolean") -> list[bool]: ...
 
     @overload
-    def select_index(self, compare: Any | tuple, result: Literal["value"]) -> list[Any]: ...
+    def select_index(self, compare: IndexT | tuple[Any, ...], result: Literal["value"]) -> list[IndexT]: ...
 
     def select_index(
-        self, compare: Any | tuple, result: Literal["boolean", "value"] = "boolean"
-    ) -> list[bool] | list[Any]:
+        self, compare: IndexT | tuple[Any, ...], result: Literal["boolean", "value"] = "boolean"
+    ) -> list[bool] | list[IndexT]:
         """
         Finds the elements in the index that match the compare parameter and returns either a list of the values that
         match, of a boolean list the length of the index with True to each index that matches. If the indexes are
@@ -361,11 +363,14 @@ class SeriesBase[T](ABC):
         :return: list of booleans or values
         """
         if isinstance(compare, tuple):
-            # this crazy list comprehension will match all the tuples in the list with None being an * wildcard
-            booleans = [
-                all([(compare[i] == w if compare[i] is not None else True) for i, w in enumerate(v)])
-                for x, v in enumerate(self._index)
-            ]
+            booleans = []
+            for value in self._index:
+                if not isinstance(value, tuple):
+                    booleans.append(False)
+                    continue
+                booleans.append(
+                    all(compare[i] == item if compare[i] is not None else True for i, item in enumerate(value))
+                )
         else:
             booleans = [False] * len(self._index)
             if self._sort:
@@ -389,7 +394,7 @@ class SeriesBase[T](ABC):
         compare_set = set(compare_list)
         return [x in compare_set for x in self._data]
 
-    def equality(self, indexes: list[Any] | list[bool] | None = None, value: Any = None) -> list[bool]:
+    def equality(self, indexes: list[IndexT] | list[bool] | None = None, value: Any = None) -> list[bool]:
         """
         Math helper method. Given a column and optional indexes will return a list of booleans on the equality of the
         value for that index in the DataFrame to the value parameter.
@@ -404,7 +409,7 @@ class SeriesBase[T](ABC):
         return [x == value for x in compare_list]
 
 
-class Series[T](SeriesBase[T]):
+class Series[IndexT, T](SeriesBase[IndexT, T]):
     """
     Series class. The raccoon Series implements a simplified version of the pandas Series with the key
     objective difference that the raccoon Series is meant for use cases where the size of the Series rows is
@@ -417,7 +422,7 @@ class Series[T](SeriesBase[T]):
     def __init__(
         self,
         data: list[T] | None = None,
-        index: list[Any] | None = None,
+        index: Sequence[IndexT] | None = None,
         data_name: str | tuple | None = "value",
         index_name: str | tuple | None = "index",
         sort: bool | None = None,
@@ -432,6 +437,9 @@ class Series[T](SeriesBase[T]):
         """
         super().__init__()
 
+        if index is not None and not _is_non_string_sequence(index):
+            raise TypeError("index must be a non-string sequence")
+
         # standard variable setup
         self._index = []
         self._index_name = index_name
@@ -444,14 +452,14 @@ class Series[T](SeriesBase[T]):
             if index:
                 # pad out to the number of rows
                 self._pad_data(len(index))
-                self.index = index
+                self.index = list(index)
             else:
                 self.index = list()
-        elif self._check_list(data) or isinstance(data, list):
+        elif isinstance(data, list):
             self._data = [x for x in data]
             # setup index
             if index:
-                self.index = index
+                self.index = list(index)
             else:
                 self.index = list(range(len(self._data)))
         else:
@@ -480,7 +488,7 @@ class Series[T](SeriesBase[T]):
         return self._data
 
     @property
-    def index(self) -> list[Any]:
+    def index(self) -> list[IndexT]:
         return self._index
 
     @index.setter
@@ -510,7 +518,7 @@ class Series[T](SeriesBase[T]):
         # sort data
         self._data = [self._data[x] for x in sort]
 
-    def set(self, indexes: Any | list[Any] | list[bool], values: Any | list[Any] = None) -> None:
+    def set(self, indexes: Any | list[Any] | list[bool], values: T | list[T] | Any = None) -> None:
         """
         Given indexes will set a sub-set of the Series to the values provided. This method will direct to the below
         methods based on what types are passed in for the indexes. If the indexes contain values not in the Series
@@ -520,12 +528,13 @@ class Series[T](SeriesBase[T]):
         :param values: value or list of values to set. If a list then must be the same length as the index's parameter.
         :return: nothing
         """
-        if self._check_list(indexes):
+        if isinstance(indexes, list):
             self.set_rows(indexes, values)
         else:
+            assert not isinstance(indexes, list)
             self.set_cell(indexes, values)
 
-    def _add_row(self, index: Any) -> None:
+    def _add_row(self, index: IndexT) -> None:
         """
         Add a new row to the Series
 
@@ -535,7 +544,7 @@ class Series[T](SeriesBase[T]):
         self._index.append(index)
         self._data.append(None)
 
-    def _insert_row(self, i: int, index: Any) -> None:
+    def _insert_row(self, i: int, index: IndexT) -> None:
         """
         Insert a new row in the Series.
 
@@ -575,7 +584,7 @@ class Series[T](SeriesBase[T]):
         for x in new_indexes:
             self._insert_row(bisect_left(self._index, x), x)
 
-    def set_cell(self, index: Any, value: Any) -> None:
+    def set_cell(self, index: IndexT, value: T | Any) -> None:
         """
         Sets the value of a single cell. If the index is not in the current index then a new index will be created.
 
@@ -595,7 +604,7 @@ class Series[T](SeriesBase[T]):
                 self._add_row(index)
         self._data[i] = value
 
-    def set_rows(self, index: list[Any] | list[bool], values: Any | list[Any] = None) -> None:
+    def set_rows(self, index: list[Any] | list[bool], values: T | list[T] | Any = None) -> None:
         """
         Set rows to a single value or list of values. If any of the index values are not in the current indexes
         then a new row will be created.
@@ -607,19 +616,17 @@ class Series[T](SeriesBase[T]):
         :return: nothing
         """
         if index and isinstance(index[0], bool) and all(isinstance(i, bool) for i in index):  # boolean list
-            if not self._check_list(values):  # single value provided, not a list, so turn values into list
-                values = [values for x in index if x]
+            value_list = list(values) if isinstance(values, list) else [values for x in index if x]
             if len(index) != len(self._index):
                 raise ValueError("boolean index list must be same size of existing index")
-            if len(values) != index.count(True):
+            if len(value_list) != index.count(True):
                 raise ValueError("length of values list must equal number of True entries in index list")
             indexes = [i for i, x in enumerate(index) if x]
             for x, i in enumerate(indexes):
-                self._data[i] = values[x]
+                self._data[i] = value_list[x]
         else:  # list of index
-            if not self._check_list(values):  # single value provided, not a list, so turn values into list
-                values = [values for _ in index]
-            if len(values) != len(index):
+            value_list = list(values) if isinstance(values, list) else [values for _ in index]
+            if len(value_list) != len(index):
                 raise ValueError("length of values and index must be the same.")
             # insert or append indexes as needed
             if self._sort:
@@ -639,7 +646,7 @@ class Series[T](SeriesBase[T]):
                     self._add_missing_rows(index)
                     indexes = [self._index.index(x) for x in index]
             for x, i in enumerate(indexes):
-                self._data[i] = values[x]
+                self._data[i] = value_list[x]
 
     def set_location(self, location: int, value: Any) -> None:
         """
@@ -663,7 +670,7 @@ class Series[T](SeriesBase[T]):
         indexes = [self._index[x] for x in locations]
         self.set(indexes, values)
 
-    def __setitem__(self, index: Any | list[Any] | slice, value: Any | list[Any]) -> None:
+    def __setitem__(self, index: Any | list[Any] | slice, value: T | list[T] | Any) -> None:
         """
         Convenience wrapper around the set() method for using srs[] = X
         Usage...
@@ -680,15 +687,15 @@ class Series[T](SeriesBase[T]):
         return self.set(indexes=indexes, values=value)
 
     @overload
-    def __getitem__(self, index: slice) -> Series[T]: ...
+    def __getitem__(self, index: slice) -> Series[IndexT, T]: ...
 
     @overload
-    def __getitem__(self, index: list[Any] | list[bool]) -> Series[T]: ...
+    def __getitem__(self, index: list[IndexT] | list[bool]) -> Series[IndexT, T]: ...
 
     @overload
-    def __getitem__(self, index: object) -> T: ...
+    def __getitem__(self, index: IndexT) -> T: ...
 
-    def __getitem__(self, index: Any | list[Any] | slice) -> Series[T] | T:
+    def __getitem__(self, index: IndexT | list[IndexT] | list[bool] | slice) -> Series[IndexT, T] | T:
         """
         Convenience wrapper around the get() method for using srs[]
         Usage...
@@ -708,7 +715,7 @@ class Series[T](SeriesBase[T]):
         else:  # just a single cell or list of cells
             return self.get(index)
 
-    def append_row(self, index: Any, value: Any) -> None:
+    def append_row(self, index: IndexT, value: T) -> None:
         """
         Appends a row of value to the end of the data. Be very careful with this function as for sorted Series it will
         not enforce sort order. Use this only for speed when needed, be careful.
@@ -723,7 +730,7 @@ class Series[T](SeriesBase[T]):
         self._index.append(index)
         self._data.append(value)
 
-    def append_rows(self, indexes: list[Any], values: list[Any]) -> None:
+    def append_rows(self, indexes: list[IndexT], values: list[T]) -> None:
         """
         Appends values to the end of the data. Be very careful with this function as for sort DataFrames it will not
         enforce sort order. Use this only for speed when needed, be careful.
@@ -753,19 +760,21 @@ class Series[T](SeriesBase[T]):
         :param indexes: either a list of values or list of booleans for the rows to delete
         :return: nothing
         """
-        indexes = [indexes] if not self._check_list(indexes) else indexes
-        if indexes and isinstance(indexes[0], bool) and all(isinstance(i, bool) for i in indexes):  # boolean list
-            if len(indexes) != len(self._index):
+        index_list = indexes if isinstance(indexes, list) else [indexes]
+        if (
+            index_list and isinstance(index_list[0], bool) and all(isinstance(i, bool) for i in index_list)
+        ):  # boolean list
+            if len(index_list) != len(self._index):
                 raise ValueError("boolean indexes list must be same size of existing indexes")
-            indexes = [i for i, x in enumerate(indexes) if x]
+            delete_locations = [i for i, x in enumerate(index_list) if x]
         else:
-            indexes = (
-                [sorted_index(self._index, x) for x in indexes]
+            delete_locations = (
+                [sorted_index(self._index, x) for x in index_list]
                 if self._sort
-                else [self._index.index(x) for x in indexes]
+                else [self._index.index(x) for x in index_list]
             )
-        indexes = sorted(indexes, reverse=True)  # need to sort and reverse list so deleting works
-        for i in indexes:
+        delete_locations = sorted(delete_locations, reverse=True)  # need to sort and reverse list so deleting works
+        for i in delete_locations:
             del self._data[i]
             del self._index[i]
 
@@ -779,7 +788,7 @@ class Series[T](SeriesBase[T]):
         self.index_name = "index"
 
 
-class ViewSeries[T](SeriesBase[T]):
+class ViewSeries[IndexT, T](SeriesBase[IndexT, T]):
     """
     ViewSeries class. The raccoon ViewSeries implements a view only version of the Series object with the key
     objective difference that the raccoon ViewSeries is meant for view only use cases where the underlying index and
@@ -790,7 +799,7 @@ class ViewSeries[T](SeriesBase[T]):
     def __init__(
         self,
         data: Sequence[T] | None = None,
-        index: list[Any] | None = None,
+        index: Sequence[IndexT] | None = None,
         data_name: str | tuple | None = "value",
         index_name: str | tuple | None = "index",
         sort: bool = False,
@@ -809,13 +818,15 @@ class ViewSeries[T](SeriesBase[T]):
         # check inputs
         if index is None:
             raise ValueError("Index cannot be None.")
+        if not _is_non_string_sequence(index):
+            raise TypeError("index must be a non-string sequence")
         if data is None:
             raise ValueError("Data cannot be None.")
 
         # standard variable setup
         self._data = data  # direct view, no copy
         self._data_name = data_name
-        self.index = index  # direct view, no copy
+        self.index = index if isinstance(index, list) else list(index)
         self._index_name = index_name
         self._sort = sort
         self._offset = offset
@@ -825,7 +836,7 @@ class ViewSeries[T](SeriesBase[T]):
         return self._data
 
     @property
-    def index(self) -> list[Any]:
+    def index(self) -> list[IndexT]:
         return self._index
 
     @index.setter
@@ -848,7 +859,7 @@ class ViewSeries[T](SeriesBase[T]):
     def value(self, indexes: slice, int_as_index: bool = False) -> list[T]: ...
 
     @overload
-    def value(self, indexes: list[int] | list[Any] | list[bool], int_as_index: bool = False) -> list[T]: ...
+    def value(self, indexes: list[int] | list[IndexT] | list[bool], int_as_index: bool = False) -> list[T]: ...
 
     @overload
     def value(self, indexes: object, int_as_index: bool = False) -> T: ...
@@ -866,7 +877,7 @@ class ViewSeries[T](SeriesBase[T]):
         # single integer value
         if isinstance(indexes, int):
             if int_as_index:
-                return self.get(indexes)
+                return self.get(cast(IndexT, indexes))
             else:
                 indexes = indexes - self._offset
                 return self._data[indexes]
@@ -890,31 +901,32 @@ class ViewSeries[T](SeriesBase[T]):
                 return self.get(indexes, as_list=True)
 
         # list of booleans
-        elif all([isinstance(x, bool) for x in indexes]):
-            return self.get(indexes, as_list=True)
+        elif isinstance(indexes, list) and all(isinstance(x, bool) for x in indexes):
+            return self.get(cast(list[IndexT] | list[bool], indexes), as_list=True)
 
         # list of values
         elif isinstance(indexes, list):
             if int_as_index or not isinstance(indexes[0], int):
-                return self.get(indexes, as_list=True)
+                return self.get(cast(list[IndexT] | list[bool], indexes), as_list=True)
             else:
                 indexes = [x - self._offset for x in indexes]
                 return self.get_locations(indexes, as_list=True)
 
         # just a single value
         else:
-            return self.get(indexes)
+            assert not isinstance(indexes, list)
+            return self.get_cell(indexes)
 
     @overload
     def __getitem__(self, index: slice) -> list[T]: ...
 
     @overload
-    def __getitem__(self, index: list[int] | list[Any] | list[bool]) -> list[T]: ...
+    def __getitem__(self, index: list[int] | list[IndexT] | list[bool]) -> list[T]: ...
 
     @overload
-    def __getitem__(self, index: object) -> T: ...
+    def __getitem__(self, index: int | IndexT) -> T: ...
 
-    def __getitem__(self, index: Any | list[Any] | slice) -> T | list[T]:
+    def __getitem__(self, index: int | IndexT | list[int] | list[IndexT] | list[bool] | slice) -> T | list[T]:
         """
         Convenience wrapper around the value() method for using srs[]. This will treat all integers as locations
 
@@ -931,7 +943,7 @@ class ViewSeries[T](SeriesBase[T]):
 
     # Series creation functions
     @classmethod
-    def from_dataframe(cls, dataframe: DataFrame, column: str | tuple | None, offset: int = 0) -> Self:
+    def from_dataframe(cls, dataframe: DataFrame[IndexT, Any], column: str | tuple | None, offset: int = 0) -> Self:
         """
         Creates and return a Series from a DataFrame and specific column
 
@@ -950,7 +962,7 @@ class ViewSeries[T](SeriesBase[T]):
         )
 
     @classmethod
-    def from_series(cls, series: Series[T], offset: int = 0) -> Self:
+    def from_series(cls, series: Series[IndexT, T], offset: int = 0) -> Self:
         """
         Creates and return a Series from a Series
 
