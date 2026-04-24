@@ -680,8 +680,8 @@ class Series(SeriesBase):
         """
         Convenience wrapper around the get() method for using srs[]
         Usage...
-        df[5, 'b']  -- get cell at index=5
-        df[[4, 5], 'c'] -- get indexes=[4, 5]
+        df[5]  -- get cell at index=5
+        df[[4, 5]] -- get indexes=[4, 5]
         df[4:10]  -- get indexes=[4, 5, 6, 7, 8, 9, 10]
         can also use a boolean list for anything
 

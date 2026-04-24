@@ -90,7 +90,7 @@ def test_input_data_mutability():
     assert srs.data == orig_data
 
     # change an inner index of input data
-    input_data.append(99)
+    input_data.append([99])
     assert srs.data == orig_data
 
     # Now make an inner element a mutable item, confirm that mutability remains
