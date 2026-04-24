@@ -3,7 +3,7 @@
 
 # -- Project information -----------------------------------------------------
 project = 'Raccoon'
-copyright = '2016, Ryan Sheftel'
+copyright = '2026, Ryan Sheftel'
 
 # -- General configuration ------------------------------------------------
 
@@ -11,9 +11,27 @@ copyright = '2016, Ryan Sheftel'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
+    "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.viewcode",
+    "IPython.sphinxext.ipython_console_highlighting",  # moved here
 ]
+
+# Suppress common duplicate warnings from re-exports
+suppress_warnings = [
+    "autodoc.duplicate",
+    "ref.python",  # for the "more than one target" warnings
+]
+
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+    "inherited-members": True,
+}
+
+# Make autodoc better with __init__ re-exports
+autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -35,11 +35,3 @@ raccoon.utils module
    :members:
    :show-inheritance:
    :undoc-members:
-
-Module contents
----------------
-
-.. automodule:: raccoon
-   :members:
-   :show-inheritance:
-   :undoc-members:
