@@ -11,6 +11,7 @@ raccoon.dataframe module
    :members:
    :show-inheritance:
    :undoc-members:
+   :noindex:
 
 raccoon.series module
 ---------------------
@@ -19,14 +20,16 @@ raccoon.series module
    :members:
    :show-inheritance:
    :undoc-members:
+   :noindex:
 
-raccoon.sort\_utils module
---------------------------
+raccoon.sort_utils module
+-------------------------
 
 .. automodule:: raccoon.sort_utils
    :members:
    :show-inheritance:
    :undoc-members:
+   :noindex:
 
 raccoon.utils module
 --------------------
@@ -35,3 +38,4 @@ raccoon.utils module
    :members:
    :show-inheritance:
    :undoc-members:
+   :noindex:
