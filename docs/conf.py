@@ -13,9 +13,15 @@ copyright = '2026, Ryan Sheftel'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.viewcode",
-    "IPython.sphinxext.ipython_console_highlighting",  # moved here
+    "sphinx.ext.viewcode"
 ]
+
+# Safely add IPython console highlighting only if IPython is installed
+try:
+    import IPython  # noqa: F401
+    extensions.append("IPython.sphinxext.ipython_console_highlighting")
+except ImportError:
+    pass  # It's okay if it's not available
 
 # Suppress common duplicate warnings from re-exports
 suppress_warnings = [
