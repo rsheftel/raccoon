@@ -6,7 +6,7 @@ from bisect import bisect_left
 from typing import Any, Callable
 
 
-def sorted_exists[T](values: list[T], x: T) -> tuple[bool, int]:
+def sorted_exists(values: list[Any], x: Any) -> tuple[bool, int]:
     """
     For list, values, returns the insert position for item x and whether the item already exists in the list. This
     allows one function call to return either the index to overwrite an existing value in the list, or the index to
@@ -21,7 +21,7 @@ def sorted_exists[T](values: list[T], x: T) -> tuple[bool, int]:
     return exists, i
 
 
-def sorted_index[T](values: list[T], x: T) -> int:
+def sorted_index(values: list[Any], x: Any) -> int:
     """
     For list, values, returns the index location of element x. If x does not exist will raise an error.
 
@@ -53,5 +53,5 @@ def sorted_list_indexes[T](
         def key_func(i):
             return key(list_to_sort.__getitem__(i))
     else:
-        key_func = list_to_sort.__getitem__
+        key_func = lambda i: list_to_sort[i]
     return sorted(range(len(list_to_sort)), key=key_func, reverse=reverse)

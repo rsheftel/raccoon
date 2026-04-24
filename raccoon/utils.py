@@ -2,9 +2,11 @@
 Raccoon utilities
 """
 
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 import raccoon as rc
+
+SeriesType = TypeVar("SeriesType", rc.Series, rc.ViewSeries)
 
 
 def assert_frame_equal(
@@ -34,8 +36,8 @@ def assert_frame_equal(
 
 
 def assert_series_equal(
-    left: rc.Series | rc.ViewSeries,
-    right: rc.Series | rc.ViewSeries,
+    left: SeriesType,
+    right: SeriesType,
     data_function: Callable[..., Any] | None = None,
     data_args: dict[str, Any] | None = None,
 ) -> None:
@@ -59,4 +61,5 @@ def assert_series_equal(
     assert left.index_name == right.index_name
     assert left.sort == right.sort
     if isinstance(left, rc.ViewSeries):
+        assert isinstance(right, rc.ViewSeries)
         assert left.offset == right.offset

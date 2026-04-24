@@ -21,4 +21,9 @@
     "python.testing.pytestArgs": [
         "tests",
     ],
+
+    // ----------------------------------
+    // PyLance / Pyrefly
+    // ----------------------------------
+    "python.analysis.diagnosticMode": "workspace"
 }

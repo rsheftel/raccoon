@@ -182,7 +182,7 @@ def test_select_index():
     assert actual == [False, False, False, True, False, False]
 
     with pytest.raises(ValueError):
-        srs.select_index("a", "BAD") # type: ignore
+        srs.select_index("a", "BAD")  # type: ignore
 
     # simple index, not sort
     srs = rc.Series([1, 2, 3, 4, 5, 6], index=["a", "b", "c", "d", "e", "f"])
@@ -242,7 +242,7 @@ def test_reset_index():
     assert_series_equal(srs, expected)
 
     # with index and index name defined
-    srs = rc.Series([1, 2, 3], index=["x", "y", "z"], index_name="jelo")
+    srs = rc.Series([1, 2, 3], index=["x", "y", "z"], index_name="jello")
     srs.reset_index()
     expected = rc.Series([1, 2, 3], [0, 1, 2], sort=False)
     assert_series_equal(srs, expected)

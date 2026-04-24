@@ -9,7 +9,7 @@ import keyword
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict, namedtuple
 from itertools import compress
-from typing import Any, Callable, Iterator, Literal, Self, overload
+from typing import Any, Callable, Iterator, Literal, Never, Self, overload
 
 from tabulate import tabulate
 
@@ -252,6 +252,7 @@ class DataFrame(object):
         self,
         indexes: list[Any] | list[bool],
         columns: Any,
+        *,
         as_list: Literal[True],
         as_dict: Literal[False] = False,
     ) -> list[Any]: ...
@@ -259,11 +260,40 @@ class DataFrame(object):
     @overload
     def get(
         self,
-        indexes: None,
+        indexes: list[Any] | list[bool],
         columns: Any,
+        as_list: Literal[False] = False,
+        as_dict: Literal[False] = False,
+    ) -> DataFrame: ...
+
+    @overload
+    def get(
+        self,
+        indexes: None = None,
+        columns: Any = None,
+        *,
         as_list: Literal[True],
         as_dict: Literal[False] = False,
     ) -> list[Any]: ...
+
+    @overload
+    def get(
+        self,
+        indexes: None = None,
+        columns: Any = None,
+        as_list: Literal[False] = False,
+        as_dict: Literal[False] = False,
+    ) -> DataFrame: ...
+
+    @overload
+    def get(
+        self,
+        indexes: Any,
+        columns: list[Any] | list[bool] | None,
+        *,
+        as_list: Literal[False] = False,
+        as_dict: Literal[True],
+    ) -> dict[Any, Any]: ...
 
     @overload
     def get(
@@ -271,8 +301,8 @@ class DataFrame(object):
         indexes: Any,
         columns: list[Any] | list[bool] | None,
         as_list: Literal[False] = False,
-        as_dict: Literal[True] = True,
-    ) -> dict[Any, Any]: ...
+        as_dict: Literal[False] = False,
+    ) -> DataFrame: ...
 
     @overload
     def get(
@@ -379,6 +409,18 @@ class DataFrame(object):
             if as_list
             else DataFrame(data={column: data}, index=index, index_name=self._index_name, sort=self._sort)
         )
+
+    @overload
+    def get_columns(
+        self,
+        index: Any,
+        columns: list[Any] | None = None,
+        *,
+        as_dict: Literal[True],
+        as_namedtuple: Literal[True],
+        name: str = "raccoon",
+        include_index: bool = True,
+    ) -> Never: ...
 
     @overload
     def get_columns(
@@ -515,10 +557,34 @@ class DataFrame(object):
         columns: list[Any] | list[bool] | None = None,
         *,
         as_dict: Literal[True],
+        as_namedtuple: Literal[True],
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> Never: ...
+
+    @overload
+    def get_location(
+        self,
+        location: int,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[True],
         as_namedtuple: Literal[False] = False,
         name: str = "raccoon",
         index: bool = True,
     ) -> dict[Any, Any]: ...
+
+    @overload
+    def get_location(
+        self,
+        location: int,
+        columns: list[Any] | list[bool] | None = None,
+        *,
+        as_dict: Literal[False] = False,
+        as_namedtuple: Literal[True],
+        name: str = "raccoon",
+        index: bool = True,
+    ) -> tuple[Any, ...]: ...
 
     @overload
     def get_location(

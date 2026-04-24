@@ -7,6 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from bisect import bisect_left, bisect_right
 from collections import OrderedDict
+from collections.abc import Sequence
 from itertools import compress
 from typing import Any, Literal, Self, overload
 
@@ -16,7 +17,7 @@ from raccoon import DataFrame
 from raccoon.sort_utils import sorted_exists, sorted_index, sorted_list_indexes
 
 
-class SeriesBase(ABC):
+class SeriesBase[T](ABC):
     """
     Base Series abstract base class that concrete implementations inherit from. Note that the .data and .index property
     methods in Series are views to the underlying data and not copies.
@@ -31,7 +32,7 @@ class SeriesBase(ABC):
         """
         self._index: list[Any] = []
         self._index_name: str | tuple | None = None
-        self._data: list[Any] = []
+        self._data: Any = []
         self._data_name: str | tuple | None = None
         self._sort: bool = False
 
@@ -61,7 +62,7 @@ class SeriesBase(ABC):
 
     @property
     @abstractmethod
-    def data(self) -> list[Any]:
+    def data(self) -> Sequence[T]:
         pass
 
     @property
@@ -99,15 +100,15 @@ class SeriesBase(ABC):
         return isinstance(x, list)
 
     @overload
-    def get(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[Any]: ...
+    def get(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[T]: ...
 
     @overload
-    def get(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Self: ...
+    def get(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series[T]: ...
 
     @overload
-    def get(self, indexes: Any, as_list: bool = False) -> Any: ...
+    def get(self, indexes: object, as_list: bool = False) -> T: ...
 
-    def get(self, indexes: Any | list[Any] | list[bool], as_list: bool = False) -> Self | list[Any] | Any:
+    def get(self, indexes: Any | list[Any] | list[bool], as_list: bool = False) -> Series[T] | list[T] | T:
         """
         Given indexes will return a sub-set of the Series. This method will direct to the specific methods
         based on what types are passed in for the indexes. The type of the return is determined by the
@@ -122,7 +123,7 @@ class SeriesBase(ABC):
         else:
             return self.get_cell(indexes)
 
-    def get_cell(self, index: Any) -> Any:
+    def get_cell(self, index: object) -> T:
         """
         For a single index and return the value
 
@@ -133,12 +134,12 @@ class SeriesBase(ABC):
         return self._data[i]
 
     @overload
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[Any]: ...
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[True]) -> list[T]: ...
 
     @overload
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series: ...
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: Literal[False] = False) -> Series[T]: ...
 
-    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Series | list[Any]:
+    def get_rows(self, indexes: list[Any] | list[bool], as_list: bool = False) -> Series[T] | list[T]:
         """
         For a list of indexes return the values of the indexes in that column.
 
@@ -150,8 +151,8 @@ class SeriesBase(ABC):
             if len(indexes) != len(self._index):
                 raise ValueError("boolean index list must be same size of existing index")
             if all(indexes):  # the entire column
-                data = self._data
-                index = self._index
+                data = list(self._data)
+                index = list(self._index)
             else:
                 data = list(compress(self._data, indexes))
                 index = list(compress(self._index, indexes))
@@ -190,9 +191,9 @@ class SeriesBase(ABC):
     def get_locations(self, locations: list[int], as_list: Literal[True]) -> list[Any]: ...
 
     @overload
-    def get_locations(self, locations: list[int], as_list: Literal[False] = False) -> Self: ...
+    def get_locations(self, locations: list[int], as_list: Literal[False] = False) -> Series[T]: ...
 
-    def get_locations(self, locations: list[int], as_list: bool = False) -> Self | list[Any]:
+    def get_locations(self, locations: list[int], as_list: bool = False) -> Series[T] | list[T]:
         """
         For list of locations return a Series or list of the values.
 
@@ -202,7 +203,9 @@ class SeriesBase(ABC):
         """
 
         indexes = [self._index[x] for x in locations]
-        return self.get(indexes, as_list)
+        if as_list:
+            return self.get(indexes, as_list=True)
+        return self.get(indexes, as_list=False)
 
     @overload
     def get_slice(
@@ -211,7 +214,7 @@ class SeriesBase(ABC):
         stop_index: Any = None,
         *,
         as_list: Literal[True],
-    ) -> tuple[list[Any], list[Any]]: ...
+    ) -> tuple[list[Any], list[T]]: ...
 
     @overload
     def get_slice(
@@ -220,14 +223,14 @@ class SeriesBase(ABC):
         stop_index: Any = None,
         *,
         as_list: Literal[False] = False,
-    ) -> Series: ...
+    ) -> Series[T]: ...
 
     def get_slice(
         self,
         start_index: Any = None,
         stop_index: Any = None,
         as_list: bool = False,
-    ) -> Series | tuple[list[Any], list[Any]]:
+    ) -> Series[T] | tuple[list[Any], list[T]]:
         """
         For sorted Series will return either a Series or list of all the rows where the index is greater than
         or equal to the start_index if provided and less than or equal to the stop_index if provided. If either the
@@ -245,8 +248,8 @@ class SeriesBase(ABC):
         start_location = bisect_left(self._index, start_index) if start_index is not None else None
         stop_location = bisect_right(self._index, stop_index) if stop_index is not None else None
 
-        index = self._index[start_location:stop_location]
-        data = self._data[start_location:stop_location]
+        index = list(self._index[start_location:stop_location])
+        data = list(self._data[start_location:stop_location])
 
         if as_list:
             return index, data
@@ -316,7 +319,7 @@ class SeriesBase(ABC):
         result.update(data_dict)
         return result
 
-    def head(self, rows: int) -> Self:
+    def head(self, rows: int) -> Series[T]:
         """
         Return a Series of the first N rows
 
@@ -327,7 +330,7 @@ class SeriesBase(ABC):
         rows_bool.extend([False] * max(0, len(self._index) - rows))
         return self.get(indexes=rows_bool)
 
-    def tail(self, rows: int) -> Self:
+    def tail(self, rows: int) -> Series[T]:
         """
         Return a Series of the last N rows
 
@@ -401,7 +404,7 @@ class SeriesBase(ABC):
         return [x == value for x in compare_list]
 
 
-class Series(SeriesBase):
+class Series[T](SeriesBase[T]):
     """
     Series class. The raccoon Series implements a simplified version of the pandas Series with the key
     objective difference that the raccoon Series is meant for use cases where the size of the Series rows is
@@ -413,7 +416,7 @@ class Series(SeriesBase):
 
     def __init__(
         self,
-        data: list[Any] | None = None,
+        data: list[T] | None = None,
         index: list[Any] | None = None,
         data_name: str | tuple | None = "value",
         index_name: str | tuple | None = "index",
@@ -473,7 +476,7 @@ class Series(SeriesBase):
         self._data.extend([None] * (index_len - len(self._data)))
 
     @property
-    def data(self) -> list[Any]:
+    def data(self) -> list[T]:
         return self._data
 
     @property
@@ -676,7 +679,16 @@ class Series(SeriesBase):
         indexes = self._slice_index(index) if isinstance(index, slice) else index
         return self.set(indexes=indexes, values=value)
 
-    def __getitem__(self, index: Any | list[Any] | slice) -> Self | Any:
+    @overload
+    def __getitem__(self, index: slice) -> Series[T]: ...
+
+    @overload
+    def __getitem__(self, index: list[Any] | list[bool]) -> Series[T]: ...
+
+    @overload
+    def __getitem__(self, index: object) -> T: ...
+
+    def __getitem__(self, index: Any | list[Any] | slice) -> Series[T] | T:
         """
         Convenience wrapper around the get() method for using srs[]
         Usage...
@@ -767,7 +779,7 @@ class Series(SeriesBase):
         self.index_name = "index"
 
 
-class ViewSeries(SeriesBase):
+class ViewSeries[T](SeriesBase[T]):
     """
     ViewSeries class. The raccoon ViewSeries implements a view only version of the Series object with the key
     objective difference that the raccoon ViewSeries is meant for view only use cases where the underlying index and
@@ -777,7 +789,7 @@ class ViewSeries(SeriesBase):
 
     def __init__(
         self,
-        data: list[Any] | None = None,
+        data: Sequence[T] | None = None,
         index: list[Any] | None = None,
         data_name: str | tuple | None = "value",
         index_name: str | tuple | None = "index",
@@ -785,7 +797,7 @@ class ViewSeries(SeriesBase):
         offset: int = 0,
     ):
         """
-        :param data: (optional) list of values.
+        :param data: (optional) sequence of values.
         :param index: (optional) list of index values. If None then the index will be integers starting with zero
         :param data_name: (optional) name of the data column, or will default to 'value'
         :param index_name: (optional) name for the index. Default is "index"
@@ -809,7 +821,7 @@ class ViewSeries(SeriesBase):
         self._offset = offset
 
     @property
-    def data(self) -> list[Any]:
+    def data(self) -> Sequence[T]:
         return self._data
 
     @property
@@ -830,20 +842,18 @@ class ViewSeries(SeriesBase):
         return self._offset
 
     @overload
-    def value(self, indexes: int, int_as_index: bool = False) -> Any: ...
+    def value(self, indexes: int, int_as_index: bool = False) -> T: ...
 
     @overload
-    def value(self, indexes: slice, int_as_index: bool = False) -> list[Any]: ...
+    def value(self, indexes: slice, int_as_index: bool = False) -> list[T]: ...
 
     @overload
-    def value(self, indexes: list[int] | list[Any] | list[bool], int_as_index: bool = False) -> list[Any]: ...
+    def value(self, indexes: list[int] | list[Any] | list[bool], int_as_index: bool = False) -> list[T]: ...
 
     @overload
-    def value(self, indexes: Any, int_as_index: bool = False) -> Any: ...
+    def value(self, indexes: object, int_as_index: bool = False) -> T: ...
 
-    def value(
-        self, indexes: int | Any | list[int] | list[Any] | list[bool], int_as_index: bool = False
-    ) -> Any | list[Any]:
+    def value(self, indexes: int | Any | list[int] | list[Any] | list[bool], int_as_index: bool = False) -> T | list[T]:
         """
         Wrapper function for get. It will return a list, no index. If the indexes are integers it will be assumed
         that they are locations unless int_as_index = True. If the indexes are locations then they will be rotated to
@@ -856,7 +866,7 @@ class ViewSeries(SeriesBase):
         # single integer value
         if isinstance(indexes, int):
             if int_as_index:
-                return self.get(indexes, as_list=True)
+                return self.get(indexes)
             else:
                 indexes = indexes - self._offset
                 return self._data[indexes]
@@ -873,8 +883,8 @@ class ViewSeries(SeriesBase):
                     raise IndexError("slide indexes invalid with given offset:%f" % self._offset)
                 # where end is the last element
                 if (start < 0) and stop == 0:
-                    return self._data[start:]
-                return self._data[start:stop]
+                    return list(self._data[start:])
+                return list(self._data[start:stop])
             else:  # treat as index
                 indexes = self._slice_index(indexes)
                 return self.get(indexes, as_list=True)
@@ -895,7 +905,16 @@ class ViewSeries(SeriesBase):
         else:
             return self.get(indexes)
 
-    def __getitem__(self, index: Any | list[Any] | slice) -> Any | list[Any]:
+    @overload
+    def __getitem__(self, index: slice) -> list[T]: ...
+
+    @overload
+    def __getitem__(self, index: list[int] | list[Any] | list[bool]) -> list[T]: ...
+
+    @overload
+    def __getitem__(self, index: object) -> T: ...
+
+    def __getitem__(self, index: Any | list[Any] | slice) -> T | list[T]:
         """
         Convenience wrapper around the value() method for using srs[]. This will treat all integers as locations
 
@@ -931,7 +950,7 @@ class ViewSeries(SeriesBase):
         )
 
     @classmethod
-    def from_series(cls, series: Series, offset: int = 0) -> Self:
+    def from_series(cls, series: Series[T], offset: int = 0) -> Self:
         """
         Creates and return a Series from a Series
 

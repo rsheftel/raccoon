@@ -73,9 +73,8 @@ def test_data():
     assert actual.data == new
     assert all([isinstance(actual.data[x], list) for x in range(len(actual.columns))])
 
-    new.append(88)
+    new.append([88])
     assert actual.data != new
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
-        actual.data = [4, 5]
+        actual.data = [4, 5] # type: ignore
