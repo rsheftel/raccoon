@@ -42,9 +42,7 @@ The raccoon DataFrame is not intended for math operations like pandas and only l
 
 Underlying Data Structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Raccoon uses the standard built in lists as its default underlying data structure. There is an option on object
-construction to use any other drop-in replacement for lists. For example the fast blist package
-http://stutzbachenterprises.com/blist/ could be used as a list replacement for the underlying data structure.
+Raccoon uses the standard built in lists as its underlying data structure.
 
 Why Raccoon?
 ~~~~~~~~~~~~
@@ -65,7 +63,8 @@ My hope is that one day Pandas solves the speed problem with growing DataFrames 
 Python Version
 ~~~~~~~~~~~~~~
 Raccoon requires Python 3.11 or greater. Python 2.7 support was eliminated as of version 3.0. If you need to use raccoon
-with Python 2.7 use any version less than 3.0
+with Python 2.7 use any version less than 3.0. Version 4.0 removed the concept of a dropin and now Raccoon only
+uses built in lists as its underlying data structure.
 
 Helper scripts
 ~~~~~~~~~~~~~~

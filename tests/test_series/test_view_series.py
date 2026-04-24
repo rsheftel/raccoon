@@ -62,8 +62,7 @@ def test_sorted_init():
     # cannot change sort status
     df = rc.ViewSeries([5, 4, 6], index=[12, 11, 13], sort=False)
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
-        df.sort = True
+        df.sort = True # type: ignore
 
 
 def test_bad_initialization():
@@ -88,21 +87,20 @@ def test_bad_initialization():
 
     # index is not a list
     with pytest.raises(TypeError):
-        rc.ViewSeries({"a": [1]}, index=1)
+        rc.ViewSeries({"a": [1]}, index=1) # type: ignore
 
     # index not a list
     with pytest.raises(TypeError):
-        rc.ViewSeries(data=[2], index="b")
+        rc.ViewSeries(data=[2], index="b") # type: ignore
 
     with pytest.raises(ValueError):
-        rc.ViewSeries(data={"data": [1, 2, 3]}, index=[4, 5, 6])
+        rc.ViewSeries(data={"data": [1, 2, 3]}, index=[4, 5, 6]) # type: ignore
 
 
 def test_mixed_type_init():
     rc.ViewSeries(data=(1, 2, 3), index=[4, 5, 6])
 
 
-# flake8: noqa
 def test_not_implemented():
     """
     These are all the tests that are implemented in the Series class that are not in ViewSeries
@@ -110,20 +108,16 @@ def test_not_implemented():
     ser = rc.ViewSeries(data=[4, 5, 6], index=[1, 2, 3])
 
     with pytest.raises(AttributeError):
-        ser.dropin
+        ser.sort = True # type: ignore
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
-        ser.sort = True
+        ser.sort_index() # type: ignore
 
     with pytest.raises(AttributeError):
-        ser.sort_index()
+        ser.set(1, 2) # type: ignore
 
     with pytest.raises(AttributeError):
-        ser.set(1, 2)
-
-    with pytest.raises(AttributeError):
-        ser.delete(1)
+        ser.delete(1) # type: ignore
 
 
 def test_from_dataframe():

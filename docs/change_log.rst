@@ -204,3 +204,9 @@ an installation requirement.
 - Added setup for using agentic AI
 - Used AI to add type hints
 - Used AI to make performance optimizations
+
+4.0 (04/20/26)
+~~~~~~~~~~~~~~~~
+- Major refactor to remove the concept of drop-in replacements and instead just allow any list type to be used.
+  This was driven by the fact that blist is no longer maintained. Now the only dependency is tabulate which is a pure
+  python package. This refactor also allows for using agentic AI to optimize the code and add type hints.

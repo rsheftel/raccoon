@@ -13,13 +13,18 @@ Updates
 Contents
 --------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :caption: API Reference
 
-   modules.rst
    raccoon.rst
+
+Usage Examples
+--------------
+.. toctree::
+   :maxdepth: 1
+
    usage_dataframe.rst
    usage_series.rst
-   usage_dropin.rst
    convert_pandas.rst
    speed_test.rst
 

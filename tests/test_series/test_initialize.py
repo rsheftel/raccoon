@@ -130,15 +130,15 @@ def test_bad_initialization():
 
     # index is not a list
     with pytest.raises(TypeError):
-        rc.Series({"a": [1]}, index=1)
+        rc.Series({"a": [1]}, index=1) # type: ignore
 
     # bad data type
     with pytest.raises(TypeError):
-        rc.Series(data=(1, 2, 3))
+        rc.Series(data=(1, 2, 3)) # type: ignore
 
     with pytest.raises(TypeError):
-        rc.Series(data={"data": [1, 2, 3]})
+        rc.Series(data={"data": [1, 2, 3]}) # type: ignore
 
     # index not a list
     with pytest.raises(TypeError):
-        rc.Series(data=[2], index="b")
+        rc.Series(data=[2], index="b") # type: ignore

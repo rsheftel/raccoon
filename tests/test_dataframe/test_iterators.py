@@ -61,3 +61,27 @@ def test_itertuples():
         actual.append(x)
 
     assert actual == expected
+
+
+def test_itertuples_sanitizes_invalid_field_names():
+    df = rc.DataFrame({"class": [1], "_hidden": [2], "a-b": [3], "a b": [4]})
+
+    actual = getattr(list(df.itertuples())[0], "_asdict")()
+
+    assert actual == {"index": 0, "col_class": 1, "hidden": 2, "a_b": 3, "a_b_1": 4}
+
+
+def test_itertuples_handles_index_column_name_collisions():
+    df = rc.DataFrame({"index": [1]}, index_name="index")
+
+    actual = getattr(list(df.itertuples())[0], "_asdict")()
+
+    assert actual == {"index": 0, "index_1": 1}
+
+
+def test_itertuples_handles_tuple_labels():
+    df = rc.DataFrame({("first", "second"): [1]}, index=[("row", 1)], index_name=("left", "right"))
+
+    actual = getattr(list(df.itertuples())[0], "_asdict")()
+
+    assert actual == {"left_right": ("row", 1), "first_second": 1}

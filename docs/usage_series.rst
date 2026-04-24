@@ -1,12 +1,12 @@
 Example Usage for Series
 ========================
 
-.. code:: python
+.. code:: ipython3
 
     # remove comment to use latest development version
     import sys; sys.path.insert(0, '../')
 
-.. code:: python
+.. code:: ipython3
 
     # import libraries
     import raccoon as rc
@@ -14,7 +14,7 @@ Example Usage for Series
 Initialize
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # empty DataFrame
     srs = rc.Series()
@@ -25,7 +25,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1924106416536
+    object id: 1875881342160
     data:
     []
     index:
@@ -33,7 +33,7 @@ Initialize
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # with indexes but no data
     srs = rc.Series(index=[1, 2, 3])
@@ -44,7 +44,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1924104590056
+    object id: 1875880829648
     data:
     [None, None, None]
     index:
@@ -52,7 +52,7 @@ Initialize
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # with data
     srs = rc.Series(data=[4, 5, 6], index=[10, 11, 12])
@@ -63,7 +63,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1924106418216
+    object id: 1875880829840
     data:
     [4, 5, 6]
     index:
@@ -74,7 +74,7 @@ Initialize
 Print
 -----
 
-.. code:: python
+.. code:: ipython3
 
     srs.print()
 
@@ -88,7 +88,7 @@ Print
          12        6
     
 
-.. code:: python
+.. code:: ipython3
 
     print(srs)
 
@@ -105,7 +105,7 @@ Print
 Setters and Getters
 -------------------
 
-.. code:: python
+.. code:: ipython3
 
     # data_name
     srs.data_name
@@ -119,7 +119,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     srs.data_name = 'new_data'
     print(srs)
@@ -134,7 +134,7 @@ Setters and Getters
          12           6
     
 
-.. code:: python
+.. code:: ipython3
 
     # index
     srs.index
@@ -148,7 +148,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     #indexes can be any non-repeating unique values
     srs.index = ['apple', 'pear', 7.7]
@@ -164,7 +164,7 @@ Setters and Getters
     7.7               6
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.index = [10, 11, 12]
     print(srs)
@@ -179,7 +179,7 @@ Setters and Getters
          12           6
     
 
-.. code:: python
+.. code:: ipython3
 
     # the index can also have a name, befault it is "index"
     srs.index_name
@@ -193,7 +193,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     srs.index_name = 'units'
     srs.index_name
@@ -207,7 +207,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # data is a shallow copy, be careful on how this is used
     srs.index_name = 'index'
@@ -225,7 +225,7 @@ Setters and Getters
 Select Index
 ------------
 
-.. code:: python
+.. code:: ipython3
 
     srs.select_index(11)
 
@@ -241,7 +241,7 @@ Select Index
 Set Values
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # set a single cell
     srs.set(10, 100)
@@ -257,7 +257,7 @@ Set Values
          12           6
     
 
-.. code:: python
+.. code:: ipython3
 
     # set a value outside current range creates a new row. Can also use [] for setting
     srs[13] = 9
@@ -274,7 +274,7 @@ Set Values
          13           9
     
 
-.. code:: python
+.. code:: ipython3
 
     # set a subset of rows
     srs[[10, 12]] = 66
@@ -291,7 +291,7 @@ Set Values
          13           9
     
 
-.. code:: python
+.. code:: ipython3
 
     # using boolean list
     srs.set([True, False, True, False], [88, 99])
@@ -308,7 +308,7 @@ Set Values
          13           9
     
 
-.. code:: python
+.. code:: ipython3
 
     # setting with slices
     srs[12:13] = 33
@@ -325,7 +325,7 @@ Set Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     srs[10:12] = [1, 2, 3]
     print(srs)
@@ -341,7 +341,7 @@ Set Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     # set a location
     srs.set_location(1, 22)
@@ -358,7 +358,7 @@ Set Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     # set multiple locations
     srs.set_locations([0, 2], [11, 27])
@@ -375,7 +375,7 @@ Set Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     # append a row, DANGEROUS as there is not validation checking, but can be used for speed
     srs.append_row(14, 99)
@@ -393,7 +393,7 @@ Set Values
          14          99
     
 
-.. code:: python
+.. code:: ipython3
 
     # append multiple rows, again no sort check
     srs.append_rows([15, 16], [100, 110])
@@ -416,7 +416,7 @@ Set Values
 Get Values
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # get a single cell
     srs[10]
@@ -430,7 +430,7 @@ Get Values
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # get subset of the index
     srs[[11, 12, 13]].print()
@@ -445,7 +445,7 @@ Get Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     # get using slices
     srs[11:13].print()
@@ -460,7 +460,7 @@ Get Values
          13          33
     
 
-.. code:: python
+.. code:: ipython3
 
     # return as a list
     srs.get([11, 12, 13], as_list=True)
@@ -480,7 +480,7 @@ Set and Get by Location
 Locations are the index of the index, in other words the index locations
 from 0…len(index)
 
-.. code:: python
+.. code:: ipython3
 
     print(srs.get_location(2))
 
@@ -490,7 +490,7 @@ from 0…len(index)
     {'index': 12, 'new_data': 27}
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.get_location(-1)
 
@@ -503,7 +503,7 @@ from 0…len(index)
 
 
 
-.. code:: python
+.. code:: ipython3
 
     srs.get_locations(locations=[0, 2]).print()
 
@@ -516,7 +516,7 @@ from 0…len(index)
          12          27
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.get_locations(locations=[0, 2], as_list=True)
 
@@ -529,7 +529,7 @@ from 0…len(index)
 
 
 
-.. code:: python
+.. code:: ipython3
 
     srs.set_locations([-1, -2], values=[10, 9])
     print(srs)
@@ -551,7 +551,7 @@ from 0…len(index)
 Head and Tail
 -------------
 
-.. code:: python
+.. code:: ipython3
 
     srs.head(2).print()
 
@@ -564,7 +564,7 @@ Head and Tail
          11          22
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.tail(2).print()
 
@@ -580,7 +580,7 @@ Head and Tail
 Delete rows
 -----------
 
-.. code:: python
+.. code:: ipython3
 
     srs.delete([10, 13])
     print(srs)
@@ -600,7 +600,7 @@ Delete rows
 Convert
 -------
 
-.. code:: python
+.. code:: ipython3
 
     # return a dict
     srs.to_dict()
@@ -614,7 +614,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # exclude the index
     srs.to_dict(index=False)
@@ -628,7 +628,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # return an OrderedDict()
     srs.to_dict(ordered=True)
@@ -646,7 +646,7 @@ Convert
 Sort by Index
 -------------
 
-.. code:: python
+.. code:: ipython3
 
     srs = rc.Series([6, 7, 8, 9], index=[25, 24, 23, 22])
     print(srs)
@@ -662,7 +662,7 @@ Sort by Index
          22        9
     
 
-.. code:: python
+.. code:: ipython3
 
     # sort by index. Sorts are inplace
     srs.sort_index()
@@ -682,11 +682,11 @@ Sort by Index
 Math Methods
 ------------
 
-.. code:: python
+.. code:: ipython3
 
     srs = rc.Series([1, 2, 3])
 
-.. code:: python
+.. code:: ipython3
 
     # test for equality
     srs.equality(value=3)
@@ -700,7 +700,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # all math methods can operate on a subset of the index
     srs.equality(indexes=[1, 2], value=2)
@@ -722,7 +722,7 @@ Pandas, but attempts to mimic some of the capabilities with the use of
 tuples as the index. Raccoon does not provide any checking to make sure
 the indexes are all the same length or any other integrity checking.
 
-.. code:: python
+.. code:: ipython3
 
     tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
     srs = rc.Series([1, 2, 3, 4, 5, 6], index=tuples)
@@ -744,7 +744,7 @@ the indexes are all the same length or any other integrity checking.
 The select_index method works with tuples by allowing the \* to act as a
 wild card for matching.
 
-.. code:: python
+.. code:: ipython3
 
     compare = ('a', None, None)
     srs.select_index(compare)
@@ -758,7 +758,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = ('a', None, 3)
     srs.select_index(compare, 'boolean')
@@ -772,7 +772,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, 2, None)
     srs.select_index(compare, 'value')
@@ -786,7 +786,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, None, 3)
     srs.select_index(compare, 'value')
@@ -800,7 +800,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, None, None)
     srs.select_index(compare)
@@ -817,7 +817,7 @@ wild card for matching.
 Reset Index
 -----------
 
-.. code:: python
+.. code:: ipython3
 
     srs = rc.Series([1, 2, 3], index=[9, 10, 11])
     print(srs)
@@ -832,7 +832,7 @@ Reset Index
          11        3
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.reset_index()
     srs
@@ -842,7 +842,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1924106640744
+    object id: 1875881741104
     data:
     [1, 2, 3]
     index:
@@ -850,7 +850,7 @@ Reset Index
 
 
 
-.. code:: python
+.. code:: ipython3
 
     srs = rc.Series([1, 2, 3], index=[9, 10, 11], index_name='new name')
     print(srs)
@@ -865,7 +865,7 @@ Reset Index
             11        3
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.reset_index()
     print(srs)
@@ -887,14 +887,14 @@ Series will be set to sorted by default if no index is given at
 initialization. If an index is given at initialization then the
 parameter sorted must be set to True
 
-.. code:: python
+.. code:: ipython3
 
     srs = rc.Series([3, 5, 4], index=[12, 15, 14], sort=True)
 
 When sorted=True on initialization the data will be sorted by index to
 start
 
-.. code:: python
+.. code:: ipython3
 
     srs.print()
 
@@ -908,7 +908,7 @@ start
          15        5
     
 
-.. code:: python
+.. code:: ipython3
 
     srs[16] = 9
     print(srs)
@@ -924,7 +924,7 @@ start
          16        9
     
 
-.. code:: python
+.. code:: ipython3
 
     srs.set(indexes=13, values=3.5)
     print(srs)

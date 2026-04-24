@@ -1,0 +1,29 @@
+{
+    // ----------------------------------
+    // Terminal, Python & Interpreter
+    // ----------------------------------
+    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/raccoon"
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/raccoon"
+    ],
+
+    // ----------------------------------
+    // Testing
+    // ----------------------------------
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.autoTestDiscoverOnSavePattern": "tests/test_*.py",
+    "python.testing.pytestArgs": [
+        "tests",
+    ],
+
+    // ----------------------------------
+    // PyLance / Pyrefly
+    // ----------------------------------
+    "python.analysis.diagnosticMode": "workspace"
+}

@@ -166,12 +166,12 @@ def test_bad_initialization():
 
     # index is not a list
     with pytest.raises(TypeError):
-        rc.DataFrame({"a": [1]}, index=1)
+        rc.DataFrame({"a": [1]}, index=1) # type: ignore
 
     # columns are not a list
     with pytest.raises(TypeError):
-        rc.DataFrame({"a": [1]}, columns="a")
+        rc.DataFrame({"a": [1]}, columns="a") # type: ignore
 
     # bad data type
     with pytest.raises(TypeError):
-        rc.DataFrame(data=[1, 2, 3])
+        rc.DataFrame(data=[1, 2, 3]) # type: ignore

@@ -4,12 +4,12 @@ Convert to and from Pandas DataFrames
 There are no built in methods for the conversions but these functions
 below should work in most basic instances.
 
-.. code:: python
+.. code:: ipython3
 
     # remove comment to use latest development version
     import sys; sys.path.insert(0, '../')
 
-.. code:: python
+.. code:: ipython3
 
     import raccoon as rc
     import pandas as pd
@@ -17,7 +17,7 @@ below should work in most basic instances.
 Raccoon to Pandas
 -----------------
 
-.. code:: python
+.. code:: ipython3
 
     def rc_to_pd(raccoon_dataframe):
         """
@@ -29,7 +29,7 @@ Raccoon to Pandas
         data_dict = raccoon_dataframe.to_dict(index=False)
         return pd.DataFrame(data_dict, columns=raccoon_dataframe.columns, index=raccoon_dataframe.index)
 
-.. code:: python
+.. code:: ipython3
 
     rc_df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=[7, 8, 9])
     print(type(rc_df))
@@ -46,7 +46,7 @@ Raccoon to Pandas
           9    3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     pd_df = rc_to_pd(rc_df)
     print(type(pd_df))
@@ -55,7 +55,7 @@ Raccoon to Pandas
 
 .. parsed-literal::
 
-    <class 'pandas.core.frame.DataFrame'>
+    <class 'pandas.DataFrame'>
        a  b
     7  1  4
     8  2  5
@@ -65,7 +65,7 @@ Raccoon to Pandas
 Pandas to Raccoon
 -----------------
 
-.. code:: python
+.. code:: ipython3
 
     def pd_to_rc(pandas_dataframe):
         """
@@ -85,7 +85,7 @@ Pandas to Raccoon
         index_name = 'index' if not index_name else index_name
         return rc.DataFrame(data=data, columns=columns, index=index, index_name=index_name)
 
-.. code:: python
+.. code:: ipython3
 
     pd_df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[5, 6, 7], columns=['a', 'b'])
     print(type(pd_df))
@@ -94,14 +94,14 @@ Pandas to Raccoon
 
 .. parsed-literal::
 
-    <class 'pandas.core.frame.DataFrame'>
+    <class 'pandas.DataFrame'>
        a  b
     5  1  4
     6  2  5
     7  3  6
     
 
-.. code:: python
+.. code:: ipython3
 
     rc_df = pd_to_rc(pd_df)
     print(type(rc_df))

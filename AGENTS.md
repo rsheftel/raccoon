@@ -99,6 +99,7 @@ Violating this rule makes the suggestion completely unusable.
 - [ ] Add focused tests next to code, with assets under `tests/data` pattern
 - [ ] Run `uv run --no-sync pytest -m "not slow"` locally; consider `-n auto`.
 - [ ] Run `uv run python -m ruff .` on any python files you have edited.
+- [ ] Confirm touched Python files do not introduce new editor or type-checker diagnostics.
 - [ ] Document assumptions (columns/dtypes, units, timezones).
 
 ---
@@ -131,6 +132,18 @@ Violating this rule makes the suggestion completely unusable.
 - Always include type hints
 - Use built-in generics (`list[str]`, `dict[str, int]`, `set[str]`) and `| None` for optionals; avoid `List`, `Dict`,
   `Optional` from typing module
+- Write annotations that keep editor analysis accurate and useful; prefer types that improve hover info, completions,
+    and error checking
+- Use explicit narrowing with `is None`, `isinstance`, `assert`, sentinels, or small helper functions when inference
+    is ambiguous
+- Avoid `Any`, `cast`, and `# type: ignore` unless they are necessary and the reason is clear from the code
+- Keep public return types and important data structures precise enough that downstream usage is obvious
+- Use advanced typing features such as `TypedDict`, `Protocol`, `Literal`, overloads, and dataclasses only when they
+    materially improve clarity, API safety, or tooling behavior
+- When using overloads, put the most specific signatures first and avoid broad signatures that weaken later overload
+    resolution
+- Prefer inline generic relationships for local use; introduce shared type aliases or `TypeVar` definitions only when
+    the same pattern is repeated across multiple functions
 - Prefer list/dict comprehensions over loops when clear
 - Use f-strings; no string concatenation with `+`
 - Use `pathlib.Path` exclusively for filesystem paths

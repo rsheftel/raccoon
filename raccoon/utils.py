@@ -2,16 +2,18 @@
 Raccoon utilities
 """
 
-from typing import Callable
+from typing import Any, Callable, TypeVar
 
 import raccoon as rc
 
+SeriesType = TypeVar("SeriesType", rc.Series, rc.ViewSeries)
+
 
 def assert_frame_equal(
-        left: rc.DataFrame,
-        right: rc.DataFrame,
-        data_function: Callable | None = None,
-        data_args: dict | None = None,
+    left: rc.DataFrame,
+    right: rc.DataFrame,
+    data_function: Callable[..., Any] | None = None,
+    data_args: dict[str, Any] | None = None,
 ) -> None:
     """
     For unit testing equality of two DataFrames.
@@ -31,12 +33,13 @@ def assert_frame_equal(
     assert left.columns == right.columns
     assert left.index_name == right.index_name
     assert left.sort == right.sort
-    assert left.dropin == right.dropin
 
 
 def assert_series_equal(
-        left: rc.Series | rc.ViewSeries, right: rc.Series | rc.ViewSeries, data_function: Callable | None = None,
-        data_args: dict | None = None
+    left: SeriesType,
+    right: SeriesType,
+    data_function: Callable[..., Any] | None = None,
+    data_args: dict[str, Any] | None = None,
 ) -> None:
     """
     For unit testing equality of two Series.
@@ -58,6 +61,5 @@ def assert_series_equal(
     assert left.index_name == right.index_name
     assert left.sort == right.sort
     if isinstance(left, rc.ViewSeries):
+        assert isinstance(right, rc.ViewSeries)
         assert left.offset == right.offset
-    if isinstance(left, rc.Series):
-        assert left.dropin == right.dropin

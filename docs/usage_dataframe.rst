@@ -1,14 +1,19 @@
 Example Usage for DataFrame
 ===========================
 
-.. code:: python
+.. code:: ipython3
 
     # remove comment to use latest development version
-    import sys;
+    import sys
+    from pathlib import Path
     
-    sys.path.insert(0, '../')
+    repo_root = Path.cwd()
+    if not (repo_root / 'raccoon').exists():
+        repo_root = repo_root.parent
+    
+    sys.path.insert(0, str(repo_root))
 
-.. code:: python
+.. code:: ipython3
 
     # import libraries
     import raccoon as rc
@@ -16,7 +21,7 @@ Example Usage for DataFrame
 Initialize
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # empty DataFrame
     df = rc.DataFrame()
@@ -27,7 +32,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1602323641696
+    object id: 2167256510720
     columns:
     []
     data:
@@ -37,7 +42,7 @@ Initialize
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # with columns and indexes but no data
     df = rc.DataFrame(columns=['a', 'b', 'c'], index=[1, 2, 3])
@@ -48,7 +53,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1602323630096
+    object id: 2167257130512
     columns:
     ['a', 'b', 'c']
     data:
@@ -58,7 +63,7 @@ Initialize
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # with data
     df = rc.DataFrame(data={'a': [1, 2, 3], 'b': [4, 5, 6]}, index=[10, 11, 12], columns=['a', 'b'])
@@ -69,7 +74,7 @@ Initialize
 
 .. parsed-literal::
 
-    object id: 1602323182784
+    object id: 2167257128192
     columns:
     ['a', 'b']
     data:
@@ -82,7 +87,7 @@ Initialize
 Print
 -----
 
-.. code:: python
+.. code:: ipython3
 
     df.print()
 
@@ -96,7 +101,7 @@ Print
          12    3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     print(df)
 
@@ -113,7 +118,7 @@ Print
 Setters and Getters
 -------------------
 
-.. code:: python
+.. code:: ipython3
 
     # columns
     df.columns
@@ -127,7 +132,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     df.columns = ['first', 'second']
     print(df)
@@ -142,7 +147,7 @@ Setters and Getters
          12        3         6
     
 
-.. code:: python
+.. code:: ipython3
 
     # columns can be renamed with a dict()
     df.rename_columns({'second': 'b', 'first': 'a'})
@@ -157,7 +162,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # index
     df.index
@@ -171,7 +176,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     #indexes can be any non-repeating unique values
     df.index = ['apple', 'pear', 7.7]
@@ -187,7 +192,7 @@ Setters and Getters
     7.7        3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df.index = [10, 11, 12]
     print(df)
@@ -202,7 +207,7 @@ Setters and Getters
          12    3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     # the index can also have a name, befault it is "index"
     df.index_name
@@ -216,7 +221,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     df.index_name = 'units'
     df.index_name
@@ -230,7 +235,7 @@ Setters and Getters
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # data is a shallow copy, be careful on how this is used
     df.index_name = 'index'
@@ -248,7 +253,7 @@ Setters and Getters
 Select Index
 ------------
 
-.. code:: python
+.. code:: ipython3
 
     df.select_index(11)
 
@@ -264,7 +269,7 @@ Select Index
 Set Values
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # set a single cell
     df.set(10, 'a', 100)
@@ -280,7 +285,7 @@ Set Values
          12    3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     # set a value outside current range creates a new row and/or column. Can also use [] for setting
     df[13, 'c'] = 9
@@ -297,7 +302,7 @@ Set Values
          13              9
     
 
-.. code:: python
+.. code:: ipython3
 
     # set column
     df['b'] = 55
@@ -314,7 +319,7 @@ Set Values
          13        55    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # set a subset of column
     df[[10, 12], 'b'] = 66
@@ -331,7 +336,7 @@ Set Values
          13        55    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # using boolean list
     df.set([True, False, True, False], 'b', [88, 99])
@@ -348,7 +353,7 @@ Set Values
          13        55    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # setting with slices
     df[12:13, 'a'] = 33
@@ -365,7 +370,7 @@ Set Values
          13   33   55    9
     
 
-.. code:: python
+.. code:: ipython3
 
     df[10:12, 'c'] = [1, 2, 3]
     print(df)
@@ -381,7 +386,7 @@ Set Values
          13   33   55    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # append a row, DANGEROUS as there is not validation checking, but can be used for speed
     df.append_row(14, {'a': 44, 'c': 100, 'd': 99})
@@ -399,7 +404,7 @@ Set Values
          14   44       100   99
     
 
-.. code:: python
+.. code:: ipython3
 
     # append rows, again use caution
     df.append_rows([15, 16], {'a': [55, 56], 'd': [100, 101]})
@@ -422,7 +427,7 @@ Set Values
 Get Values
 ----------
 
-.. code:: python
+.. code:: ipython3
 
     # get a single cell
     df[10, 'a']
@@ -436,7 +441,7 @@ Get Values
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # get an entire column
     df['c'].print()
@@ -455,7 +460,7 @@ Get Values
          16
     
 
-.. code:: python
+.. code:: ipython3
 
     # get list of columns
     df[['a', 'c']].print()
@@ -474,7 +479,7 @@ Get Values
          16   56
     
 
-.. code:: python
+.. code:: ipython3
 
     # get subset of the index
     df[[11, 12, 13], 'b'].print()
@@ -489,7 +494,7 @@ Get Values
          13   55
     
 
-.. code:: python
+.. code:: ipython3
 
     # get using slices
     df[11:13, 'b'].print()
@@ -504,7 +509,7 @@ Get Values
          13   55
     
 
-.. code:: python
+.. code:: ipython3
 
     # get a matrix
     df[10:11, ['a', 'c']].print()
@@ -518,7 +523,7 @@ Get Values
          11    2    2
     
 
-.. code:: python
+.. code:: ipython3
 
     # get a column, return as a list
     df.get(columns='a', as_list=True)
@@ -532,7 +537,7 @@ Get Values
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # get a row and return as a dictionary
     df.get_columns(index=13, columns=['a', 'b'], as_dict=True)
@@ -546,7 +551,7 @@ Get Values
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # get a row and return as a namedtuple, excluding the index
     df.get_columns(index=13, columns=['a', 'b'], as_namedtuple=True, name="tuplename", include_index=False)
@@ -566,7 +571,7 @@ Set and Get by Location
 Locations are the index of the index, in other words the index locations
 from 0…len(index)
 
-.. code:: python
+.. code:: ipython3
 
     # get a single cell
     df.get_location(2, 'a')
@@ -580,7 +585,7 @@ from 0…len(index)
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # get an entire row when the columns is None
     print(df.get_location(2))
@@ -593,7 +598,7 @@ from 0…len(index)
          12   33   99    3
     
 
-.. code:: python
+.. code:: ipython3
 
     df.get_location(0, ['b', 'c'], as_dict=True)
 
@@ -606,7 +611,7 @@ from 0…len(index)
 
 
 
-.. code:: python
+.. code:: ipython3
 
     df.get_location(1, as_namedtuple=True, name="tuplename", index=False)
 
@@ -619,7 +624,7 @@ from 0…len(index)
 
 
 
-.. code:: python
+.. code:: ipython3
 
     df.get_location(-1).print()
 
@@ -631,7 +636,7 @@ from 0…len(index)
          16   56            101
     
 
-.. code:: python
+.. code:: ipython3
 
     df.get_locations(locations=[0, 2]).print()
 
@@ -644,7 +649,7 @@ from 0…len(index)
          12   33   99    3
     
 
-.. code:: python
+.. code:: ipython3
 
     df.set_locations(locations=[0, 2], column='a', values=-9)
     df.print()
@@ -666,7 +671,7 @@ from 0…len(index)
 Head and Tail
 -------------
 
-.. code:: python
+.. code:: ipython3
 
     df.head(2).print()
 
@@ -679,7 +684,7 @@ Head and Tail
          11    2   55    2
     
 
-.. code:: python
+.. code:: ipython3
 
     df.tail(2).print()
 
@@ -695,7 +700,7 @@ Head and Tail
 Delete colunmns and rows
 ------------------------
 
-.. code:: python
+.. code:: ipython3
 
     df.delete_rows([10, 13])
     print(df)
@@ -712,7 +717,7 @@ Delete colunmns and rows
          16   56            101
     
 
-.. code:: python
+.. code:: ipython3
 
     df.delete_columns('b')
     print(df)
@@ -732,7 +737,7 @@ Delete colunmns and rows
 Convert
 -------
 
-.. code:: python
+.. code:: ipython3
 
     # return a dict
     df.to_dict()
@@ -749,7 +754,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # exclude the index
     df.to_dict(index=False)
@@ -765,7 +770,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # return an OrderedDict()
     df.to_dict(ordered=True)
@@ -782,7 +787,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # return a list of just one column
     df['c'].to_list()
@@ -796,7 +801,7 @@ Convert
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # convert to JSON
     string = df.to_json()
@@ -805,10 +810,10 @@ Convert
 
 .. parsed-literal::
 
-    {"data": {"a": [2, -9, 44, 55, 56], "c": [2, 3, 100, null, null], "d": [null, null, 99, 100, 101]}, "index": [11, 12, 14, 15, 16], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false, "dropin": null}}
+    {"data": {"a": [2, -9, 44, 55, 56], "c": [2, 3, 100, null, null], "d": [null, null, 99, 100, 101]}, "index": [11, 12, 14, 15, 16], "meta_data": {"index_name": "index", "columns": ["a", "c", "d"], "sort": false}}
     
 
-.. code:: python
+.. code:: ipython3
 
     # construct DataFrame from JSON
     df_from_json = rc.DataFrame.from_json(string)
@@ -829,7 +834,7 @@ Convert
 Sort by Index and Column
 ------------------------
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [4, 3, 2, 1], 'b': [6, 7, 8, 9]}, index=[25, 24, 23, 22])
     print(df)
@@ -845,7 +850,7 @@ Sort by Index and Column
          22    1    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # sort by index. Sorts are inplace
     df.sort_index()
@@ -862,7 +867,7 @@ Sort by Index and Column
          25    4    6
     
 
-.. code:: python
+.. code:: ipython3
 
     # sort by column
     df.sort_columns('b')
@@ -879,7 +884,7 @@ Sort by Index and Column
          22    1    9
     
 
-.. code:: python
+.. code:: ipython3
 
     # sort by column in reverse order
     df.sort_columns('b', reverse=True)
@@ -896,14 +901,14 @@ Sort by Index and Column
          25    4    6
     
 
-.. code:: python
+.. code:: ipython3
 
     # sorting with a key function is avaialble, see tests for examples
 
 Append
 ------
 
-.. code:: python
+.. code:: ipython3
 
     df1 = rc.DataFrame({'a': [1, 2], 'b': [5, 6]}, index=[1, 2])
     df1.print()
@@ -917,7 +922,7 @@ Append
           2    2    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df2 = rc.DataFrame({'b': [7, 8], 'c': [11, 12]}, index=[3, 4])
     print(df2)
@@ -931,7 +936,7 @@ Append
           4    8   12
     
 
-.. code:: python
+.. code:: ipython3
 
     df1.append(df2)
     print(df1)
@@ -950,11 +955,11 @@ Append
 Math Methods
 ------------
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [2, 8, 9]})
 
-.. code:: python
+.. code:: ipython3
 
     # test for equality
     df.equality('a', value=3)
@@ -968,7 +973,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # all math methods can operate on a subset of the index
     df.equality('b', indexes=[1, 2], value=2)
@@ -982,7 +987,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # add two columns
     df.add('a', 'b')
@@ -996,7 +1001,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # subtract
     df.subtract('b', 'a')
@@ -1010,7 +1015,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # multiply
     df.multiply('a', 'b', [0, 2])
@@ -1024,7 +1029,7 @@ Math Methods
 
 
 
-.. code:: python
+.. code:: ipython3
 
     # divide
     df.divide('b', 'a')
@@ -1046,7 +1051,7 @@ Pandas, but attempts to mimic some of the capabilities with the use of
 tuples as the index. Raccoon does not provide any checking to make sure
 the indexes are all the same length or any other integrity checking.
 
-.. code:: python
+.. code:: ipython3
 
     tuples = [('a', 1, 3), ('a', 1, 4), ('a', 2, 3), ('b', 1, 4), ('b', 2, 1), ('b', 3, 3)]
     df = rc.DataFrame({'a': [1, 2, 3, 4, 5, 6]}, index=tuples)
@@ -1068,7 +1073,7 @@ the indexes are all the same length or any other integrity checking.
 The select_index method works with tuples by allowing the \* to act as a
 wild card for matching.
 
-.. code:: python
+.. code:: ipython3
 
     compare = ('a', None, None)
     df.select_index(compare)
@@ -1082,7 +1087,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = ('a', None, 3)
     df.select_index(compare, 'boolean')
@@ -1096,7 +1101,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, 2, None)
     df.select_index(compare, 'value')
@@ -1110,7 +1115,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, None, 3)
     df.select_index(compare, 'value')
@@ -1124,7 +1129,7 @@ wild card for matching.
 
 
 
-.. code:: python
+.. code:: ipython3
 
     compare = (None, None, None)
     df.select_index(compare)
@@ -1141,7 +1146,7 @@ wild card for matching.
 Reset Index
 -----------
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'])
     print(df)
@@ -1156,7 +1161,7 @@ Reset Index
           2    3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df.reset_index()
     df
@@ -1166,7 +1171,7 @@ Reset Index
 
 .. parsed-literal::
 
-    object id: 1602314513728
+    object id: 2167256509840
     columns:
     ['a', 'b', 'index_0']
     data:
@@ -1176,7 +1181,7 @@ Reset Index
 
 
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     print(df)
@@ -1191,7 +1196,7 @@ Reset Index
     z         3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df.reset_index()
     print(df)
@@ -1206,7 +1211,7 @@ Reset Index
           2    3    6  z
     
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'],
                       index=[('a', 10, 'x'), ('b', 11, 'y'), ('c', 12, 'z')], index_name=('melo', 'helo', 'gelo'))
@@ -1222,7 +1227,7 @@ Reset Index
     ('c', 12, 'z')                3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df.reset_index()
     print(df)
@@ -1237,7 +1242,7 @@ Reset Index
           2    3    6  c           12  z
     
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]}, columns=['a', 'b'], index=['x', 'y', 'z'], index_name='jelo')
     print(df)
@@ -1252,7 +1257,7 @@ Reset Index
     z         3    6
     
 
-.. code:: python
+.. code:: ipython3
 
     df.reset_index(drop=True)
     print(df)
@@ -1270,11 +1275,11 @@ Reset Index
 Iterators
 ---------
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [1, 2, 'c'], 'b': [5, 6, 'd']}, index=[1, 2, 3])
 
-.. code:: python
+.. code:: ipython3
 
     for row in df.iterrows():
         print(row)
@@ -1287,7 +1292,7 @@ Iterators
     {'index': 3, 'a': 'c', 'b': 'd'}
     
 
-.. code:: python
+.. code:: ipython3
 
     for row in df.itertuples():
         print(row)
@@ -1307,14 +1312,14 @@ DataFrames will be set to sorted by default if no index is given at
 initialization. If an index is given at initialization then the
 parameter sorted must be set to True
 
-.. code:: python
+.. code:: ipython3
 
     df = rc.DataFrame({'a': [3, 5, 4], 'b': [6, 8, 7]}, index=[12, 15, 14], sort=True)
 
 When sorted=True on initialization the data will be sorted by index to
 start
 
-.. code:: python
+.. code:: ipython3
 
     df.print()
 
@@ -1328,7 +1333,7 @@ start
          15    5    8
     
 
-.. code:: python
+.. code:: ipython3
 
     df[16, 'b'] = 9
     print(df)
@@ -1344,7 +1349,7 @@ start
          16         9
     
 
-.. code:: python
+.. code:: ipython3
 
     df.set(indexes=13, values={'a': 3.5, 'b': 6.5})
     print(df)
